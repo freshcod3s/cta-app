@@ -89,8 +89,8 @@ push-notification provider (APNs vs FCM) and (b) build artifact format.
 
 ### Bundle identifiers (LOCKED at first build -- changing later = ID rotation pain)
 
-- iOS:     `ios.bundleIdentifier = com.freshcoder.cta`
-- Android: `android.package      = com.freshcoder.cta`
+- iOS:     `ios.bundleIdentifier = com.congresstradealerts.cta`
+- Android: `android.package      = com.congresstradealerts.cta`
 - Convention: identical reverse-DNS across both, suffix only on field name.
 
 ---
