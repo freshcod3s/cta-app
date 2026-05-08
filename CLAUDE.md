@@ -217,6 +217,24 @@ CTA-App-1-1 ships 9/10 items. Item #10 is split: `.aab` ✓ this ticket;
   Joe-tasks per RULE #1 ("real-device pixel rendering"). Claude Code may
   drive simulator / Expo Go web-preview but final pass requires Joe on
   hardware.
+- Three-surface email rule: the contact email is mirrored across three
+  user-facing surfaces -- cta-app `app/(drawer)/about.tsx` PRESS_EMAIL
+  constant + the Worker repo's `privacy.html` + the Worker repo's
+  `press.ts`. Any change touches all three or the surfaces drift.
+  Currently locked on `congresstradealertsapp@gmail.com`; flips to
+  `press@congresstradealerts.com` when Cloudflare Email Routing is wired
+  (currently blocked per Worker repo's
+  `docs/embargo/PRE_SEND_CHECKLIST.md` Phase 1).
+
+---
+
+## Gotchas
+
+- **JSX TS1382 (literal angle brackets in text content):** `<` and `>`
+  inside JSX text trip `tsc` with `error TS1382: Unexpected token`.
+  Fix: escape as `&lt;` / `&gt;`. Easy to miss in copy-heavy diffs
+  (long descriptions, methodology body, About paragraphs). Hit during
+  CTA-App-1-8 ship.
 
 ---
 
