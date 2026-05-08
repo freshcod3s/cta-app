@@ -29,8 +29,8 @@
         "appleTeamId": "REPLACE_WITH_APPLE_TEAM_ID"
       },
       "android": {
-        "serviceAccountKeyPath": "./REPLACE_WITH_SERVICE_ACCOUNT_KEY.json",
-        "track": "production"
+        "serviceAccountKeyPath": "./store/google-play/service-account-key.json",
+        "track": "internal"
       }
     },
     "preview": {

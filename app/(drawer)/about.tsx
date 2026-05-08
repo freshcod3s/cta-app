@@ -14,7 +14,7 @@ import { Linking, Pressable, ScrollView, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import Constants from "expo-constants";
 
-import { GITHUB_URL, PRIVACY_URL, WEB_URL } from "@/lib/constants/links";
+import { GITHUB_URL, PRIVACY_URL, TERMS_URL, WEB_URL } from "@/lib/constants/links";
 
 const PRESS_EMAIL = "congresstradealertsapp@gmail.com";
 
@@ -55,9 +55,22 @@ function Para({ children }: { children: React.ReactNode }) {
   );
 }
 
-function LinkRow({ label, onPress }: { label: string; onPress: () => void }) {
+function LinkRow({
+  label,
+  onPress,
+  accessibilityLabel,
+}: {
+  label: string;
+  onPress: () => void;
+  accessibilityLabel?: string;
+}) {
   return (
-    <Pressable onPress={onPress} accessibilityRole="link" hitSlop={8}>
+    <Pressable
+      onPress={onPress}
+      accessibilityRole="link"
+      accessibilityLabel={accessibilityLabel}
+      hitSlop={8}
+    >
       <Text className="mb-1.5 text-sm text-cta-accent underline">{label}</Text>
     </Pressable>
   );
@@ -110,6 +123,11 @@ export default function AboutScreen() {
           <LinkRow
             label="Read the full privacy policy"
             onPress={() => openExternal(PRIVACY_URL)}
+          />
+          <LinkRow
+            label="Read the Terms of Service"
+            onPress={() => openExternal(TERMS_URL)}
+            accessibilityLabel="Open Terms of Service in browser"
           />
         </Section>
 
