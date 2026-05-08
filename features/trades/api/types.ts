@@ -56,6 +56,21 @@ export type TradeDetailEnvelope = {
   data: TradeRecord;
 };
 
+// /api/trades?page=N envelope (CTA-App-1-5 P1: page-based pagination,
+// 1-indexed, per_page=25 default; per_page can be overridden via query
+// param). meta drives the next-page cursor logic.
+export type TradesListMeta = {
+  total: number;
+  page: number;
+  per_page: number;
+};
+
+export type TradesListPage = {
+  ok: boolean;
+  data: TradeRecord[];
+  meta: TradesListMeta;
+};
+
 // Helpers used across feature components.
 export const isBuy = (tx: TxType) => tx === "Purchase";
 export const isLateFiling = (lagDays: number) => lagDays > 45;
