@@ -14,6 +14,7 @@
 // instead of digging through .response.
 
 import { API_BASE_URL } from "@/lib/api/client";
+import type { SubscriptionPrefs } from "@/features/settings/types";
 
 export type PushApiErrorCode =
   | "invalid_token"
@@ -136,4 +137,21 @@ export async function deletePushToken(
   }
 
   return { deleted: (json as DeleteEnvelope).deleted };
+}
+
+/**
+ * CTA-App-1-7: re-POST /api/push/token with the current
+ * subscriptionPrefs blob. Same upsert semantics as postPushToken --
+ * the backend updates last_seen + subscription_prefs in one shot.
+ *
+ * Wraps postPushToken so callers don't need to know that the
+ * preferences sync rides on the registration endpoint; CTA-N's
+ * future dispatcher reads subscription_prefs.members[] directly.
+ */
+export async function syncSubscriptionPrefs(
+  token: string,
+  platform: "ios" | "android",
+  prefs: SubscriptionPrefs,
+): Promise<{ registered: boolean }> {
+  return postPushToken(token, platform, prefs as unknown as Record<string, unknown>);
 }

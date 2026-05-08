@@ -22,6 +22,7 @@ import { Platform } from "react-native";
 import Constants from "expo-constants";
 
 import { postPushToken, deletePushToken, PushApiError } from "./api";
+import { useSettingsStore } from "@/features/settings/store";
 
 const TOKEN_STORE_KEY = "cta.push.token";
 
@@ -154,8 +155,13 @@ export async function registerForPushNotifications(): Promise<RegisterResult> {
     return { success: false, error: "unknown" };
   }
 
+  // CTA-App-1-7: ship the current subscriptionPrefs alongside the
+  // initial registration. New users hydrate to {members:[]}, but
+  // users who previously subscribed and turned push off + on again
+  // get their watched-member list re-applied transparently.
+  const prefs = useSettingsStore.getState().subscriptionPrefs;
   try {
-    await postPushToken(token, platform);
+    await postPushToken(token, platform, prefs as unknown as Record<string, unknown>);
   } catch (e) {
     if (e instanceof PushApiError) {
       return { success: false, error: pushApiErrorToCode(e) };
@@ -205,8 +211,11 @@ export async function syncPushRegistration(): Promise<void> {
     return;
   }
 
+  // Read prefs at call time so a foreground re-sync immediately picks
+  // up the latest subscription state -- avoids stale closure capture.
+  const prefs = useSettingsStore.getState().subscriptionPrefs;
   try {
-    await postPushToken(stored, platform);
+    await postPushToken(stored, platform, prefs as unknown as Record<string, unknown>);
   } catch {
     // Token may be rotated or invalidated server-side. Try a full
     // re-register; if it fails we'll catch on next sync.

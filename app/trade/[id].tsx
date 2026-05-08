@@ -14,6 +14,7 @@ import { useLocalSearchParams } from "expo-router";
 
 import { useTradeDetail } from "@/features/trades/api/queries";
 import { MemberHeader } from "@/features/trades/components/MemberHeader";
+import { SubscribeButton } from "@/features/trades/components/SubscribeButton";
 import { CommitteeChips } from "@/features/trades/components/CommitteeChips";
 import { TransactionHero } from "@/features/trades/components/TransactionHero";
 import { TimelineSection } from "@/features/trades/components/TimelineSection";
@@ -93,6 +94,7 @@ export default function TradeDetailScreen() {
       ) : (
         <ScrollView contentContainerStyle={{ paddingBottom: 16 }}>
           <MemberHeader trade={query.data} />
+          <SubscribeButton trade={query.data} />
           <CommitteeChips />
           <TransactionHero trade={query.data} />
           <TimelineSection trade={query.data} />
