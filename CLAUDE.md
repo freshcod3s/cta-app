@@ -217,3 +217,271 @@ CTA-App-1-1 ships 9/10 items. Item #10 is split: `.aab` ✓ this ticket;
   Joe-tasks per RULE #1 ("real-device pixel rendering"). Claude Code may
   drive simulator / Expo Go web-preview but final pass requires Joe on
   hardware.
+
+---
+
+## Process Kernel (v2.1.1)
+
+The architectural-discipline kernel below was developed under the
+deprecated `congress-trade-mobile/` rebuild and ported here verbatim
+on 2026-05-08 when that scratch project was retired. It applies to all
+CTA-App-N work alongside the Stack lock and Architectural rules above.
+
+Sections 0-13 are preserved with original numbering and content;
+heading levels were adjusted (H1 -> H3, H2 -> H4) to nest under this
+section in the host document hierarchy. Section 13's bootstrap-prompt
+template references "the congress-trade-mobile rebuild" verbatim from
+the original kernel; when applying that prompt to a cta-app session,
+mentally substitute "the cta-app rebuild" (or edit inline at paste
+time).
+
+### 0. Core philosophy (non-overridable)
+
+- Vertical slices > layers
+- Explicit > implicit
+- Deterministic > reactive magic
+- Delete > add
+- State machines > booleans
+- Contracts > conventions
+
+### 1. System architecture rules
+
+#### 1.1 Vertical slice model
+Every feature = UI + state machine + domain logic + data + tests
+- No horizontal "services" spanning unrelated features
+- No "global auth layer", "global feed layer", etc.
+- Each slice owns its full lifecycle
+
+#### 1.2 Domain boundaries
+- Each domain has: one canonical model, one public API surface, one persistence adapter
+- Rule: No duplicate domain representations across layers
+
+#### 1.3 Dependency rule (strict DAG)
+Allowed flow only: UI -> State Machine -> Domain -> Data Adapter
+Forbidden:
+- UI -> API calls directly
+- UI -> database/cache
+- Domain -> UI imports
+
+#### 1.4 Dependency injection (mandatory)
+All external dependencies must be injected: network client, storage, clock, analytics, feature flags
+- Rule: No hidden singletons except platform runtime primitives
+
+### 2. State & behavior model
+
+#### 2.1 Finite state machines required
+Every feature state must be explicit FSM. Required minimum:
+- idle / loading / success / empty / error / offline (if networked)
+- Rule: No boolean-driven UI flow logic
+
+#### 2.2 Pure UI rule
+UI is a pure projection. Forbidden in UI: side effects, API calls, business decisions, state mutation
+- Allowed: rendering state, dispatching intents only
+
+#### 2.3 Idempotency contract (mandatory)
+Every mutation defines: idempotency key, retry policy, merge strategy
+- Rule: No mutation without replay safety
+
+#### 2.4 Event emission (system-level)
+Every state transition emits: feature_id, user_id (if available), from_state -> to_state, idempotency_key, timestamp
+- Rule: UI never emits events directly
+
+### 3. Data & schema discipline
+
+#### 3.1 Schema-first pipeline
+Order is mandatory: Schema -> API contract -> Domain -> State machine -> UI
+- Rule: No UI exists before schema definition
+
+#### 3.2 Versioned local storage
+All local persistence must define: schemaVersion, migration path, maxAge or maxSize
+- Rule: Unversioned storage is rejected
+
+#### 3.3 Migration requirement
+Every schema change must include: forward migration, backward compatibility test
+
+### 4. Error system
+
+#### 4.1 Unified error taxonomy
+All errors must be one of: validation_error, network_error, auth_error, permission_error, conflict_error, timeout_error, unknown_error
+- Rule: No raw string errors in domain or UI layers
+
+#### 4.2 Error propagation rule
+Errors propagate: Domain -> State Machine -> UI
+- Rule: UI never constructs or interprets raw backend errors
+
+### 5. Performance & resource contracts
+
+#### 5.1 Hard budgets per slice
+- <= 60ms first render (target device class)
+- <= 200MB peak memory
+- <= 16ms main-thread blocking
+- <= 0.5% battery/hour background impact
+- Rule: Budget violation = merge rejection
+
+#### 5.2 Background work constraints
+All background tasks must define: throttle state in FSM, max runtime, retry policy, cancellation behavior
+- Rule: No fire-and-forget execution
+
+### 6. Cross-platform parity system
+
+#### 6.1 Parity levels per feature
+Each feature declares: strict (auth, payments, data integrity), tolerant (UI layout, animation), divergent (platform-native UX differences)
+- Rule: Undeclared divergence = bug
+
+#### 6.2 Determinism requirement
+Given same state -> identical UI output across platforms. Forbidden: time-based UI branching, implicit locale-driven layout changes (unless abstracted), platform heuristics inside components
+
+#### 6.3 Platform adapter boundary
+Platform-specific logic lives ONLY in: platform adapters, token overrides, input abstraction layer
+- Rule: No platform logic in feature code
+
+### 7. Design system constraints
+
+- No hard-coded spacing/colors/fonts
+- All values come from token system
+- No platform default styling leaks
+- Rule: UI must be fully token-driven
+
+### 8. Testing & verification system
+
+#### 8.1 Required state coverage
+Every screen must test: loading, empty, success, error, offline (if applicable)
+
+#### 8.2 Integration requirement
+Every feature must include at least one cross-domain integration test
+- Rule: No isolated feature-only testing
+
+#### 8.3 Simulation test suite (mandatory)
+Each feature must include: iOS Simulator test, Android Emulator test
+- These run in CI on every commit
+
+#### 8.4 Real-device smoke test (mandatory)
+Each feature must ship with a one-command smoke test script that runs on physical iPhone + physical Pixel
+- Required checks: navigation gestures, haptics, Dynamic Island / Live Activities, dynamic colors, accessibility tree, offline edge cases
+- Rule: Emulators lie. Real-device pass is required for "done."
+
+#### 8.5 Accessibility & i18n invariants
+- a11y tree validation required
+- RTL layout validation required
+- Rule: Not optional, not separate QA phase
+
+### 9. Abstraction control system
+
+#### 9.1 Abstraction debt ledger
+Each abstraction must record: consumers count, creation date, expiry (default 30 days)
+- Rule: 0-consumer abstractions must be deleted
+
+#### 9.2 Anti-overengineering rule
+Before adding abstraction: must exist in >=2 real use cases
+
+#### 9.3 Max abstraction depth
+UI -> Domain max 3 layers
+
+### 10. AI drift prevention system
+
+#### 10.1 Mandatory self-audit before code generation
+Check: Is this minimal? Is this duplicating existing model? Can this be deleted instead? Does this introduce >3 abstractions?
+- If yes -> reject or simplify
+
+#### 10.2 Prompt discipline
+Every session must include: CLAUDE.md version, feature slice name
+- Rule: No global "improve system" prompts
+
+#### 10.3 Anti-pattern bans
+Strictly forbidden: magic observers, implicit event systems, hidden global listeners, auto-refresh side effects, service locator patterns
+
+### 11. Observability rules
+
+- Logs emitted ONLY in domain/state layer
+- UI never logs directly
+- Events must be structured (not string logs)
+
+### 12. Build & release gates
+
+No merge unless:
+- all tests pass (unit + integration + simulation parity)
+- real-device smoke test passes
+- performance budget validated
+- migration tests included if schema changed
+- abstraction debt ledger updated
+- feature has kill-switch (feature flag or rollback path)
+
+### 13. Session bootstrap prompt
+
+Before every Claude Code session on the mobile rebuild, paste this at the top of your prompt:
+
+```
+I am running a Claude Code session against CLAUDE.md v2.1.1 on the congress-trade-mobile rebuild.
+
+FEATURE: <slice_name> (e.g., "Politician profile screen + offline cache")
+CLAUDE.md VERSION: v2.1.1
+PLATFORM: <ios | android | cross-platform>
+
+Before generating code, validate and report on:
+
+1. Architecture compliance: Which sections of CLAUDE.md am I relying on? Which might I violate?
+2. FSM definition: List the explicit FSM states for this slice. No booleans for UI flow.
+3. Idempotency strategy: For every mutation, declare key + retry policy + merge strategy.
+4. Error taxonomy: Map every error path to one of the 7 unified error types.
+5. Abstraction debt: List entries I would create or modify in docs/abstraction-debt.md.
+6. Performance budget: Confirm the slice can meet 60ms first render / 200MB peak memory / 16ms main-thread blocking.
+7. Parity contract: Declare parity level (strict / tolerant / divergent) and any intentional platform divergences.
+8. Test plan: List the simulation tests, integration test, real-device smoke test, a11y tree check.
+9. Migration: If schema changes, describe forward + backward compatibility tests.
+10. Kill-switch: Confirm feature flag and rollback path.
+
+If any of the above cannot be answered, stop and request clarification before generating code.
+```
+
+---
+
+## Product Invariants
+
+LOCKED product / UX / security decisions inherited from the deprecated
+`congress-trade-mobile/` rebuild's source-code comment headers, ported
+here on 2026-05-08 when that scratch project was retired. They override
+default Expo / RN platform conventions and apply to all CTA-App-N work.
+
+1. **Subscription billing -- never Apple/Google IAP.** The "Upgrade"
+   button opens the website's existing Stripe Checkout in the system
+   browser (`expo-web-browser`). Source decision: original
+   `congress-trade-mobile/src/screens/AccountScreen.tsx` header.
+
+2. **Auth flow -- API key paste only.** No password flow in the app.
+   Payment + key issuance happen on the website. Source decision:
+   original `congress-trade-mobile/src/auth/context.tsx` header.
+
+3. **Auth storage -- keychain (iOS) / EncryptedSharedPreferences
+   (Android) via `expo-secure-store`.** API keys never land in
+   AsyncStorage, plain JS state, or any backup that could leak them.
+   Source decision: original `congress-trade-mobile/src/auth/storage.ts`
+   header.
+
+4. **Auth UX -- never auto-paste API keys from clipboard without
+   explicit user tap.** Auto-paste-on-screen-mount would be a privacy
+   violation surface (any other app's clipboard content would be read
+   implicitly). Source decision: original
+   `congress-trade-mobile/src/screens/SignInScreen.tsx` header.
+
+5. **External content -- never load untrusted HTML in WebView.** Source
+   URLs (news links, congressional source documents) open via
+   `expo-web-browser` (in-app browser tab on iOS, Custom Tabs on
+   Android). Source decision: original
+   `congress-trade-mobile/src/screens/TradeDetailScreen.tsx` header.
+
+6. **Theme -- dark mode only in v1.** Light mode intentionally not
+   implemented; >90% dark usage observed on prior shipped finance apps.
+   Reduces surface area + maintenance burden. Source decision: original
+   `congress-trade-mobile/src/theme/colors.ts` header.
+
+7. **Watchlist -- free / unauth users get a local AsyncStorage
+   watchlist; not gated behind auth.** The worker's `/api/watchlist`
+   endpoint exists but is not on the v1 critical path. Source decision:
+   original `congress-trade-mobile/src/watchlist/storage.ts` header.
+
+8. **Worker contract mirroring -- client API types stay in sync with
+   `congress-trade-alerts/src/types.ts`.** When the Worker changes a
+   response shape, the client's `src/api/types.ts` (or equivalent)
+   updates with it; the Worker repo is the single source of truth.
+   Source decision: original `congress-trade-mobile/src/api/types.ts`
+   header.
