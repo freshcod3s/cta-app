@@ -1,0 +1,79 @@
+name: CI
+
+# First CI workflow for cta-app, scaffolded from zero with the security
+# pattern established in congress-trade-alerts hardening (commit 73cefb1):
+# Socket Firewall as a required pre-install step, sfw-wrapped `npm ci`,
+# every action pinned to a 40-char commit SHA, and the checkout step set
+# to persist-credentials: false (this workflow never pushes back, so the
+# token shouldn't sit in .git/config during install).
+#
+# No deploy step. cta-app deploys via EAS (eas build / eas update), not
+# GitHub Actions. CI here is purely correctness gating.
+#
+# Runs on every PR and on direct push to master (the repo's default
+# branch -- note: NOT 'main'). Concurrency cancels in-flight runs when
+# a newer commit lands on the same ref.
+
+on:
+  pull_request:
+  push:
+    branches: [master]
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+# Least-privilege: this workflow only reads source. No artifact uploads,
+# no PR comments, no deploys, no commits back to the branch.
+permissions:
+  contents: read
+
+jobs:
+  ci:
+    name: Lint + typecheck + test
+    runs-on: ubuntu-latest
+
+    steps:
+      # Socket Firewall Free (wrapper mode) -- gates the `npm ci` step
+      # below against known-malicious packages without an API key. Free
+      # tier provides command-prefix mode only. Pinned to SHA per the
+      # same blanket-pin policy applied to the other actions.
+      - name: Socket Firewall Free
+        uses: socketdev/action@937f824ec476dfd164d4a4d9995751427b0be143 # v1
+        with:
+          mode: firewall
+
+      - name: Checkout
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
+        with:
+          # CI never pushes back to the branch, so the default GITHUB_TOKEN
+          # has no reason to sit in .git/config during install. Closes the
+          # zizmor `artipacked` class proactively.
+          persist-credentials: false
+
+      - name: Setup Node
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          # Expo SDK 54 requires Node 20+. Matches cta-app's stack lock.
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies (Socket-gated)
+        # `sfw` prefix routes the install through Socket Firewall.
+        run: sfw npm ci
+
+      - name: TypeScript check
+        # Direct tsc invocation -- no `typecheck` script in package.json
+        # yet. Project is TS strict per the stack lock; tsconfig.json
+        # in repo root governs.
+        run: npx tsc --noEmit
+
+      - name: Lint
+        # expo lint -- the only lint script present in package.json.
+        run: npm run lint
+
+      - name: Test
+        # No test framework wired yet. `--if-present` lets this step
+        # silently pass until a `test` script lands, at which point it
+        # auto-activates without a workflow edit.
+        run: npm test --if-present
