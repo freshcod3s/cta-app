@@ -60,7 +60,7 @@ export default function MethodologyScreen() {
             Redundancy: House Clerk PTR XML feed and Senate EFD search
             results. Committee assignments come from clerk.house.gov and
             the open @unitedstates/congress-legislators dataset; sector
-            tagging from Finnhub's GICS classifications.
+            tagging from Finnhub&apos;s GICS classifications.
           </Para>
         </Section>
 
@@ -104,7 +104,7 @@ export default function MethodologyScreen() {
         <Section title="Conflict + jurisdiction signals">
           <Para>
             Trades are tagged when the member sits on a committee whose
-            jurisdiction overlaps the security's GICS sector. Committee
+            jurisdiction overlaps the security&apos;s GICS sector. Committee
             jurisdictions come from public charters; sector mapping from
             Finnhub.
           </Para>
@@ -113,7 +113,7 @@ export default function MethodologyScreen() {
         <Section title="Limitations">
           <Para>
             Amounts are ranges, not precise figures. Disclosure lag
-            reflects filing delay; we don't observe option exercise
+            reflects filing delay; we don&apos;t observe option exercise
             details, post-disclosure exits, or non-equity assets cleanly.
           </Para>
           <Para>

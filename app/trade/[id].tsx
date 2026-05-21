@@ -63,7 +63,7 @@ function ErrorState({ id, onRetry }: { id?: string; onRetry: () => void }) {
   return (
     <View className="flex-1 items-center justify-center p-6">
       <Text className="text-base font-semibold text-gray-900 dark:text-gray-100">
-        Couldn't load this trade
+        Couldn&apos;t load this trade
       </Text>
       <Text className="mt-1 text-center text-sm text-gray-600 dark:text-gray-400">
         {id ? `Trade id: ${id}` : "No trade id provided"}

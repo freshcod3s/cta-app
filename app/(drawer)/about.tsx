@@ -96,7 +96,7 @@ export default function AboutScreen() {
           <Para>
             Congress Trade Alerts surfaces every stock trade disclosed
             under the STOCK Act by sitting members of the U.S. Congress.
-            Each disclosure is normalized, tagged with the member's
+            Each disclosure is normalized, tagged with the member&apos;s
             committee assignments, and pushed to subscribed devices when
             it lands.
           </Para>
@@ -113,7 +113,7 @@ export default function AboutScreen() {
             v1 has no user accounts and no analytics. Push tokens are
             anonymous: the server stores the token, the platform (iOS or
             Android), and your subscription preferences (the politicians
-            you've opted in to alerts for). No email, no name, no device
+            you&apos;ve opted in to alerts for). No email, no name, no device
             identifier beyond the rotating Expo push token.
           </Para>
           <Para>

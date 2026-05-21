@@ -32,7 +32,7 @@ function ErrorState({ onRetry }: { onRetry: () => void }) {
   return (
     <View className="flex-1 items-center justify-center p-6">
       <Text className="text-base font-semibold text-gray-900 dark:text-gray-100">
-        Couldn't load the feed
+        Couldn&apos;t load the feed
       </Text>
       <Text className="mt-1 text-center text-sm text-gray-600 dark:text-gray-400">
         Pull to retry, or tap below.
