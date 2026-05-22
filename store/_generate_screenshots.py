@@ -537,7 +537,7 @@ def surface_about(img: Image.Image, content_top: int):
     draw.text((pad, y), "The mobile app is open source on GitHub.",
               font=f_b, fill=TEXT_DIM)
     y += int(W * 0.05)
-    link = "github.com/freshcod3r/cta-app"
+    link = "github.com/freshcod3s/cta-app"
     f_link = font(int(W * 0.034), bold=True)
     draw.text((pad, y), link, font=f_link, fill=ACCENT)
     # Underline

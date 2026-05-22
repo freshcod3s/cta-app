@@ -21,7 +21,7 @@ See [`CLAUDE.md`](./CLAUDE.md) for the canonical architecture lock. Highlights:
 ## Local dev
 
 ```bash
-git clone https://github.com/freshcod3r/cta-app.git
+git clone https://github.com/freshcod3s/cta-app.git
 cd cta-app
 npm install
 npx expo start --tunnel

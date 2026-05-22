@@ -31,7 +31,7 @@ Privacy
 - No user accounts required
 - No analytics or third-party tracking
 - Anonymous push tokens only -- we do not collect any personal data
-- Open source: github.com/freshcod3r/cta-app
+- Open source: github.com/freshcod3s/cta-app
 
 This app is not affiliated with the United States government or with any member of Congress. All data comes from public records that members of Congress are required by law to file under the Stop Trading on Congressional Knowledge Act of 2012.
 

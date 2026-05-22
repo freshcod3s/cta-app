@@ -8,4 +8,4 @@
 export const WEB_URL = "https://congresstradealerts.com";
 export const PRIVACY_URL = "https://congresstradealerts.com/privacy";
 export const TERMS_URL = "https://congresstradealerts.com/terms";
-export const GITHUB_URL = "https://github.com/freshcod3r/cta-app";
+export const GITHUB_URL = "https://github.com/freshcod3s/cta-app";
