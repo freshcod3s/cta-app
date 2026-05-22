@@ -88,8 +88,8 @@ function getProjectId(): string | undefined {
 
 async function ensureAndroidChannel(): Promise<void> {
   if (Platform.OS !== "android") return;
-  await Notifications.setNotificationChannelAsync("default", {
-    name: "default",
+  await Notifications.setNotificationChannelAsync("trades", {
+    name: "trades",
     importance: Notifications.AndroidImportance.DEFAULT,
   });
 }
