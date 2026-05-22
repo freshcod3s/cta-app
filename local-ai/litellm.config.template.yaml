@@ -1,0 +1,23 @@
+model_list:
+  - model_name: local-coder
+    litellm_params:
+      model: ollama/qwen2.5-coder:14b
+      api_base: http://localhost:11434
+      timeout: 120
+      stream: true
+
+  - model_name: cloud-fallback
+    litellm_params:
+      model: openai/gpt-4o-mini
+      api_key: os.environ/OPENAI_API_KEY
+      timeout: 120
+
+general_settings:
+  master_key: os.environ/LITELLM_MASTER_KEY
+  store_model_messages: false
+
+fallbacks:
+  - local-coder: ["cloud-fallback"]
+
+context_window_fallbacks:
+  - local-coder: ["cloud-fallback"]

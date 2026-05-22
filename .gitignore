@@ -44,3 +44,14 @@ app-example
 # generated native folders
 /ios
 /android
+
+# Expo tunnel runtime log
+.expo-tunnel.log
+
+# Local AI stack (real config -- env-derived secrets; templates only are tracked)
+local-ai/litellm.config.yaml
+
+# Model weights (never commit)
+*.gguf
+*.safetensors
+*.bin
