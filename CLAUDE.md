@@ -49,7 +49,6 @@ push-notification provider (APNs vs FCM) and (b) build artifact format.
 - Server state:   TanStack Query / React Query
 - Client state:   Zustand (with persist middleware)
 - UI:             NativeWind (same Tailwind classes both platforms)
-- Theme:          system-following + manual override toggle
 - Safe area:      react-native-safe-area-context (notch / Dynamic Island
                   iOS, edge-to-edge Android)
 - Offline cache:  React Query + AsyncStorage persist
@@ -62,7 +61,7 @@ push-notification provider (APNs vs FCM) and (b) build artifact format.
 ### Push notifications (asymmetric prod, symmetric dev)
 
 - Library:        expo-notifications + Expo Push service (unified API)
-- iOS dev:        Expo Go provides dev tokens (no enrollment needed)
+- iOS dev push:   Expo Go no longer delivers iOS push tokens (deprecated in SDK 53+). Validate via a development build (`eas build --profile development --platform ios`) or via TestFlight. Android dev push via Expo Go is unaffected.
 - iOS prod:       APNs key via Apple Developer Program (post-enrollment)
 - Android dev:    Expo Go provides dev tokens (no enrollment needed)
 - Android prod:   FCM via free Firebase project + Google Play Console
