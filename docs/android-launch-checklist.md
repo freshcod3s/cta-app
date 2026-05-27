@@ -190,5 +190,5 @@ Until the org account is provisioned, production-track submission is blocked. In
 | 3 | Google Play Console developer account on `<LLC_NAME>` seller identity | Joe | Blocks production-track submission |
 | 4 | Google Play service-account JSON at `cta-app/store/google-play/service-account-key.json` | Joe | Required for `eas submit -p android --profile production` |
 | 5 | T4 channel-importance bump (DEFAULT -> HIGH + sound + vibration + lockscreenVisibility) at `lib/push/register.ts:89-95` | Awaiting Joe's T4 ruling | Worker contract priority='high' silently downgraded today |
-| 6 | EAS-managed keystore backup via `eas credentials -p android` -> Keystore -> Download | Joe | One-time, irreversible if lost (only signing identity that can ship Play updates) |
+| 6 | EAS-managed keystore backup via `eas credentials -p android` -> Keystore -> Download | Joe | Backup-confirmed 2026-05-27. One-time, irreversible if lost (only signing identity that can ship Play updates). |
 | 7 | Privacy policy live at `<BRAND_DOMAIN>/privacy` with the field-set required by Play Data Safety form (collection, sharing, encryption-in-transit, encryption-at-rest, deletion mechanism) | Joe | Play submission rejects without a reachable privacy URL |
