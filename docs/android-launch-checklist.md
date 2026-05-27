@@ -158,6 +158,16 @@ Testing track sequencing:
 
 ---
 
+## 7a. Companion docs (T6 deliverable)
+
+Store-listing copy, content rating questionnaire, and target-audience declaration: see [docs/play-console-metadata.md](./play-console-metadata.md).
+
+Data Safety form per-data-type schema (Play Console Data Safety section): see [docs/data-safety-form.md](./data-safety-form.md).
+
+Both companions follow the same field-path-only OPSEC posture as this checklist; literal copy stays Joe-side at Play Console upload time.
+
+---
+
 ## 8. Org developer account upgrade status
 
 | Step | Status | Blocker |
