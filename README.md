@@ -82,10 +82,6 @@ enrollment lands, **CTA-App-1-2** drives:
 3. Real-device install via Expo Orbit or TestFlight Internal Testing.
 4. Updates this README's parity status to "iOS .ipa parity status: ACTIVE".
 
-In the meantime, iOS dev work proceeds via **Expo Go** on a physical
-iPhone -- no enrollment needed, no .ipa build required, full code parity
-with Android dev path.
-
 ## Folder structure
 
 Per `CLAUDE.md`:
