@@ -49,6 +49,7 @@ push-notification provider (APNs vs FCM) and (b) build artifact format.
 - Server state:   TanStack Query / React Query
 - Client state:   Zustand (with persist middleware)
 - UI:             NativeWind (same Tailwind classes both platforms)
+- Theme:          system-following + manual override toggle
 - Safe area:      react-native-safe-area-context (notch / Dynamic Island
                   iOS, edge-to-edge Android)
 - Offline cache:  React Query + AsyncStorage persist
