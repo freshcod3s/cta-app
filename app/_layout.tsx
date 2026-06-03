@@ -80,6 +80,22 @@ export default function RootLayout() {
                   headerBackTitle: "Back",
                 }}
               />
+              <Stack.Screen
+                name="member/[name]"
+                options={{
+                  headerShown: true,
+                  title: "Member",
+                  headerBackTitle: "Back",
+                }}
+              />
+              <Stack.Screen
+                name="ticker/[symbol]"
+                options={{
+                  headerShown: true,
+                  title: "Ticker",
+                  headerBackTitle: "Back",
+                }}
+              />
             </Stack>
             <StatusBar style="auto" />
           </ThemeProvider>

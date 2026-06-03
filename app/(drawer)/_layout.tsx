@@ -6,12 +6,16 @@
 // both iOS + Android.
 //
 // Account avatar is a shared headerRight across all drawer screens for
-// consistent global access (CTA-App-1-3 spec calls it out for Feed; placing
-// it at the drawer-level screenOptions covers all 4 destinations identically).
+// consistent global access.
+//
+// Web-parity slices add Watchlist + Leaderboard as primary destinations
+// adjacent to the Feed.
 import { Drawer } from "expo-router/drawer";
 import { Pressable, Alert, useColorScheme } from "react-native";
 import {
   House,
+  Star,
+  Trophy,
   BookOpen,
   Settings as SettingsIcon,
   Info,
@@ -65,6 +69,22 @@ export default function DrawerLayout() {
           title: "Congress Trade Alerts",
           drawerLabel: "Feed",
           drawerIcon: ({ color }) => <House size={ICON_SIZE} color={color} />,
+        }}
+      />
+      <Drawer.Screen
+        name="watchlist"
+        options={{
+          title: "Watchlist",
+          drawerLabel: "Watchlist",
+          drawerIcon: ({ color }) => <Star size={ICON_SIZE} color={color} />,
+        }}
+      />
+      <Drawer.Screen
+        name="leaderboard"
+        options={{
+          title: "Leaderboard",
+          drawerLabel: "Leaderboard",
+          drawerIcon: ({ color }) => <Trophy size={ICON_SIZE} color={color} />,
         }}
       />
       <Drawer.Screen
