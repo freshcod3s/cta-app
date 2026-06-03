@@ -10,6 +10,10 @@
       "channel": "development",
       "android": {
         "buildType": "apk"
+      },
+      "ios": {
+        "simulator": true,
+        "resourceClass": "m-medium"
       }
     },
     "preview": {
@@ -17,13 +21,17 @@
       "channel": "preview",
       "android": {
         "buildType": "apk"
+      },
+      "ios": {
+        "resourceClass": "m-medium"
       }
     },
     "production": {
       "distribution": "store",
       "channel": "production",
       "ios": {
-        "autoIncrement": "buildNumber"
+        "autoIncrement": "buildNumber",
+        "resourceClass": "m-medium"
       },
       "android": {
         "buildType": "app-bundle",

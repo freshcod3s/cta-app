@@ -12,8 +12,21 @@
       "bundleIdentifier": "com.congresstradealerts.cta",
       "supportsTablet": false,
       "associatedDomains": ["applinks:congresstradealerts.com"],
-      "infoPlist": {
-        "NSUserNotificationsUsageDescription": "Get alerts when Congress files new stock trades or hits compliance milestones."
+      "config": {
+        "usesNonExemptEncryption": false
+      },
+      "privacyManifests": {
+        "NSPrivacyTracking": false,
+        "NSPrivacyTrackingDomains": [],
+        "NSPrivacyCollectedDataTypes": [
+          {
+            "NSPrivacyCollectedDataType": "NSPrivacyCollectedDataTypeDeviceID",
+            "NSPrivacyCollectedDataTypeLinked": false,
+            "NSPrivacyCollectedDataTypeTracking": false,
+            "NSPrivacyCollectedDataTypePurposes": ["NSPrivacyCollectedDataTypePurposeAppFunctionality"]
+          }
+        ],
+        "NSPrivacyAccessedAPITypes": []
       }
     },
     "android": {

@@ -62,7 +62,7 @@ push-notification provider (APNs vs FCM) and (b) build artifact format.
 ### Push notifications (asymmetric prod, symmetric dev)
 
 - Library:        expo-notifications + Expo Push service (unified API)
-- iOS dev:        Expo Go provides dev tokens (no enrollment needed)
+- iOS dev push:   Expo Go no longer delivers iOS push tokens (deprecated in SDK 53+). Validate via a development build (`eas build --profile development --platform ios`) or via TestFlight. Android dev push via Expo Go is unaffected.
 - iOS prod:       APNs key via Apple Developer Program (post-enrollment)
 - Android dev:    Expo Go provides dev tokens (no enrollment needed)
 - Android prod:   FCM via free Firebase project + Google Play Console
