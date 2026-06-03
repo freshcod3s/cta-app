@@ -1,22 +1,22 @@
-// Feed row -- 72pt fixed height. Tap navigates to /trade/{id}.
+// Feed row -- 72pt fixed height. Row body opens the trade detail
+// (/trade/{id}); the member name drills into the member profile
+// (/member/{name}), the ticker into the ticker page (/ticker/{symbol}),
+// and a trailing star toggles the watchlist. Each nested press target
+// captures its own taps; the rest of the row falls through to the Link.
 //
-// Layout:
-//   ┌──┬─────────────────────────────────┬──────────────────┐
-//   │40│ politician name (1 line)        │ [BUY/SELL pill]  │
-//   │px│ TICKER  asset name (1 line)     │ amount  [LATE]   │
-//   └──┴─────────────────────────────────┴──────────────────┘
+// Layout: [avatar] [name / TICKER asset] [BUY-SELL pill / amount] [star]
 //
-// initials() is duplicated from MemberHeader by design -- "no abstraction
-// until 3+ uses." Extract to /lib/util/initials.ts when the third caller
-// shows up.
+// initials() is duplicated from MemberHeader (and now LeaderboardRow) --
+// crosses the "extract at 3rd use" line; promote to /lib/util/initials.ts
+// in a follow-up.
 import { Image, Pressable, Text, View } from "react-native";
-import { Link } from "expo-router";
+import { Link, router } from "expo-router";
 import {
   isBuy,
   isLateFiling,
   type TradeRecord,
 } from "@/features/trades/api/types";
-import { useTradeFiltersStore } from "@/features/trades/store";
+import { FollowButton } from "@/features/watchlist/components/FollowButton";
 
 function initials(name: string) {
   return name
@@ -30,8 +30,6 @@ function initials(name: string) {
 type Props = { trade: TradeRecord };
 
 export function TradeRow({ trade }: Props) {
-  const drillToTicker = useTradeFiltersStore((s) => s.drillToTicker);
-  const drillToPolitician = useTradeFiltersStore((s) => s.drillToPolitician);
   const buy = isBuy(trade.tx_type);
   const late = isLateFiling(trade.disclosure_lag_days);
   const pillBg = buy ? "bg-cta-buy" : "bg-cta-sell";
@@ -63,26 +61,40 @@ export function TradeRow({ trade }: Props) {
         )}
 
         <View className="flex-1">
-          <Text
-            onPress={() => drillToPolitician(trade.politician)}
-            suppressHighlighting
-            accessibilityRole="button"
-            accessibilityLabel={`Filter feed to ${trade.politician}`}
-            className="text-sm font-semibold text-gray-900 dark:text-gray-100"
-            numberOfLines={1}
+          {/* Member-name tap drills into the politician profile; the rest of
+              the row still opens the trade detail via the outer Link.
+              encodeURIComponent so names with spaces round-trip. */}
+          <Link
+            href={`/member/${encodeURIComponent(trade.politician)}`}
+            asChild
           >
-            {trade.politician}
-          </Text>
+            <Pressable
+              accessibilityRole="link"
+              accessibilityLabel={`View ${trade.politician} profile`}
+              hitSlop={4}
+            >
+              <Text
+                className="text-sm font-semibold text-gray-900 dark:text-gray-100"
+                numberOfLines={1}
+              >
+                {trade.politician}
+              </Text>
+            </Pressable>
+          </Link>
           <Text
             className="text-xs text-gray-600 dark:text-gray-400"
             numberOfLines={1}
           >
             {trade.ticker ? (
+              // Ticker tap opens the ticker detail (/ticker/{symbol}); onPress
+              // on the nested Text fires for the ticker glyphs only.
               <Text
-                onPress={() => drillToTicker(trade.ticker)}
+                onPress={() =>
+                  router.push(`/ticker/${trade.ticker.toUpperCase()}`)
+                }
                 suppressHighlighting
-                accessibilityRole="button"
-                accessibilityLabel={`Filter feed to ${trade.ticker}`}
+                accessibilityRole="link"
+                accessibilityLabel={`View all Congress trades in ${trade.ticker}`}
                 className="font-bold text-cta-accent"
               >
                 {trade.ticker}
@@ -114,6 +126,8 @@ export function TradeRow({ trade }: Props) {
             {trade.amount_range}
           </Text>
         </View>
+
+        <FollowButton politician={trade.politician} size="sm" />
       </Pressable>
     </Link>
   );
