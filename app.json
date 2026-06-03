@@ -81,6 +81,12 @@
         "projectId": "9174d3a2-1b14-4c57-adaa-9fdadfff21a6"
       }
     },
-    "owner": "freshcod3r"
+    "owner": "freshcod3r",
+    "runtimeVersion": {
+      "policy": "appVersion"
+    },
+    "updates": {
+      "url": "https://u.expo.dev/9174d3a2-1b14-4c57-adaa-9fdadfff21a6"
+    }
   }
 }
