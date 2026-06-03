@@ -1,9 +1,14 @@
-// Settings -- push notification preferences (CTA-App-1-6).
-// Theme override + account UI land in later tickets.
+// Settings -- push notification preferences (CTA-App-1-6) + Upgrade-to-Pro
+// affordance (billing slice). Theme override + account UI land in later
+// tickets.
 //
 // The Switch drives both the store flag AND the registration side
 // effects. Permission-denied (sticky) shows the "Open OS Settings"
 // affordance instead of the toggle path.
+//
+// Subscription section: per Product Invariant #1, the Upgrade button opens
+// the website's external Stripe Checkout in the system browser (see
+// UpgradeButton). No in-app payment UI, no IAP.
 import { useEffect, useState } from "react";
 import { Linking, Pressable, Switch, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
@@ -16,6 +21,7 @@ import {
   unregisterPushNotifications,
   type RegisterErrorCode,
 } from "@/lib/push/register";
+import { UpgradeButton } from "@/features/billing/components/UpgradeButton";
 
 const DEV = Constants.expoConfig?.extra?.eas?.projectId
   ? typeof __DEV__ !== "undefined" && __DEV__
@@ -161,6 +167,20 @@ export default function SettingsScreen() {
             dev: token ...{storedTokenSuffix}
           </Text>
         ) : null}
+
+        <Text className="mb-4 mt-8 text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">
+          Subscription
+        </Text>
+        <View className="rounded-xl border border-gray-200 bg-gray-50 px-4 py-4 dark:border-gray-700 dark:bg-gray-800">
+          <Text className="text-base font-semibold text-gray-900 dark:text-gray-100">
+            Congress Trade Alerts Pro
+          </Text>
+          <Text className="mb-3 mt-0.5 text-xs text-gray-600 dark:text-gray-400">
+            Real-time disclosures and Pro features. Secure checkout opens in
+            your browser -- never in the app.
+          </Text>
+          <UpgradeButton />
+        </View>
       </View>
     </SafeAreaView>
   );
