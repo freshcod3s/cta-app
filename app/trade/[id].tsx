@@ -20,6 +20,9 @@ import { TransactionHero } from "@/features/trades/components/TransactionHero";
 import { TimelineSection } from "@/features/trades/components/TimelineSection";
 import { SourceLink } from "@/features/trades/components/SourceLink";
 import { MethodologyFooter } from "@/features/trades/components/MethodologyFooter";
+import { ShareTradeButton } from "@/features/share/components/ShareTradeButton";
+import { ConflictScore } from "@/features/conflict/components/ConflictScore";
+import { NewsSection } from "@/features/news/components/NewsSection";
 
 function ShimmerBlock({ className = "" }: { className?: string }) {
   return (
@@ -97,7 +100,14 @@ export default function TradeDetailScreen() {
           <SubscribeButton trade={query.data} />
           <CommitteeChips />
           <TransactionHero trade={query.data} />
+          <ShareTradeButton trade={query.data} />
+          <ConflictScore
+            politician={query.data.politician}
+            tradeId={query.data.id}
+            sector={query.data.sector}
+          />
           <TimelineSection trade={query.data} />
+          <NewsSection politician={query.data.politician} />
           <SourceLink trade={query.data} />
           <MethodologyFooter />
         </ScrollView>
