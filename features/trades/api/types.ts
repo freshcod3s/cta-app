@@ -74,3 +74,32 @@ export type TradesListPage = {
 // Helpers used across feature components.
 export const isBuy = (tx: TxType) => tx === "Purchase";
 export const isLateFiling = (lagDays: number) => lagDays > 45;
+
+// Feed filter state. Each field maps 1:1 to a GET /api/trades query
+// param (worker src/routes/api.ts handleTrades). Absent = not applied.
+//   politician -> partial LIKE match (search box)
+//   ticker     -> exact match (tap-to-drill from a row)
+//   party      -> D | R | I        chamber -> House | Senate
+//   txType     -> Purchase | Sale (partial LIKE server-side)
+//   currentOnly-> current=1 (only sitting members)
+export type TradeFilters = {
+  politician?: string;
+  ticker?: string;
+  party?: "D" | "R" | "I";
+  chamber?: "House" | "Senate";
+  txType?: "Purchase" | "Sale";
+  currentOnly?: boolean;
+};
+
+// How many filters are live -- drives the "N active" badge + whether an
+// empty result is "no data" vs "filtered to nothing".
+export function activeFilterCount(f: TradeFilters): number {
+  let n = 0;
+  if (f.politician) n++;
+  if (f.ticker) n++;
+  if (f.party) n++;
+  if (f.chamber) n++;
+  if (f.txType) n++;
+  if (f.currentOnly) n++;
+  return n;
+}

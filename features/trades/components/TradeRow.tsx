@@ -16,6 +16,7 @@ import {
   isLateFiling,
   type TradeRecord,
 } from "@/features/trades/api/types";
+import { useTradeFiltersStore } from "@/features/trades/store";
 
 function initials(name: string) {
   return name
@@ -29,6 +30,8 @@ function initials(name: string) {
 type Props = { trade: TradeRecord };
 
 export function TradeRow({ trade }: Props) {
+  const drillToTicker = useTradeFiltersStore((s) => s.drillToTicker);
+  const drillToPolitician = useTradeFiltersStore((s) => s.drillToPolitician);
   const buy = isBuy(trade.tx_type);
   const late = isLateFiling(trade.disclosure_lag_days);
   const pillBg = buy ? "bg-cta-buy" : "bg-cta-sell";
@@ -61,6 +64,10 @@ export function TradeRow({ trade }: Props) {
 
         <View className="flex-1">
           <Text
+            onPress={() => drillToPolitician(trade.politician)}
+            suppressHighlighting
+            accessibilityRole="button"
+            accessibilityLabel={`Filter feed to ${trade.politician}`}
             className="text-sm font-semibold text-gray-900 dark:text-gray-100"
             numberOfLines={1}
           >
@@ -70,7 +77,19 @@ export function TradeRow({ trade }: Props) {
             className="text-xs text-gray-600 dark:text-gray-400"
             numberOfLines={1}
           >
-            <Text className="font-bold">{trade.ticker || "(unlisted)"}</Text>
+            {trade.ticker ? (
+              <Text
+                onPress={() => drillToTicker(trade.ticker)}
+                suppressHighlighting
+                accessibilityRole="button"
+                accessibilityLabel={`Filter feed to ${trade.ticker}`}
+                className="font-bold text-cta-accent"
+              >
+                {trade.ticker}
+              </Text>
+            ) : (
+              <Text className="font-bold">(unlisted)</Text>
+            )}
             {trade.asset_name ? `  ${trade.asset_name}` : ""}
           </Text>
         </View>

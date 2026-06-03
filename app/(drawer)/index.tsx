@@ -1,25 +1,20 @@
-// Feed -- primary surface (CTA-App-1-5: real content).
-// FlatList<TradeRecord> with StatsBanner as ListHeaderComponent so the
-// banner scrolls with the list (no fixed splitter eating phone height).
-// Three-state branch:
-//   isLoading -> FeedSkeleton (banner shimmer + 8 row shimmers)
-//   isError    -> inline ErrorState with Retry
-//   data       -> FlatList + RefreshControl + onEndReached pagination
-// Search FAB stub from CTA-App-1-3 stays bottom-right; account button +
-// hamburger come from the drawer's screenOptions header.
-import {
-  Alert,
-  FlatList,
-  Pressable,
-  RefreshControl,
-  Text,
-  View,
-} from "react-native";
+// Feed -- primary surface (CTA-App-1-5: real content; filters slice adds
+// server-side filtering + row drill-in).
+// FlatList<TradeRecord> with a pinned FilterBar on top. StatsBanner is the
+// ListHeaderComponent (scrolls with the list) but is hidden once any
+// filter is active so a filtered view stays focused on results.
+// State branch:
+//   isLoading            -> FeedSkeleton
+//   isError && empty     -> ErrorState with Retry
+//   data, empty, filtered-> "No trades match these filters" + Clear
+//   data                 -> FlatList + RefreshControl + pagination
+import { FlatList, Pressable, RefreshControl, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { Search } from "lucide-react-native";
 
 import { useTradesList } from "@/features/trades/api/queries";
-import type { TradeRecord } from "@/features/trades/api/types";
+import { activeFilterCount, type TradeRecord } from "@/features/trades/api/types";
+import { useTradeFiltersStore } from "@/features/trades/store";
+import { FilterBar } from "@/features/trades/components/FilterBar";
 import { StatsBanner } from "@/features/trades/components/StatsBanner";
 import { TradeRow } from "@/features/trades/components/TradeRow";
 import { FeedSkeleton } from "@/features/trades/components/FeedSkeleton";
@@ -48,12 +43,27 @@ function ErrorState({ onRetry }: { onRetry: () => void }) {
   );
 }
 
-function EmptyState() {
+function EmptyState({
+  filtered,
+  onClear,
+}: {
+  filtered: boolean;
+  onClear: () => void;
+}) {
   return (
     <View className="items-center justify-center p-12">
-      <Text className="text-base text-gray-500 dark:text-gray-400">
-        No trades yet.
+      <Text className="text-center text-base text-gray-500 dark:text-gray-400">
+        {filtered ? "No trades match these filters." : "No trades yet."}
       </Text>
+      {filtered ? (
+        <Pressable
+          onPress={onClear}
+          accessibilityRole="button"
+          className="mt-3 rounded-lg bg-cta-accent px-4 py-2"
+        >
+          <Text className="text-sm font-semibold text-white">Clear filters</Text>
+        </Pressable>
+      ) : null}
     </View>
   );
 }
@@ -70,11 +80,16 @@ function ListFooter({ loading }: { loading: boolean }) {
 }
 
 export default function FeedScreen() {
-  const query = useTradesList();
+  const filters = useTradeFiltersStore((s) => s.filters);
+  const clear = useTradeFiltersStore((s) => s.clear);
+  const query = useTradesList(filters);
   const trades: TradeRecord[] = query.data?.flat ?? [];
+  const filtered = activeFilterCount(filters) > 0;
 
   return (
     <SafeAreaView edges={["bottom"]} className="flex-1 bg-white dark:bg-gray-900">
+      <FilterBar />
+
       {query.isLoading ? (
         <FeedSkeleton />
       ) : query.isError && trades.length === 0 ? (
@@ -85,11 +100,11 @@ export default function FeedScreen() {
           keyExtractor={(t) => String(t.id)}
           renderItem={({ item }) => <TradeRow trade={item} />}
           ItemSeparatorComponent={Divider}
-          ListHeaderComponent={<StatsBanner />}
-          ListEmptyComponent={<EmptyState />}
-          ListFooterComponent={
-            <ListFooter loading={query.isFetchingNextPage} />
-          }
+          ListHeaderComponent={filtered ? null : <StatsBanner />}
+          ListEmptyComponent={<EmptyState filtered={filtered} onClear={clear} />}
+          ListFooterComponent={<ListFooter loading={query.isFetchingNextPage} />}
+          keyboardShouldPersistTaps="handled"
+          keyboardDismissMode="on-drag"
           onEndReached={() => {
             if (query.hasNextPage && !query.isFetchingNextPage) {
               query.fetchNextPage();
@@ -104,16 +119,6 @@ export default function FeedScreen() {
           }
         />
       )}
-
-      <Pressable
-        accessibilityRole="button"
-        accessibilityLabel="Search"
-        onPress={() => Alert.alert("Search", "Search ships in CTA-App-1-N")}
-        className="absolute bottom-6 right-6 h-14 w-14 items-center justify-center rounded-full bg-cta-accent shadow-lg"
-        style={{ elevation: 6 }}
-      >
-        <Search size={26} color="#ffffff" />
-      </Pressable>
     </SafeAreaView>
   );
 }

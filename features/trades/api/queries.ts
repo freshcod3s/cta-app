@@ -4,6 +4,7 @@ import { apiFetch } from "@/lib/api/client";
 import { tradesKeys } from "./keys";
 import type {
   TradeDetailEnvelope,
+  TradeFilters,
   TradeRecord,
   TradesListPage,
 } from "./types";
@@ -53,19 +54,36 @@ export function getTradesPageParam(
   return consumed < total ? page + 1 : undefined;
 }
 
+// Build the /api/trades path, appending only the filters that are set.
+// Mirrors the server contract (worker src/routes/api.ts handleTrades):
+// politician -> LIKE, ticker/party/chamber -> exact, tx_type -> LIKE,
+// current=1 -> sitting members only. Built by hand rather than via
+// URLSearchParams because RN's polyfill lacks a reliable .set()/object
+// constructor across versions.
+function buildTradesPath(page: number, filters: TradeFilters): string {
+  const parts = [`page=${page}`, "per_page=25"];
+  if (filters.politician)
+    parts.push(`politician=${encodeURIComponent(filters.politician)}`);
+  if (filters.ticker) parts.push(`ticker=${encodeURIComponent(filters.ticker)}`);
+  if (filters.party) parts.push(`party=${encodeURIComponent(filters.party)}`);
+  if (filters.chamber)
+    parts.push(`chamber=${encodeURIComponent(filters.chamber)}`);
+  if (filters.txType) parts.push(`tx_type=${encodeURIComponent(filters.txType)}`);
+  if (filters.currentOnly) parts.push("current=1");
+  return `/api/trades?${parts.join("&")}`;
+}
+
 // useTradesList -- GET /api/trades?page=N (CTA-App-1-5 P1 finding:
-// page-based pagination, 1-indexed, per_page=25 default). Returns an
-// infinite query whose pages flatten to TradeRecord[] for the FlatList.
-// staleTime 60s keeps the list fresh enough for "what happened" without
-// refetching every focus change.
-export function useTradesList() {
+// page-based pagination, 1-indexed, per_page=25 default), now filterable.
+// Returns an infinite query whose pages flatten to TradeRecord[] for the
+// FlatList. staleTime 60s keeps the list fresh enough for "what happened"
+// without refetching every focus change. The filters object is part of
+// the query key, so switching filters swaps to a separate cache entry.
+export function useTradesList(filters: TradeFilters = {}) {
   return useInfiniteQuery({
-    queryKey: tradesKeys.list(),
+    queryKey: tradesKeys.list(filters),
     queryFn: ({ signal, pageParam }) =>
-      apiFetch<TradesListPage>(
-        `/api/trades?page=${pageParam}&per_page=25`,
-        { signal },
-      ),
+      apiFetch<TradesListPage>(buildTradesPath(pageParam, filters), { signal }),
     initialPageParam: 1,
     getNextPageParam: getTradesPageParam,
     staleTime: 1000 * 60,
