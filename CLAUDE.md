@@ -544,3 +544,73 @@ Full content in `congress-trade-alerts/CLAUDE.md` -> Decisions Log -> Analytics.
 - Build D1 events table -- **DONE 2026-05-21** Worker-side. See `congress-trade-alerts/CLAUDE.md` Decisions Log for full deviations list. Mobile-side action item: when a push notification is tapped and the deep link opens, the app should `POST /api/push/engagement` with `{ trade_id }` (aggregate-only, no user/token sent). Separate cta-app ticket; no work in this repo for the D1 table itself.
 - Lock launch date once D-U-N-S clears and Org migration completes
 - Draft 90-day post-launch tactical plan once date is real
+
+---
+
+## Workflow conventions (added 2026-06-04)
+
+Kernel-level rules for how feature work is dispatched, branched, merged,
+and broadcast across parallel CC chats. Apply to every feature CC
+dispatch in this repo. Promoted from a one-off iOS broadcast pattern
+(2026-06-04 session) into a standing convention after the
+`feat/trade-detail-richness` / `parallel-track-c-windows` branch-orphan
+incident exposed the cost of cross-chat drift.
+
+### Section A — Preflight (every feature CC dispatch)
+
+Before any task execution in a fresh CC dispatch, run these five steps
+in order:
+
+1. `git fetch origin`
+2. `git status` -- verify the working tree is clean (untracked
+   `.claude/` and similar are OK; tracked-file diffs are NOT).
+3. If on `master`: `git pull --ff-only origin master`.
+   If on a feature branch: `git rebase origin/master`.
+4. Report current `master` SHA + branch state to the chat so the
+   dispatching human can confirm preflight matches their mental model.
+5. Only then begin task execution.
+
+Why: master drifts under parallel chats (iOS + Android + brand-site +
+worker repos all share contributors). Skipping preflight produces
+exactly the wrong-branch / stale-base / branch-orphan failure modes the
+2026-06-04 session ate two turns recovering from.
+
+### Section B — Branch lifecycle
+
+- Branch off `master` at task start.
+- Merge to `master` at task end (same session preferred -- carrying a
+  feature branch across sessions costs a forced rebase later and risks
+  parallel reimplementation under different SHAs).
+- Delete the source branch immediately after merge (`git branch -d
+  <name>` if cleanly merged, `-D` if force needed).
+- Never carry a feature branch across sessions without rebasing
+  `origin/master` first.
+
+Implication: the `feat/<scope>` / `chore/<scope>` / `docs/<scope>`
+branches are SESSION-LOCAL by default. Long-running branches (the
+`android-hardening` / `ios-hardening` / `brand-parity-audit` style) are
+the EXCEPTION, reserved for multi-day deliverables with explicit
+cross-session intent.
+
+### Section C — Cross-chat coordination
+
+After every `master` merge, output a paste-block per the template at
+`docs/cross-chat-broadcast-template.md` containing:
+
+- Final `master` SHA + repo name.
+- Commit-count delta past the prior sync SHA.
+- Shipped commits since the prior sync, grouped by feature/track,
+  each with SHA + one-line message.
+- New dependencies introduced (with the SHA that added each and a
+  one-line reason).
+- Files most likely to conflict with parallel branches (with a
+  one-line reason per file).
+- Any orphaned-branch SHAs the recipient may see referenced in older
+  messages (so the recipient does not chase ghosts).
+- The literal rebase command sequence the recipient should run.
+
+Joe pastes the block into every other active chat before further work
+in those chats begins. Recipient chats run their own Section A preflight
+against the new `master` SHA before they pick up tasks.
+
+---
