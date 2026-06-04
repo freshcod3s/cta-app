@@ -19,3 +19,8 @@ export const GITHUB_URL = "https://github.com/freshcod3s/cta-app";
 // so it cannot POST /api/subscribe directly (that endpoint requires an
 // email); the web flow collects email + tier, then redirects to Stripe.
 export const UPGRADE_URL = `${WEB_URL}/?upgrade=1`;
+
+// Press / media kit -- the website's full press page, opened in the system
+// browser (expo-web-browser). The mobile Press screen surfaces a thin
+// summary + contact and links out here for the full kit.
+export const PRESS_URL = `${WEB_URL}/press`;
