@@ -43,7 +43,7 @@ After Tracks A, B, and C plus the Gap-1 Upgrade button shipped, the mobile app n
 
 ### Remaining
 
-- **Minor product gaps:** #19 per-committee pages (CommitteeChips still non-tappable / empty on detail); #13 targeted per-politician/ticker push alerts (push is broadcast-only); #16 full top-stocks / sectors discovery (largely covered by Leaderboard + Daily Dive).
+- **Minor product gaps:** #13 targeted per-politician/ticker push alerts (push is broadcast-only); #16 full top-stocks / sectors discovery (largely covered by Leaderboard + Daily Dive). (#19 per-committee pages CLOSED 2026-06-04 -- see table row 19.)
 - **Unchanged by design:** the per-spec v1 omissions (section 2) and the web-only / fintech-declined surfaces (#5, #6, #15, #26, #28) remain correctly out of scope.
 
 ---
@@ -72,7 +72,7 @@ Site nav lifted from the live homepage (top nav + footer). App surfaces from `ap
 | 16 | Top Stocks / Top Earners / Top Trades / Hot Tickers / Sectors | `routes/api.ts:handleTopStocks` `:handleTopEarners` `:handleTopTrades` `:handleBigPictureAngles` | None | — | **GAP** — these are the leaderboard / discovery surfaces that make the site feel "full"; on mobile there's just the feed + 4 stat cards |
 | 17 | Per-politician profile (committee power, activity snapshot, conflict scoring) | `routes/api.ts:handlePoliticianProfile` | None — name shown in feed/detail, not tappable to a profile | `features/trades/components/MemberHeader.tsx` | **GAP** — high-leverage civic surface; ties directly into the "civic-transparency" positioning |
 | 18 | Per-ticker page (who in Congress traded this) | `routes/ticker-info.ts` (6.8KB) + `routes/api.ts:handleTickerCongressional` | None — ticker shown in feed/detail, not tappable | `features/trades/components/TransactionHero.tsx` | **GAP** — natural drill-down from any trade row |
-| 19 | Per-committee page | `routes/committees-info.ts` + `routes/api.ts:handleCommitteeMembers` | CommitteeChips on trade detail, not tappable | `features/trades/components/CommitteeChips.tsx` | **GAP** — chips exist; routing to committee page does not |
+| 19 | Per-committee page | `routes/committees-info.ts` + `routes/api.ts:handleCommitteeMembers` | `app/committee/[name].tsx` + `features/committees/*`; chips tappable on trade detail + member profile | `features/committees/components/*` | **CLOSED 2026-06-04** -- /committee/[name] roster (deduped by bioguide, role-sorted) + reference header from committees/info; worker endpoint was already live |
 | 20 | Search | dashboard search + `routes/api.ts:handleSearch` | Stub FAB only (Alert popup says "Search ships in CTA-App-1-N") | `app/(drawer)/index.tsx:108-115` | **GAP** — FAB is a placeholder; tap shows "ships in CTA-App-1-N" alert |
 | 21 | Daily Dive / Briefing | `routes/api.ts:handleDailyDive` `:handleBriefing` | None | — | **GAP** — short-read narrative surfaces that fit mobile well |
 | 22 | Mobile App Signup form (web → email collection for app launch) | dashboard mobile signup section | N/A — app users are post-signup | — | **INVERSE** — web-only by design; app IS the destination |
@@ -206,7 +206,7 @@ The 6 gaps from section 3, in order: Upgrade button → Search → Filters → P
 
 Total: 12 tickets, ~6 weeks of CTA-App-2-N work. Pre-launch minimum is Track A; Tracks B+C can land between closed-testing day 1 and the production-track promotion.
 
-**Status (2026-06-04): Tracks A, B, and C are all CLOSED** (plus the Gap-1 Upgrade button) -- see the 2026-06-04 re-audit near the top. Pre-launch surface work is complete; the only remaining items are the two minor gaps (committee pages, targeted alerts) noted there.
+**Status (2026-06-04): Tracks A, B, and C are all CLOSED** (plus the Gap-1 Upgrade button) -- see the 2026-06-04 re-audit near the top. Pre-launch surface work is complete. #19 per-committee pages CLOSED 2026-06-04 (`/committee/[name]` roster + tappable CommitteeChips); the only remaining minor gap is #13 targeted alerts.
 
 ### What this audit does NOT recommend
 
