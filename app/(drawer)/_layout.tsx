@@ -8,15 +8,18 @@
 // Account avatar is a shared headerRight across all drawer screens for
 // consistent global access.
 //
-// Web-parity slices add Watchlist + Leaderboard as primary destinations
-// adjacent to the Feed.
+// Web-parity slices add Watchlist + Leaderboard (Track A) and Daily Dive +
+// FAQ + Press (Track B) as drawer destinations.
 import { Drawer } from "expo-router/drawer";
 import { Pressable, Alert, useColorScheme } from "react-native";
 import {
   House,
   Star,
   Trophy,
+  Newspaper,
   BookOpen,
+  HelpCircle,
+  Megaphone,
   Settings as SettingsIcon,
   Info,
   User,
@@ -88,12 +91,42 @@ export default function DrawerLayout() {
         }}
       />
       <Drawer.Screen
+        name="daily-dive"
+        options={{
+          title: "Daily Dive",
+          drawerLabel: "Daily Dive",
+          drawerIcon: ({ color }) => (
+            <Newspaper size={ICON_SIZE} color={color} />
+          ),
+        }}
+      />
+      <Drawer.Screen
         name="methodology"
         options={{
           title: "Methodology",
           drawerLabel: "Methodology",
           drawerIcon: ({ color }) => (
             <BookOpen size={ICON_SIZE} color={color} />
+          ),
+        }}
+      />
+      <Drawer.Screen
+        name="faq"
+        options={{
+          title: "FAQ",
+          drawerLabel: "FAQ",
+          drawerIcon: ({ color }) => (
+            <HelpCircle size={ICON_SIZE} color={color} />
+          ),
+        }}
+      />
+      <Drawer.Screen
+        name="press"
+        options={{
+          title: "Press",
+          drawerLabel: "Press",
+          drawerIcon: ({ color }) => (
+            <Megaphone size={ICON_SIZE} color={color} />
           ),
         }}
       />
