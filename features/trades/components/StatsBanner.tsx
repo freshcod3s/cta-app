@@ -1,13 +1,13 @@
-// 4-panel stats banner. 2x2 grid; reuses useStats(). Has its own three-
+// 3-panel stats banner. Single row; reuses useStats(). Has its own three-
 // state branch (loading shimmer per panel, error -> empty placeholders,
-// data -> values) so it never blocks the feed below.
+// data -> values) so it never blocks the feed below. The Congress-vs-S&P
+// benchmark moved to PulseHero (feed ListHeader) so it lives in exactly one
+// place; this banner is the supporting 3-cell grid.
 //
 // Brand-color rules:
 //   * Overdue members  -> cta-late tint when value > 0
 //   * Disclosures 7d    -> neutral
 //   * Committee overlap -> neutral
-//   * Congress alpha    -> cta-buy if positive, cta-sell if negative,
-//                          neutral if exactly zero
 import { Text, View } from "react-native";
 import { useStats } from "@/features/trades/api/queries";
 
@@ -51,9 +51,6 @@ export function StatsBanner() {
         <View className="flex-row gap-3">
           <ShimmerCell />
           <ShimmerCell />
-        </View>
-        <View className="mt-3 flex-row gap-3">
-          <ShimmerCell />
           <ShimmerCell />
         </View>
       </View>
@@ -69,10 +66,7 @@ export function StatsBanner() {
         <View className="flex-row gap-3">
           <Cell label="Overdue (119th)" value="-" />
           <Cell label="Disclosures last 7d" value="-" />
-        </View>
-        <View className="mt-3 flex-row gap-3">
           <Cell label="Committee overlap 7d" value="-" />
-          <Cell label="Congress vs S&P (30d)" value="-" />
         </View>
       </View>
     );
@@ -82,26 +76,6 @@ export function StatsBanner() {
   const overdue = d.overdue_members_119th ?? 0;
   const disclosures = d.disclosures_last_7d ?? 0;
   const overlap = d.committee_overlap_trades_7d ?? 0;
-
-  let alpha: number | null = null;
-  if (
-    typeof d.congress_alpha?.avg_stock === "number" &&
-    typeof d.congress_alpha?.avg_spx === "number"
-  ) {
-    alpha = d.congress_alpha.avg_stock - d.congress_alpha.avg_spx;
-  }
-  const alphaText =
-    alpha == null
-      ? "-"
-      : `${alpha >= 0 ? "+" : ""}${alpha.toFixed(1)}%`;
-  const alphaTint =
-    alpha == null
-      ? ""
-      : alpha > 0
-        ? "text-cta-buy"
-        : alpha < 0
-          ? "text-cta-sell"
-          : "";
 
   const overdueTint = overdue > 0 ? "text-cta-late" : "";
 
@@ -114,14 +88,7 @@ export function StatsBanner() {
           valueClassName={overdueTint}
         />
         <Cell label="Disclosures last 7d" value={disclosures.toLocaleString()} />
-      </View>
-      <View className="mt-3 flex-row gap-3">
         <Cell label="Committee overlap 7d" value={overlap.toLocaleString()} />
-        <Cell
-          label="Congress vs S&P (30d)"
-          value={alphaText}
-          valueClassName={alphaTint}
-        />
       </View>
     </View>
   );

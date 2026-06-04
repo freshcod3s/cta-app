@@ -16,6 +16,7 @@ import { activeFilterCount, type TradeRecord } from "@/features/trades/api/types
 import { useTradeFiltersStore } from "@/features/trades/store";
 import { FilterBar } from "@/features/trades/components/FilterBar";
 import { StatsBanner } from "@/features/trades/components/StatsBanner";
+import { PulseHero } from "@/features/pulse/components/PulseHero";
 import { TradeRow } from "@/features/trades/components/TradeRow";
 import { FeedSkeleton } from "@/features/trades/components/FeedSkeleton";
 
@@ -100,7 +101,14 @@ export default function FeedScreen() {
           keyExtractor={(t) => String(t.id)}
           renderItem={({ item }) => <TradeRow trade={item} />}
           ItemSeparatorComponent={Divider}
-          ListHeaderComponent={filtered ? null : <StatsBanner />}
+          ListHeaderComponent={
+            filtered ? null : (
+              <View>
+                <PulseHero />
+                <StatsBanner />
+              </View>
+            )
+          }
           ListEmptyComponent={<EmptyState filtered={filtered} onClear={clear} />}
           ListFooterComponent={<ListFooter loading={query.isFetchingNextPage} />}
           keyboardShouldPersistTaps="handled"
