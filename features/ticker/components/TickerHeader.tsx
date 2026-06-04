@@ -20,6 +20,7 @@
 import { Image, Text, View } from "react-native";
 import type { TradeRecord } from "@/features/trades/api/types";
 import type { TickerInfo } from "@/features/ticker/api/types";
+import { FollowTickerButton } from "@/features/watchlist/components/FollowTickerButton";
 
 type Props = {
   symbol: string;
@@ -125,6 +126,7 @@ export function TickerHeader({
             </Text>
           )}
         </View>
+        <FollowTickerButton symbol={symbol} size="md" />
       </View>
 
       {/* Sector chip. */}
