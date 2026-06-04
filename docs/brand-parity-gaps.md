@@ -43,7 +43,7 @@ After Tracks A, B, and C plus the Gap-1 Upgrade button shipped, the mobile app n
 
 ### Remaining
 
-- **Minor product gaps:** #13 targeted per-politician/ticker push alerts (push is broadcast-only); #16 full top-stocks / sectors discovery (largely covered by Leaderboard + Daily Dive). (#19 per-committee pages CLOSED 2026-06-04 -- see table row 19.)
+- **Minor product gaps:** #13 push targeting is HALF-CLOSED -- per-politician targeting works end-to-end (FollowButton -> subscription_prefs.members[] -> worker selectTokensForTrade filter -> filtered delivery, free tier, no gate; audited 2026-06-04); per-ticker + min-amount threshold targeting remain (ticker closure in progress 2026-06-04, threshold a separate ticket). #16 full top-stocks / sectors discovery (largely covered by Leaderboard + Daily Dive). (#19 per-committee pages CLOSED 2026-06-04 -- see table row 19.)
 - **Unchanged by design:** the per-spec v1 omissions (section 2) and the web-only / fintech-declined surfaces (#5, #6, #15, #26, #28) remain correctly out of scope.
 
 ---
@@ -66,7 +66,7 @@ Site nav lifted from the live homepage (top nav + footer). App surfaces from `ap
 | 10 | Terms of Service | `terms.html` | About → external browser link | `app/(drawer)/about.tsx:128` via `TERMS_URL` | **OK** — same posture as Privacy |
 | 11 | Pricing tiers (Free, Pro, Trader) | `routes/stripe.ts` + `routes/pro.ts` + dashboard pricing section | None | — | **GAP** — product invariant #1 says Upgrade button opens external Stripe Checkout; the BUTTON itself is missing |
 | 12 | Pro API key login | dashboard form + `middleware/auth.ts` | None | — | **PER-SPEC v1 OMIT** — auth v1 = none per stack lock line 60; API key paste UI lives in product invariants #2-3 but is not built yet |
-| 13 | Alerts configuration (email, Telegram, Discord channels + watchlist rules) | dashboard + `routes/pro.ts:handleProChannels` | Push toggle only | `app/(drawer)/settings.tsx` | **PARTIAL** — push works for "all trades, anonymous broadcast"; targeted alerts per politician/ticker/threshold not in mobile UI |
+| 13 | Alerts configuration (email, Telegram, Discord channels + watchlist rules) | dashboard + `routes/pro.ts:handleProChannels` | Push toggle + per-politician targeting (FollowButton) | `app/(drawer)/settings.tsx`, `features/watchlist/*` | **PARTIAL** -- per-POLITICIAN push targeting CLOSED end-to-end (members[] -> selectTokensForTrade, free tier, audited 2026-06-04); per-TICKER targeting in progress 2026-06-04; min-amount THRESHOLD deferred (separate ticket). Full alerts-config UI (channel mgmt) stays web/Pro |
 | 14 | Watchlist (named politicians + tickers) | `routes/watchlist.ts` + dashboard watchlist panel | None — subscription_prefs.members[] exists in `features/settings/store` but no UI | — | **GAP** — product invariant #7 says free/unauth users get a local watchlist; storage primitive is there, screen isn't |
 | 15 | Copy-Trade Simulator | dashboard simulator section + `routes/api.ts:handleRealism` | None | — | **WEB-ONLY BY DESIGN** — per `CLAUDE.md` Strategic positioning, copy-trade framing IS the fintech drift the lock forbids on mobile; declining is correct |
 | 16 | Top Stocks / Top Earners / Top Trades / Hot Tickers / Sectors | `routes/api.ts:handleTopStocks` `:handleTopEarners` `:handleTopTrades` `:handleBigPictureAngles` | None | — | **GAP** — these are the leaderboard / discovery surfaces that make the site feel "full"; on mobile there's just the feed + 4 stat cards |
@@ -206,7 +206,7 @@ The 6 gaps from section 3, in order: Upgrade button → Search → Filters → P
 
 Total: 12 tickets, ~6 weeks of CTA-App-2-N work. Pre-launch minimum is Track A; Tracks B+C can land between closed-testing day 1 and the production-track promotion.
 
-**Status (2026-06-04): Tracks A, B, and C are all CLOSED** (plus the Gap-1 Upgrade button) -- see the 2026-06-04 re-audit near the top. Pre-launch surface work is complete. #19 per-committee pages CLOSED 2026-06-04 (`/committee/[name]` roster + tappable CommitteeChips); the only remaining minor gap is #13 targeted alerts.
+**Status (2026-06-04): Tracks A, B, and C are all CLOSED** (plus the Gap-1 Upgrade button) -- see the 2026-06-04 re-audit near the top. Pre-launch surface work is complete. #19 per-committee pages CLOSED 2026-06-04 (`/committee/[name]` roster + tappable CommitteeChips). #13 push targeting is HALF-CLOSED: per-politician works end-to-end; per-ticker closure in progress 2026-06-04, min-amount threshold deferred to a separate ticket.
 
 ### What this audit does NOT recommend
 
@@ -226,4 +226,4 @@ Re-run this audit if:
 - Strategic positioning in `CLAUDE.md` shifts (e.g., a deliberate pivot toward Pro-tier portfolio features would re-classify several "fintech-drift" omissions)
 - Worker's `src/routes/mobile.ts` Pro endpoints get wired in app (this audit's section 4 becomes obsolete)
 
-Last audit: 2026-06-04 against `master` @ `c715680` (Tracks A/B/C + Gap 1 closed; 12 surfaces). Prior: 2026-05-28 @ `a76d6f0`.
+Last audit: 2026-06-04 against `master` @ `9edb36e` (Gap #13 push-targeting audit: per-politician CLOSED, per-ticker + threshold remain; Gap #19 committee pages closed). Prior: 2026-06-04 @ `c715680` (Tracks A/B/C + Gap 1; 12 surfaces). Earlier: 2026-05-28 @ `a76d6f0`.
