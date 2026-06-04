@@ -20,6 +20,34 @@ The mobile APK shows roughly 5% of what the live site surfaces. Most of that gap
 
 ---
 
+## Re-audit -- 2026-06-04 (post Track A + Gap 1 + Track C + Track B)
+
+After Tracks A, B, and C plus the Gap-1 Upgrade button shipped, the mobile app now covers roughly **65-70%** of the meaningful civic-transparency surface -- up from the ~5% baseline above. The remaining delta is intentional omissions plus two minor surfaces.
+
+### Closed since last audit (12 surfaces)
+
+| # | Surface | Closed by |
+|---|---|---|
+| 1 | Live Feed -- party/chamber/type filters + member search | Track A |
+| 2 | Stats / leaderboards -- Leaderboard + Congress-vs-S&P benchmark | Track A |
+| 4 | Press / media kit | Track B |
+| 7 | FAQ | Track B |
+| 11 | Pricing / Upgrade -> external Stripe Checkout | Gap 1 |
+| 14 | Watchlist (local follow) | Track A |
+| 17 | Per-politician profile route | Track A |
+| 18 | Per-ticker page | Track A |
+| 20 | Search -- inline FilterBar member search (replaced the stub FAB) | Track A |
+| 21 | Daily Dive / Briefing surface | Track B |
+| 25 | News + ConflictScore on trade detail | Track C |
+| 27 | Share-a-trade action | Track C |
+
+### Remaining
+
+- **Minor product gaps:** #19 per-committee pages (CommitteeChips still non-tappable / empty on detail); #13 targeted per-politician/ticker push alerts (push is broadcast-only); #16 full top-stocks / sectors discovery (largely covered by Leaderboard + Daily Dive).
+- **Unchanged by design:** the per-spec v1 omissions (section 2) and the web-only / fintech-declined surfaces (#5, #6, #15, #26, #28) remain correctly out of scope.
+
+---
+
 ## 1. Full delta inventory
 
 Site nav lifted from the live homepage (top nav + footer). App surfaces from `app/(drawer)/*` + `app/trade/[id].tsx`. Worker route source from `congress-trade-alerts/src/routes/*`.
@@ -178,6 +206,8 @@ The 6 gaps from section 3, in order: Upgrade button → Search → Filters → P
 
 Total: 12 tickets, ~6 weeks of CTA-App-2-N work. Pre-launch minimum is Track A; Tracks B+C can land between closed-testing day 1 and the production-track promotion.
 
+**Status (2026-06-04): Tracks A, B, and C are all CLOSED** (plus the Gap-1 Upgrade button) -- see the 2026-06-04 re-audit near the top. Pre-launch surface work is complete; the only remaining items are the two minor gaps (committee pages, targeted alerts) noted there.
+
 ### What this audit does NOT recommend
 
 - Building copy-trade simulator into mobile (fintech drift per Strategic positioning).
@@ -196,4 +226,4 @@ Re-run this audit if:
 - Strategic positioning in `CLAUDE.md` shifts (e.g., a deliberate pivot toward Pro-tier portfolio features would re-classify several "fintech-drift" omissions)
 - Worker's `src/routes/mobile.ts` Pro endpoints get wired in app (this audit's section 4 becomes obsolete)
 
-Last audit: 2026-05-28 against `master` @ `a76d6f0`.
+Last audit: 2026-06-04 against `master` @ `c715680` (Tracks A/B/C + Gap 1 closed; 12 surfaces). Prior: 2026-05-28 @ `a76d6f0`.
