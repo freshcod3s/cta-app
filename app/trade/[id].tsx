@@ -13,6 +13,7 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { useLocalSearchParams } from "expo-router";
 
 import { useTradeDetail } from "@/features/trades/api/queries";
+import { useMemberProfile } from "@/features/members/api/queries";
 import { MemberHeader } from "@/features/trades/components/MemberHeader";
 import { SubscribeButton } from "@/features/trades/components/SubscribeButton";
 import { CommitteeChips } from "@/features/trades/components/CommitteeChips";
@@ -85,6 +86,10 @@ function ErrorState({ id, onRetry }: { id?: string; onRetry: () => void }) {
 export default function TradeDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const query = useTradeDetail(id);
+  // Committees aren't carried on /api/trades/{id}; pull them from the trade
+  // politician's profile (shared members cache) so the chips populate + link.
+  // Disabled until the trade resolves (politician is the name key).
+  const memberProfile = useMemberProfile(query.data?.politician);
 
   return (
     <SafeAreaView edges={["bottom"]} className="flex-1 bg-white dark:bg-gray-900">
@@ -98,7 +103,10 @@ export default function TradeDetailScreen() {
         <ScrollView contentContainerStyle={{ paddingBottom: 16 }}>
           <MemberHeader trade={query.data} />
           <SubscribeButton trade={query.data} />
-          <CommitteeChips />
+          <CommitteeChips
+            committees={memberProfile.data?.committees ?? []}
+            loading={memberProfile.isLoading}
+          />
           <TransactionHero trade={query.data} />
           <ShareTradeButton trade={query.data} />
           <ConflictScore

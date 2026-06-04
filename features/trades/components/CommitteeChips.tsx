@@ -1,25 +1,46 @@
-// Committee assignment chips. Horizontal scroll list.
+// Committee assignment chips. Horizontal scroll list; each chip taps through
+// to the committee detail page (/committee/{name}), which lists every member
+// of that committee. Used on the member profile (MemberSummaryStrip, where the
+// worker profile supplies the names) and on the trade detail (where the screen
+// fetches the trade politician's profile committees).
 //
-// CTA-App-1-4 pre-flight P1 finding: committees are NOT exposed in the
-// /api/trades/{id} response. Component takes a `committees: string[]`
-// prop with default [] so it integrates cleanly when the backend adds
-// the field (or a separate /api/legislators/{id}/committees endpoint).
-// Empty state renders a one-line placeholder so the section is visible
-// in the layout but doesn't fabricate data.
-import { FlatList, Text, View } from "react-native";
+// `committees` is the canonical parent-committee name list, passed straight to
+// the worker's ?name= filter (the committee detail screen encodes it). `loading`
+// shows a slim shimmer instead of the empty copy while a caller's source query
+// is still in flight, so the trade detail doesn't flash "no committees" before
+// the member profile resolves.
+import { FlatList, Pressable, Text, View } from "react-native";
+import { Link } from "expo-router";
+import { ChevronRight } from "lucide-react-native";
 
-type Props = { committees?: string[] };
+type Props = { committees?: string[]; loading?: boolean };
 
-export function CommitteeChips({ committees = [] }: Props) {
+function ShimmerChip({ className }: { className: string }) {
+  return (
+    <View
+      className={`h-7 rounded-full bg-gray-200 dark:bg-gray-700 ${className}`}
+    />
+  );
+}
+
+export function CommitteeChips({ committees = [], loading = false }: Props) {
   if (!committees.length) {
     return (
-      <View className="px-4 pb-2">
-        <Text className="text-xs uppercase text-gray-500 dark:text-gray-400">
+      <View className="pb-2">
+        <Text className="px-4 pb-2 text-xs uppercase text-gray-500 dark:text-gray-400">
           Committee assignments
         </Text>
-        <Text className="mt-1 text-sm italic text-gray-500 dark:text-gray-400">
-          Committee data ships when backend exposes it (CTA-N TBD).
-        </Text>
+        {loading ? (
+          <View className="flex-row gap-2 px-4">
+            <ShimmerChip className="w-28" />
+            <ShimmerChip className="w-20" />
+            <ShimmerChip className="w-24" />
+          </View>
+        ) : (
+          <Text className="px-4 text-sm italic text-gray-500 dark:text-gray-400">
+            No committee assignments on file.
+          </Text>
+        )}
       </View>
     );
   }
@@ -36,11 +57,18 @@ export function CommitteeChips({ committees = [] }: Props) {
         keyExtractor={(c) => c}
         contentContainerStyle={{ paddingHorizontal: 16, gap: 8 }}
         renderItem={({ item }) => (
-          <View className="rounded-full border border-gray-300 bg-gray-50 px-3 py-1 dark:border-gray-700 dark:bg-gray-800">
-            <Text className="text-xs text-gray-700 dark:text-gray-300">
-              {item}
-            </Text>
-          </View>
+          <Link href={`/committee/${encodeURIComponent(item)}`} asChild>
+            <Pressable
+              accessibilityRole="button"
+              accessibilityLabel={`View members of the ${item} committee`}
+              className="flex-row items-center gap-1 rounded-full border border-cta-accent/40 bg-cta-accent/5 px-3 py-1 active:opacity-60"
+            >
+              <Text className="text-xs font-medium text-cta-accent">
+                {item}
+              </Text>
+              <ChevronRight size={12} color="#6366f1" />
+            </Pressable>
+          </Link>
         )}
       />
     </View>
