@@ -3,14 +3,15 @@
 // mirrors this verbatim; keep them in step.
 //
 // CTA-31 stores this JSON-encoded in push_tokens.subscription_prefs.
-// CTA-N reads JSON_EXTRACT(subscription_prefs, '$.members') in the
-// fanout SQL JOIN; falls back to broadcast when prefs.members is null
-// or empty so pre-targeting tokens still receive notifications.
+// The worker's selectTokensForTrade reads JSON_EXTRACT('$.members') and
+// JSON_EXTRACT('$.tickers') in the fanout filter; a token is targeted if the
+// trade's politician is in members[] OR its ticker is in tickers[], and falls
+// back to broadcast only when BOTH lists are null/empty.
 //
-// v1 ships only members[]; tickers + event_classes scaffold for
-// CTA-App-1-N future UI.
+// members[] + tickers[] are live (member + ticker push targeting);
+// event_classes[] remains scaffolded for a future UI.
 export interface SubscriptionPrefs {
   members: string[];
-  tickers?: string[]; // CTA-App-1-N
+  tickers?: string[]; // ticker watchlist (push targeting)
   event_classes?: string[]; // CTA-App-1-N
 }

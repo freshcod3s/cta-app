@@ -9,15 +9,17 @@
 // prompt was denied with !canAskAgain. The Settings screen reads it
 // to decide whether to show the "Open OS Settings" affordance.
 //
-// CTA-App-1-7 adds subscriptionPrefs.members[] with idempotent
-// toggle semantics. The shape is the cross-repo contract from
-// /features/settings/types.ts; the backend (CTA-N) reads the same
-// JSON shape from push_tokens.subscription_prefs.
+// CTA-App-1-7 adds subscriptionPrefs.members[] with idempotent toggle
+// semantics; the 2026-06-04 ticker-watchlist slice adds
+// subscriptionPrefs.tickers[] with the same toggle semantics. The shape is
+// the cross-repo contract from /features/settings/types.ts; the worker reads
+// the same JSON from push_tokens.subscription_prefs and targets push on
+// members[] OR tickers[].
 //
-// Persist version 1 introduces subscriptionPrefs. The migrate hook
-// preserves pre-existing pushEnabled / pushPermissionDenied state
-// from v0 (no-version) blobs so users on older app versions don't
-// lose their notification opt-in when the schema grows.
+// Persist version 2: v1 introduced subscriptionPrefs.members[]; v2 adds
+// tickers[]. The migrate hook backfills missing arrays and preserves
+// pre-existing pushEnabled / pushPermissionDenied state from older blobs so
+// users don't lose their notification opt-in when the schema grows.
 import { create } from "zustand";
 import { persist, createJSONStorage } from "zustand/middleware";
 import AsyncStorage from "@react-native-async-storage/async-storage";
@@ -32,9 +34,11 @@ interface SettingsState {
   setPushPermissionDenied: (denied: boolean) => void;
   toggleMemberSubscription: (politician: string) => void;
   isSubscribedToMember: (politician: string) => boolean;
+  toggleTickerSubscription: (ticker: string) => void;
+  isSubscribedToTicker: (ticker: string) => boolean;
 }
 
-const DEFAULT_PREFS: SubscriptionPrefs = { members: [] };
+const DEFAULT_PREFS: SubscriptionPrefs = { members: [], tickers: [] };
 
 export const useSettingsStore = create<SettingsState>()(
   persist(
@@ -55,23 +59,44 @@ export const useSettingsStore = create<SettingsState>()(
       },
       isSubscribedToMember: (politician) =>
         get().subscriptionPrefs.members.includes(politician),
+      toggleTickerSubscription: (ticker) => {
+        const sym = ticker.trim().toUpperCase();
+        if (!sym) return;
+        const cur = get().subscriptionPrefs;
+        const tickers = cur.tickers ?? [];
+        const next = tickers.includes(sym)
+          ? tickers.filter((t) => t !== sym)
+          : [...tickers, sym];
+        set({ subscriptionPrefs: { ...cur, tickers: next } });
+      },
+      isSubscribedToTicker: (ticker) =>
+        (get().subscriptionPrefs.tickers ?? []).includes(
+          ticker.trim().toUpperCase(),
+        ),
     }),
     {
       name: "cta.settings",
       storage: createJSONStorage(() => AsyncStorage),
-      version: 1,
+      version: 2,
       migrate: (persistedState, fromVersion) => {
-        // v0 -> v1: backfill subscriptionPrefs without touching push flags.
+        // v0 -> v1: backfill subscriptionPrefs. v1 -> v2: backfill tickers[].
+        // Never touches push flags.
         const s = (persistedState ?? {}) as Partial<SettingsState>;
         if (fromVersion < 1 || !s.subscriptionPrefs) {
           s.subscriptionPrefs = DEFAULT_PREFS;
         }
-        // Defensive: if a persisted blob ever arrives with members
-        // missing (manually-edited storage, etc.), repair to default.
+        // Defensive: repair members[] / tickers[] if a persisted blob arrives
+        // with either missing (older version, manually-edited storage, etc.).
         if (!Array.isArray(s.subscriptionPrefs?.members)) {
           s.subscriptionPrefs = {
             ...(s.subscriptionPrefs ?? DEFAULT_PREFS),
             members: [],
+          };
+        }
+        if (!Array.isArray(s.subscriptionPrefs?.tickers)) {
+          s.subscriptionPrefs = {
+            ...(s.subscriptionPrefs ?? DEFAULT_PREFS),
+            tickers: [],
           };
         }
         return s as SettingsState;
