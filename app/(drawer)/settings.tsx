@@ -22,6 +22,17 @@ import {
   type RegisterErrorCode,
 } from "@/lib/push/register";
 import { UpgradeButton } from "@/features/billing/components/UpgradeButton";
+import * as Localization from "expo-localization";
+
+// US App Store storefront gate for the Upgrade button. Apple's 3.1.1(a)
+// external-purchase carveout (2025 US court order) permits the web Stripe
+// Checkout link ONLY on the US storefront; EU + rest-of-world still require
+// IAP, so we hide the whole Subscription section off-US. regionCode is a
+// cross-platform proxy for the storefront -- production-accurate detection
+// would need the native SKStorefront API, but the reviewer's device locale
+// equals their storefront, so regionCode is sufficient for App Review safety.
+// Default to HIDE on null/undefined/unknown (conservative).
+const isUS = Localization.getLocales()[0]?.regionCode === "US";
 
 const DEV = Constants.expoConfig?.extra?.eas?.projectId
   ? typeof __DEV__ !== "undefined" && __DEV__
@@ -168,19 +179,23 @@ export default function SettingsScreen() {
           </Text>
         ) : null}
 
-        <Text className="mb-4 mt-8 text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">
-          Subscription
-        </Text>
-        <View className="rounded-xl border border-gray-200 bg-gray-50 px-4 py-4 dark:border-gray-700 dark:bg-gray-800">
-          <Text className="text-base font-semibold text-gray-900 dark:text-gray-100">
-            Congress Trade Alerts Pro
-          </Text>
-          <Text className="mb-3 mt-0.5 text-xs text-gray-600 dark:text-gray-400">
-            Real-time disclosures and Pro features. Secure checkout opens in
-            your browser -- never in the app.
-          </Text>
-          <UpgradeButton />
-        </View>
+        {isUS && (
+          <>
+            <Text className="mb-4 mt-8 text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">
+              Subscription
+            </Text>
+            <View className="rounded-xl border border-gray-200 bg-gray-50 px-4 py-4 dark:border-gray-700 dark:bg-gray-800">
+              <Text className="text-base font-semibold text-gray-900 dark:text-gray-100">
+                Congress Trade Alerts Pro
+              </Text>
+              <Text className="mb-3 mt-0.5 text-xs text-gray-600 dark:text-gray-400">
+                Real-time disclosures and Pro features. Secure checkout opens in
+                your browser -- never in the app.
+              </Text>
+              <UpgradeButton />
+            </View>
+          </>
+        )}
       </View>
     </SafeAreaView>
   );
