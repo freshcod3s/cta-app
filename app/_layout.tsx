@@ -23,12 +23,32 @@ import { SafeAreaProvider } from "react-native-safe-area-context";
 import { PersistQueryClientProvider } from "@tanstack/react-query-persist-client";
 import "react-native-reanimated";
 
+import { ThemeProvider as NavThemeProvider, DarkTheme } from "@react-navigation/native";
+
 import { queryClient, queryPersister } from "@/lib/query/client";
 import { ThemeProvider } from "@/lib/theme/provider";
+import { ctaColors } from "@/lib/theme/tokens";
 import { useSettingsStore } from "@/features/settings/store";
 import { syncPushRegistration } from "@/lib/push/register";
 
 const SYNC_DEBOUNCE_MS = 5 * 60 * 1000;
+
+// React Navigation theme locked to dark (Product Invariant #6): the nav chrome
+// (Stack headers + drawer header + drawer panel) stays dark regardless of the
+// device system appearance, matching the NativeWind-locked content. Colors
+// mirror the content's gray-900/100/800 so header and content share one
+// surface; active tint = brand accent.
+const navDarkTheme = {
+  ...DarkTheme,
+  colors: {
+    ...DarkTheme.colors,
+    background: ctaColors.darkBg,
+    card: ctaColors.darkBg,
+    text: ctaColors.darkText,
+    border: ctaColors.darkBorder,
+    primary: ctaColors.accent,
+  },
+};
 
 function PushSyncBridge() {
   const pushEnabled = useSettingsStore((s) => s.pushEnabled);
@@ -69,43 +89,45 @@ export default function RootLayout() {
           persistOptions={{ persister: queryPersister }}
         >
           <ThemeProvider>
-            <PushSyncBridge />
-            <Stack screenOptions={{ headerShown: false }}>
-              <Stack.Screen name="(drawer)" />
-              <Stack.Screen
-                name="trade/[id]"
-                options={{
-                  headerShown: true,
-                  title: "Trade detail",
-                  headerBackTitle: "Back",
-                }}
-              />
-              <Stack.Screen
-                name="member/[name]"
-                options={{
-                  headerShown: true,
-                  title: "Member",
-                  headerBackTitle: "Back",
-                }}
-              />
-              <Stack.Screen
-                name="ticker/[symbol]"
-                options={{
-                  headerShown: true,
-                  title: "Ticker",
-                  headerBackTitle: "Back",
-                }}
-              />
-              <Stack.Screen
-                name="committee/[name]"
-                options={{
-                  headerShown: true,
-                  title: "Committee",
-                  headerBackTitle: "Back",
-                }}
-              />
-            </Stack>
-            <StatusBar style="auto" />
+            <NavThemeProvider value={navDarkTheme}>
+              <PushSyncBridge />
+              <Stack screenOptions={{ headerShown: false }}>
+                <Stack.Screen name="(drawer)" />
+                <Stack.Screen
+                  name="trade/[id]"
+                  options={{
+                    headerShown: true,
+                    title: "Trade detail",
+                    headerBackTitle: "Back",
+                  }}
+                />
+                <Stack.Screen
+                  name="member/[name]"
+                  options={{
+                    headerShown: true,
+                    title: "Member",
+                    headerBackTitle: "Back",
+                  }}
+                />
+                <Stack.Screen
+                  name="ticker/[symbol]"
+                  options={{
+                    headerShown: true,
+                    title: "Ticker",
+                    headerBackTitle: "Back",
+                  }}
+                />
+                <Stack.Screen
+                  name="committee/[name]"
+                  options={{
+                    headerShown: true,
+                    title: "Committee",
+                    headerBackTitle: "Back",
+                  }}
+                />
+              </Stack>
+              <StatusBar style="light" />
+            </NavThemeProvider>
           </ThemeProvider>
         </PersistQueryClientProvider>
       </SafeAreaProvider>

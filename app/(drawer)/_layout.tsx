@@ -11,7 +11,7 @@
 // Web-parity slices add Watchlist + Leaderboard (Track A) and Daily Dive +
 // FAQ + Press (Track B) as drawer destinations.
 import { Drawer } from "expo-router/drawer";
-import { Pressable, Alert, useColorScheme } from "react-native";
+import { Pressable, Alert } from "react-native";
 import {
   House,
   Star,
@@ -28,12 +28,11 @@ import { ctaColors } from "@/lib/theme/tokens";
 
 const ICON_SIZE = 22;
 
-// CTA-App-1-4 fix: User icon was hardcoded to gray-700 which renders too dark
-// against a dark-mode header background. Resolve at runtime against the
-// device colorScheme so the icon stays legible in both modes.
+// The nav chrome is locked dark (Product Invariant #6, via the NavThemeProvider
+// in app/_layout.tsx), so the header is always dark -- the account icon uses a
+// fixed light tint (gray-300) instead of resolving against the device scheme.
 function AccountButton() {
-  const scheme = useColorScheme();
-  const tint = scheme === "dark" ? "#d1d5db" : "#374151"; // gray-300 / gray-700
+  const tint = "#d1d5db"; // gray-300, legible on the dark header
   return (
     <Pressable
       accessibilityRole="button"
