@@ -6,7 +6,7 @@
 // (2026-05-08) downgraded the brand-aligned press@congresstradealerts.com
 // to congresstradealertsapp@gmail.com because Cloudflare Email Routing
 // for press@ isn't wired yet (per CTA Worker repo's PRE_SEND_CHECKLIST
-// Phase 1 🟡). All three customer-facing surfaces (mobile About, web
+// Phase 1). All three customer-facing surfaces (mobile About, web
 // /privacy, web /press) line up on this gmail value until Joe completes
 // the routing setup. When that happens, flip this constant + the two
 // CTA Worker constants in the same motion.
@@ -20,6 +20,17 @@ import { GITHUB_URL, PRIVACY_URL, TERMS_URL, WEB_URL } from "@/lib/constants/lin
 // also mirrored in the Worker repo's privacy.html + press.ts. Imported by
 // methodology.tsx so the in-app surfaces can't drift.
 export const PRESS_EMAIL = "congresstradealertsapp@gmail.com";
+
+// Canonical civic-transparency disclaimer (verbatim, Lowe v. SEC-aligned).
+// Same text as methodology.tsx's footer; both screens stand alone with the
+// full disclaimer, no cross-reference.
+const DISCLAIMER =
+  "This app reports public STOCK Act disclosures and related public records " +
+  "for civic transparency. It does not provide investment, legal, tax, or " +
+  "financial advice; does not recommend buying, selling, or holding any " +
+  "security; does not connect to brokerages or enable trading. Not affiliated " +
+  "with or endorsed by Congress, the House, the Senate, the SEC, or any " +
+  "government agency.";
 
 function openExternal(url: string) {
   Linking.openURL(url).catch(() => {
@@ -80,7 +91,7 @@ function LinkRow({
 }
 
 export default function AboutScreen() {
-  const version = Constants.expoConfig?.version ?? "—";
+  const version = Constants.expoConfig?.version ?? "-";
 
   return (
     <SafeAreaView edges={["bottom"]} className="flex-1 bg-white dark:bg-gray-900">
@@ -154,11 +165,9 @@ export default function AboutScreen() {
           <LinkRow label={WEB_URL} onPress={() => openExternal(WEB_URL)} />
         </Section>
 
-        <View className="mt-4 border-t border-gray-200 pt-4 dark:border-gray-800">
-          <Text className="text-[10px] text-gray-500 dark:text-gray-400">
-            Not investment advice. Data sourced from public STOCK Act
-            filings via Capitol Trades and the House/Senate disclosure
-            systems. See Methodology for full sourcing + limitations.
+        <View className="mt-4 rounded-lg border border-gray-200 bg-gray-50 p-3 dark:border-gray-700 dark:bg-gray-800">
+          <Text className="text-[11px] leading-4 text-gray-500 dark:text-gray-400">
+            {DISCLAIMER}
           </Text>
         </View>
       </ScrollView>
