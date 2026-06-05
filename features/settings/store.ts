@@ -14,12 +14,15 @@
 // subscriptionPrefs.tickers[] with the same toggle semantics. The shape is
 // the cross-repo contract from /features/settings/types.ts; the worker reads
 // the same JSON from push_tokens.subscription_prefs and targets push on
-// members[] OR tickers[].
+// members[] OR tickers[], then applies the optional min_amount floor
+// (2026-06-05 threshold slice).
 //
-// Persist version 2: v1 introduced subscriptionPrefs.members[]; v2 adds
-// tickers[]. The migrate hook backfills missing arrays and preserves
-// pre-existing pushEnabled / pushPermissionDenied state from older blobs so
-// users don't lose their notification opt-in when the schema grows.
+// Persist version 3: v1 introduced subscriptionPrefs.members[]; v2 added
+// tickers[]; v3 adds the optional min_amount dollar floor. The migrate hook
+// backfills missing arrays and preserves pre-existing pushEnabled /
+// pushPermissionDenied state from older blobs so users don't lose their
+// notification opt-in when the schema grows (min_amount needs no backfill --
+// absent simply means no floor).
 import { create } from "zustand";
 import { persist, createJSONStorage } from "zustand/middleware";
 import AsyncStorage from "@react-native-async-storage/async-storage";
@@ -36,6 +39,7 @@ interface SettingsState {
   isSubscribedToMember: (politician: string) => boolean;
   toggleTickerSubscription: (ticker: string) => void;
   isSubscribedToTicker: (ticker: string) => boolean;
+  setMinAmount: (amount: number | undefined) => void;
 }
 
 const DEFAULT_PREFS: SubscriptionPrefs = { members: [], tickers: [] };
@@ -73,13 +77,22 @@ export const useSettingsStore = create<SettingsState>()(
         (get().subscriptionPrefs.tickers ?? []).includes(
           ticker.trim().toUpperCase(),
         ),
+      setMinAmount: (amount) => {
+        const cur = get().subscriptionPrefs;
+        const next = { ...cur };
+        // "Any" (undefined / non-positive) clears the floor entirely.
+        if (amount && amount > 0) next.min_amount = amount;
+        else delete next.min_amount;
+        set({ subscriptionPrefs: next });
+      },
     }),
     {
       name: "cta.settings",
       storage: createJSONStorage(() => AsyncStorage),
-      version: 2,
+      version: 3,
       migrate: (persistedState, fromVersion) => {
         // v0 -> v1: backfill subscriptionPrefs. v1 -> v2: backfill tickers[].
+        // v2 -> v3: adds optional min_amount (no backfill -- absent = no floor).
         // Never touches push flags.
         const s = (persistedState ?? {}) as Partial<SettingsState>;
         if (fromVersion < 1 || !s.subscriptionPrefs) {

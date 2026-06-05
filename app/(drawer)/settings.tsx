@@ -34,6 +34,20 @@ import * as Localization from "expo-localization";
 // Default to HIDE on null/undefined/unknown (conservative).
 const isUS = Localization.getLocales()[0]?.regionCode === "US";
 
+// Minimum-trade-size presets for the push floor (dollar thresholds matching
+// STOCK Act disclosure brackets: $15k = the lowest bracket's ceiling, then
+// natural increments). The worker suppresses any trade whose amount_low is
+// below the chosen floor; "Any" clears it.
+const THRESHOLDS: { label: string; value: number | undefined }[] = [
+  { label: "Any", value: undefined },
+  { label: "$15k", value: 15000 },
+  { label: "$50k", value: 50000 },
+  { label: "$100k", value: 100000 },
+  { label: "$250k", value: 250000 },
+  { label: "$500k", value: 500000 },
+  { label: "$1M", value: 1000000 },
+];
+
 const DEV = Constants.expoConfig?.extra?.eas?.projectId
   ? typeof __DEV__ !== "undefined" && __DEV__
   : false;
@@ -67,6 +81,8 @@ export default function SettingsScreen() {
   const setPushPermissionDenied = useSettingsStore(
     (s) => s.setPushPermissionDenied,
   );
+  const minAmount = useSettingsStore((s) => s.subscriptionPrefs.min_amount);
+  const setMinAmount = useSettingsStore((s) => s.setMinAmount);
 
   const [busy, setBusy] = useState(false);
   const [errorText, setErrorText] = useState<string | null>(null);
@@ -172,6 +188,46 @@ export default function SettingsScreen() {
         {errorText ? (
           <Text className="mt-3 text-xs text-cta-sell">{errorText}</Text>
         ) : null}
+
+        <View className="mt-6">
+          <Text className="mb-1 text-base font-semibold text-gray-900 dark:text-gray-100">
+            Minimum trade size
+          </Text>
+          <Text className="mb-3 text-xs text-gray-600 dark:text-gray-400">
+            When notifications are on, only alert about disclosed trades at or
+            above this size. A $15,001-$50,000 trade will not notify at a $50k
+            floor -- we alert only when confident the trade clears it.
+          </Text>
+          <View className="flex-row flex-wrap gap-2">
+            {THRESHOLDS.map((t) => {
+              const active = minAmount === t.value;
+              return (
+                <Pressable
+                  key={t.label}
+                  onPress={() => setMinAmount(t.value)}
+                  accessibilityRole="button"
+                  accessibilityState={{ selected: active }}
+                  accessibilityLabel={`Minimum trade size ${t.label}`}
+                  className={`rounded-full border px-3 py-1.5 ${
+                    active
+                      ? "border-cta-accent bg-cta-accent"
+                      : "border-gray-300 dark:border-gray-700"
+                  }`}
+                >
+                  <Text
+                    className={`text-sm font-medium ${
+                      active
+                        ? "text-white"
+                        : "text-gray-700 dark:text-gray-300"
+                    }`}
+                  >
+                    {t.label}
+                  </Text>
+                </Pressable>
+              );
+            })}
+          </View>
+        </View>
 
         {DEV && storedTokenSuffix ? (
           <Text className="mt-6 text-[10px] text-gray-400">
