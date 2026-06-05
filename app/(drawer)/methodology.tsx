@@ -6,7 +6,23 @@
 import { Linking, Pressable, ScrollView, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
+// PRESS_EMAIL is the single source of truth for the three-surface email rule
+// (CLAUDE.md: about.tsx + Worker privacy.html + Worker press.ts). Import it --
+// do not hardcode -- so this 4th surface can't drift when it flips to
+// press@congresstradealerts.com.
+import { PRESS_EMAIL } from "./about";
+
 const WEB_METHODOLOGY = "https://congresstradealerts.com/methodology";
+
+// Civic-framing disclaimer (verbatim, Lowe v. SEC-aligned: public-record,
+// impersonal, no advice, no execution). ASCII only.
+const DISCLAIMER =
+  "This app reports public STOCK Act disclosures and related public records " +
+  "for civic transparency. It does not provide investment, legal, tax, or " +
+  "financial advice; does not recommend buying, selling, or holding any " +
+  "security; does not connect to brokerages or enable trading. Not affiliated " +
+  "with or endorsed by Congress, the House, the Senate, the SEC, or any " +
+  "government agency.";
 
 function openExternal(url: string) {
   Linking.openURL(url).catch(() => {
@@ -89,7 +105,7 @@ export default function MethodologyScreen() {
           <Para>
             STOCK Act discloses amounts as ranges, not exact figures
             (e.g. $1,001 - $15,000). The simulator and aggregate stats use
-            the midpoint of each range, with an explicit ±50% per-trade
+            the midpoint of each range, with an explicit +/-50% per-trade
             variance. Treat range-derived totals as approximations.
           </Para>
         </Section>
@@ -131,6 +147,20 @@ export default function MethodologyScreen() {
           </Para>
         </Section>
 
+        <Section title="Questions or corrections">
+          <Para>
+            Spotted an error or have a question about the data? Email{" "}
+            <Text
+              className="text-cta-accent underline"
+              onPress={() => openExternal(`mailto:${PRESS_EMAIL}`)}
+              accessibilityRole="link"
+            >
+              {PRESS_EMAIL}
+            </Text>
+            .
+          </Para>
+        </Section>
+
         <View className="mt-2 mb-6">
           <Pressable
             onPress={() => openExternal(WEB_METHODOLOGY)}
@@ -143,8 +173,14 @@ export default function MethodologyScreen() {
           </Pressable>
         </View>
 
+        <View className="mb-4 rounded-lg border border-gray-200 bg-gray-50 p-3 dark:border-gray-700 dark:bg-gray-800">
+          <Text className="text-[11px] leading-4 text-gray-500 dark:text-gray-400">
+            {DISCLAIMER}
+          </Text>
+        </View>
+
         <Text className="text-[10px] text-gray-400">
-          Last updated: 2026-05-08 (mobile copy)
+          Last updated: 2026-06-04 (mobile copy)
         </Text>
       </ScrollView>
     </SafeAreaView>

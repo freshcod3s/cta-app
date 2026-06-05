@@ -16,7 +16,10 @@ import Constants from "expo-constants";
 
 import { GITHUB_URL, PRIVACY_URL, TERMS_URL, WEB_URL } from "@/lib/constants/links";
 
-const PRESS_EMAIL = "congresstradealertsapp@gmail.com";
+// Single source of truth for the three-surface email rule (CLAUDE.md):
+// also mirrored in the Worker repo's privacy.html + press.ts. Imported by
+// methodology.tsx so the in-app surfaces can't drift.
+export const PRESS_EMAIL = "congresstradealertsapp@gmail.com";
 
 function openExternal(url: string) {
   Linking.openURL(url).catch(() => {
