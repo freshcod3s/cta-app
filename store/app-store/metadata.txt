@@ -40,7 +40,7 @@ Free. No ads. Updated daily.
 
 KEYWORDS (max 100, comma-separated): congress,stock,trades,tracker,STOCK Act,disclosures,senate,house,politician,capitol,trading,alerts
 PRIMARY_CATEGORY: News
-SECONDARY_CATEGORY: Finance
+SECONDARY_CATEGORY: Reference
 SUPPORT_URL: https://congresstradealerts.com
 MARKETING_URL: https://congresstradealerts.com
 PRIVACY_POLICY_URL: https://congresstradealerts.com/privacy
