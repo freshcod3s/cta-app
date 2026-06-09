@@ -17,12 +17,13 @@
 // members[] OR tickers[], then applies the optional min_amount floor
 // (2026-06-05 threshold slice).
 //
-// Persist version 3: v1 introduced subscriptionPrefs.members[]; v2 added
-// tickers[]; v3 adds the optional min_amount dollar floor. The migrate hook
-// backfills missing arrays and preserves pre-existing pushEnabled /
-// pushPermissionDenied state from older blobs so users don't lose their
-// notification opt-in when the schema grows (min_amount needs no backfill --
-// absent simply means no floor).
+// Persist version 4: v1 introduced subscriptionPrefs.members[]; v2 added
+// tickers[]; v3 added the optional min_amount dollar floor; v4 adds
+// hasSeenOnboarding (the first-run disclaimer flag). The migrate hook backfills
+// missing arrays and preserves pre-existing pushEnabled / pushPermissionDenied
+// state from older blobs so users don't lose their notification opt-in when the
+// schema grows. v3 -> v4 leaves hasSeenOnboarding falsy so the first-run
+// disclaimer shows once for everyone on this app version (including testers).
 import { create } from "zustand";
 import { persist, createJSONStorage } from "zustand/middleware";
 import AsyncStorage from "@react-native-async-storage/async-storage";
@@ -40,6 +41,8 @@ interface SettingsState {
   toggleTickerSubscription: (ticker: string) => void;
   isSubscribedToTicker: (ticker: string) => boolean;
   setMinAmount: (amount: number | undefined) => void;
+  hasSeenOnboarding: boolean;
+  setHasSeenOnboarding: (seen: boolean) => void;
 }
 
 const DEFAULT_PREFS: SubscriptionPrefs = { members: [], tickers: [] };
@@ -85,15 +88,19 @@ export const useSettingsStore = create<SettingsState>()(
         else delete next.min_amount;
         set({ subscriptionPrefs: next });
       },
+      hasSeenOnboarding: false,
+      setHasSeenOnboarding: (hasSeenOnboarding) => set({ hasSeenOnboarding }),
     }),
     {
       name: "cta.settings",
       storage: createJSONStorage(() => AsyncStorage),
-      version: 3,
+      version: 4,
       migrate: (persistedState, fromVersion) => {
         // v0 -> v1: backfill subscriptionPrefs. v1 -> v2: backfill tickers[].
         // v2 -> v3: adds optional min_amount (no backfill -- absent = no floor).
-        // Never touches push flags.
+        // v3 -> v4: adds hasSeenOnboarding; left falsy so the first-run
+        // disclaimer shows once for everyone on this version. Never touches
+        // push flags.
         const s = (persistedState ?? {}) as Partial<SettingsState>;
         if (fromVersion < 1 || !s.subscriptionPrefs) {
           s.subscriptionPrefs = DEFAULT_PREFS;
@@ -111,6 +118,10 @@ export const useSettingsStore = create<SettingsState>()(
             ...(s.subscriptionPrefs ?? DEFAULT_PREFS),
             tickers: [],
           };
+        }
+        // v3 -> v4: ensure the first-run disclaimer flag exists (falsy = show).
+        if (typeof s.hasSeenOnboarding !== "boolean") {
+          s.hasSeenOnboarding = false;
         }
         return s as SettingsState;
       },
