@@ -24,6 +24,7 @@ import { MethodologyFooter } from "@/features/trades/components/MethodologyFoote
 import { ShareTradeButton } from "@/features/share/components/ShareTradeButton";
 import { ConflictScore } from "@/features/conflict/components/ConflictScore";
 import { NewsSection } from "@/features/news/components/NewsSection";
+import { RelatedTrades } from "@/features/trades/components/RelatedTrades";
 
 function ShimmerBlock({ className = "" }: { className?: string }) {
   return (
@@ -116,6 +117,20 @@ export default function TradeDetailScreen() {
           />
           <TimelineSection trade={query.data} />
           <NewsSection politician={query.data.politician} />
+          {query.data.ticker ? (
+            <RelatedTrades
+              title={`Other recent trades for ${query.data.ticker}`}
+              emptyText={`No other recent disclosures for ${query.data.ticker}.`}
+              filters={{ ticker: query.data.ticker }}
+              currentId={query.data.id}
+            />
+          ) : null}
+          <RelatedTrades
+            title={`Other recent trades by ${query.data.politician}`}
+            emptyText={`No other recent disclosures by ${query.data.politician}.`}
+            filters={{ politician: query.data.politician }}
+            currentId={query.data.id}
+          />
           <SourceLink trade={query.data} />
           <MethodologyFooter />
         </ScrollView>
