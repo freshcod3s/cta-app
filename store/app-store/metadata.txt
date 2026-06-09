@@ -1,44 +1,44 @@
-App Store Connect listing fields. Filled by CTA-App-1-10. ASCII only
-per global ASCII rule. Char limits annotated; counts verified at write
-time. Prefix lines with the field label so Joe can paste each value
-into the matching ASC field. Body text under "DESCRIPTION (max 4000):"
-is the description verbatim.
+App Store Connect listing fields. Filled by CTA-App-1-10, updated
+2026-06-09 post-v2 feature completeness. ASCII only per global rule.
+Char limits annotated; counts verified at write time. Prefix lines
+with the field label so Joe can paste each value into the matching
+ASC field. Body text under "DESCRIPTION (max 4000):" is verbatim.
 
 NAME (max 30): Congress Trade Alerts
 SUBTITLE (max 30): Capitol Hill Stock Disclosures
-PROMOTIONAL_TEXT (max 170): Real-time alerts when members of Congress file STOCK Act disclosures. Subscribe to specific members and get notified the moment their trades hit the public record.
+PROMOTIONAL_TEXT (max 170): See every stock trade disclosed by members of Congress. Push alerts for members and tickers, conflict scores, and full methodology -- no account, no tracking, no ads.
 
 DESCRIPTION (max 4000):
-Congress Trade Alerts surfaces every stock trade disclosed under the STOCK Act by members of the US House and Senate -- drawn from official public records, with no opinions, no spin, and no guesswork.
+Congress Trade Alerts surfaces every stock trade disclosed under the STOCK Act by members of the US House and Senate -- drawn from official public records, updated in real time, with no opinions and no ads.
 
-WHAT YOU GET
-- Live feed of every congressional stock trade as it's disclosed
-- Filter by individual member to follow specific Representatives or Senators
-- Push alerts when a member you follow files a new disclosure
-- Plain-language methodology so you know exactly where the data comes from and how it's processed
-- Clear flags when a trade is filed late (the STOCK Act requires disclosure within 45 days; we surface that lag)
-
-WHO IT'S FOR
-- Journalists tracking congressional compliance failures
-- Civic-engaged citizens watching their representatives' financial activity
-- Researchers studying public-record financial disclosure data
+FEATURES
+- Real-time feed of every congressional stock trade as disclosures are filed
+- Push alerts for specific members and tickers, with minimum trade-size filter
+- Trade detail with filing date, amount range, and market return comparison
+- Conflict Score measuring overlap between committee assignments and sectors traded
+- Related trades for the same ticker or by the same member
+- Daily Dive with sector analysis, bipartisan trading patterns, and newly filing members
+- Member profiles with full trading history, committee seats, party, state, and chamber
+- Ticker pages showing all congressional trades for any stock
+- Committee pages with rosters, subcommittees, hearings, markups, and votes
+- Leaderboard ranking members by trading frequency and volume
+- Local watchlist -- saved on your device, never uploaded
+- Full methodology with data sources, update frequency, lag stats, and calculation details
 
 DATA SOURCES
-- US House Clerk Periodic Transaction Reports (PTR)
-- US Senate Office of Public Records (Senate EFD)
-- Refreshed every 30 minutes from official filings
+All data derived from public STOCK Act filings via the US House Office of the Clerk and the US Senate Select Committee on Ethics. Market data from public financial data providers.
+
+WHO IT'S FOR
+- Journalists tracking congressional compliance and conflicts of interest
+- Civic-minded citizens watching their representatives' financial activity
+- Researchers studying public financial-disclosure data
 
 PRIVACY
-- No user accounts required
-- No analytics or third-party tracking
-- Anonymous push tokens only -- we do not collect any personal data
-- Open source: github.com/freshcod3s/cta-app
+No account required. No tracking. No ads. No third-party analytics. The only data stored is an anonymous push token if you enable notifications -- delete it anytime from Settings. Source code viewable at github.com/freshcod3s/cta-app.
 
-This app is not affiliated with the United States government or with any member of Congress. All data comes from public records that members of Congress are required by law to file under the Stop Trading on Congressional Knowledge Act of 2012.
+Not affiliated with the US government. Not investment advice. Disclosures may be delayed or amended. Verify at disclosures-clerk.house.gov and ethics.senate.gov. Free. No ads. No tracking.
 
-Free. No ads. Updated daily.
-
-KEYWORDS (max 100, comma-separated): congress,stock,trades,tracker,STOCK Act,disclosures,senate,house,politician,capitol,trading,alerts
+KEYWORDS (max 100, comma-separated): stock,politician,disclosure,senate,house,pelosi,government,civic,transparency,insider,capitol,ethics
 PRIMARY_CATEGORY: News
 SECONDARY_CATEGORY: Reference
 SUPPORT_URL: https://congresstradealerts.com

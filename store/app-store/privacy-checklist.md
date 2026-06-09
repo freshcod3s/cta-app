@@ -8,8 +8,8 @@ App-side basis verified at CTA-App-1-10 commit time:
 - No analytics, no Sentry, no Firebase/Amplitude/PostHog/Mixpanel/Segment
   (verified via grep on package.json + package-lock.json -- zero hits).
 - Push tokens: anonymous Expo push token + platform string +
-  subscription preferences. No PII, no email, no name, no IDFA, no IDFV
-  collection.
+  subscription preferences (members[], tickers[], optional min_amount).
+  No PII, no email, no name, no IDFA, no IDFV collection.
 - All transport over HTTPS to congresstradealerts.com (verified in
   lib/api/client.ts).
 - Token deletion: Settings -> push toggle OFF removes token from
@@ -61,7 +61,8 @@ is NOT linked to a user identity.)
 ## Data flow declaration (one-line summary for ASC review notes)
 
 "This app collects only an anonymous Expo push token plus subscription
-preferences (which members the user has opted into alerts for). The
-token is used solely to deliver push notifications. Disabling push in
-Settings removes the token from our backend. No accounts, no
-analytics, no third-party tracking."
+preferences (which members, tickers, and minimum trade sizes the user
+selects for push alerts). The token is used solely to deliver push
+notifications. Disabling push in Settings removes the token and
+preferences from our backend. No accounts, no analytics, no
+third-party tracking."

@@ -45,14 +45,14 @@ upload time.
 | Field | Value |
 |---|---|
 | Data type | Other user-generated content |
-| Specific data | `subscription_prefs.members[]` — user-curated list of politicians subscribed to for push alerts |
+| Specific data | `subscription_prefs` — user-curated alert preferences: `members[]` (politicians), `tickers[]` (stocks), optional `min_amount` (dollar floor) |
 | Collected | YES |
 | Shared with third parties | NO |
 | Linked to user | NO (linked only to the anonymous push-token row; no user account in v1) |
 | Used for tracking | NO |
 | Purposes | App functionality (filters which trade alerts the user receives) |
-| Collection required | NO (optional — empty `members[]` is the default per CTA-App-1-7) |
-| Source | `lib/push/register.ts:162-170` POSTs `subscription_prefs` alongside token; current shape `{members: []}` per `features/settings/store` `subscriptionPrefs` selector |
+| Collection required | NO (optional — empty `members[]` + `tickers[]` is the default; `min_amount` absent = no floor) |
+| Source | `lib/push/register.ts:162-170` POSTs `subscription_prefs` alongside token; current shape `{members: [], tickers: [], min_amount?: number}` per `features/settings/store` `subscriptionPrefs` selector |
 | Deletion mechanism | Same as push token row — DELETE removes the row including `subscription_prefs` |
 
 ### Row 3 — App activity > Other actions

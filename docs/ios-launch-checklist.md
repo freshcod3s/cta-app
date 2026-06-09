@@ -36,7 +36,7 @@ each value into the matching ASC field.
 | Description (4000) | per file | 11-39 |
 | Keywords (100) | per file | 41 |
 | Primary Category | News | 42 |
-| Secondary Category | Finance | 43 |
+| Secondary Category | Reference | 43 |
 | Support URL | per metadata.txt | 44 |
 | Marketing URL | per metadata.txt | 45 |
 | Privacy Policy URL | per metadata.txt | 46 |
