@@ -24,7 +24,11 @@ import {
   useCommitteeMembers,
   useCommitteesInfo,
 } from "@/features/committees/api/queries";
-import type { CommitteeMember } from "@/features/committees/api/types";
+import type {
+  CommitteeMember,
+  CommitteeRecentEvent,
+} from "@/features/committees/api/types";
+import { CommitteeEventRow } from "@/features/committees/components/CommitteeEventRow";
 import { CommitteeHeader } from "@/features/committees/components/CommitteeHeader";
 import { CommitteeMemberRow } from "@/features/committees/components/CommitteeMemberRow";
 
@@ -95,6 +99,32 @@ function EmptyState({ name }: { name: string }) {
   );
 }
 
+// Footer timeline: the committee's recent congress.gov legislative events
+// (hearings / markups / bills / votes). Most committees have none on file
+// today, so the empty state carries the common case. Factual aggregation
+// only -- no evaluative or directive copy around the section.
+function RecentActivity({ events }: { events: CommitteeRecentEvent[] }) {
+  return (
+    <View className="pb-8">
+      <View className="border-t border-gray-200 px-4 pb-1 pt-5 dark:border-gray-800">
+        <Text className="text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">
+          Recent committee activity
+        </Text>
+        <Text className="mt-0.5 text-[11px] text-gray-400">
+          Hearings, markups, and votes (congress.gov), last 180 days
+        </Text>
+      </View>
+      {events.length === 0 ? (
+        <Text className="px-4 py-3 text-sm text-gray-500 dark:text-gray-400">
+          No recent activity on file for this committee.
+        </Text>
+      ) : (
+        events.map((e) => <CommitteeEventRow key={e.id} event={e} />)
+      )}
+    </View>
+  );
+}
+
 export default function CommitteeDetailScreen() {
   const params = useLocalSearchParams<{ name: string }>();
   const name = params.name ? decodeURIComponent(params.name) : "";
@@ -107,6 +137,8 @@ export default function CommitteeDetailScreen() {
   const chamber = members.data?.chamber ?? null;
   const memberCount = members.data?.member_count ?? roster.length;
   const officialUrl = members.data?.official_url ?? null;
+  const recentActivity: CommitteeRecentEvent[] =
+    members.data?.recent_activity ?? [];
 
   const retry = () => {
     void members.refetch();
@@ -144,6 +176,7 @@ export default function CommitteeDetailScreen() {
           renderItem={({ item }) => <CommitteeMemberRow member={item} />}
           ItemSeparatorComponent={Divider}
           ListHeaderComponent={header}
+          ListFooterComponent={<RecentActivity events={recentActivity} />}
           ListEmptyComponent={<EmptyState name={name} />}
           refreshControl={
             <RefreshControl
