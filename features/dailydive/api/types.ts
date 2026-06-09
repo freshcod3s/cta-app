@@ -2,9 +2,10 @@
 // accountability digest aggregated from the trades table. Field names mirror
 // the worker response verbatim (Product Invariant #8).
 //
-// This v1 slice renders pulse + stocks + politicians + unusual. The worker
-// also returns sectors / companies / bipartisan / fresh_faces -- deliberately
-// left untyped + unrendered here (deferred to a follow-up).
+// Renders pulse + stocks + politicians + unusual + sectors + bipartisan +
+// fresh_faces (2026-06-05 completeness slice). The worker also returns
+// `companies` (same shape as stocks, ranked by 30-day volume) -- intentionally
+// left unrendered as redundant with the stocks section.
 
 export type DailyDivePulse = {
   trades_7d: number;
@@ -55,11 +56,45 @@ export type DailyDiveUnusual = {
   party: string | null;
 };
 
+// Disclosed trades grouped by sector, last 7 days (by trade count).
+export type DailyDiveSector = {
+  sector: string;
+  trade_count: number;
+  buys: number;
+  sells: number;
+  total_volume: number | null;
+};
+
+// Securities purchased by members of BOTH parties, last 30 days.
+export type DailyDiveBipartisan = {
+  ticker: string;
+  asset_name: string;
+  dem_traders: number;
+  rep_traders: number;
+  trade_count: number;
+  buys: number;
+  avg_return: number | null;
+  total_volume: number | null;
+};
+
+// Members whose first-ever disclosure landed in the last 30 days.
+export type DailyDiveFreshFace = {
+  politician: string;
+  party: string | null;
+  chamber: string | null;
+  state: string | null;
+  first_trade: string;
+  trades: number;
+};
+
 export type DailyDiveData = {
   pulse: DailyDivePulse;
   stocks: DailyDiveStock[];
   politicians: DailyDiveMember[];
   unusual: DailyDiveUnusual[];
+  sectors: DailyDiveSector[];
+  bipartisan: DailyDiveBipartisan[];
+  fresh_faces: DailyDiveFreshFace[];
 };
 
 export type DailyDiveEnvelope = {

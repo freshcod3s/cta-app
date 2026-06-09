@@ -5,7 +5,7 @@ import { Text, View } from "react-native";
 
 import type { DailyDivePulse } from "@/features/dailydive/api/types";
 
-function fmtVolume(v: number): string {
+export function fmtVolume(v: number): string {
   if (v >= 1_000_000_000) return `$${(v / 1_000_000_000).toFixed(1)}B`;
   if (v >= 1_000_000) return `$${(v / 1_000_000).toFixed(1)}M`;
   if (v >= 1_000) return `$${Math.round(v / 1_000)}K`;

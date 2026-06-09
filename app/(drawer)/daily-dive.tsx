@@ -1,7 +1,7 @@
 // Daily Dive -- a 7-day accountability digest from GET /api/daily-dive:
-// the disclosure pulse, most-traded stocks, most-active members, and large/
-// late filings. Discovery + accountability framing only -- never "what to
-// buy". (Worker also returns sectors/bipartisan/fresh-faces; deferred.)
+// the disclosure pulse, most-traded stocks, sector breakdown, bipartisan
+// purchases, most-active members, newly disclosing members, and large/late
+// filings. Discovery + accountability framing only -- never "what to buy".
 import {
   ActivityIndicator,
   Pressable,
@@ -15,7 +15,10 @@ import { ctaColors } from "@/lib/theme/tokens";
 import { useDailyDive } from "@/features/dailydive/api/queries";
 import { PulseBanner } from "@/features/dailydive/components/PulseBanner";
 import {
+  BipartisanRow,
+  FreshFaceRow,
   MemberRow,
+  SectorRow,
   StockRow,
   UnusualRow,
 } from "@/features/dailydive/components/DiveRows";
@@ -67,7 +70,8 @@ export default function DailyDiveScreen() {
     );
   }
 
-  const { pulse, stocks, politicians, unusual } = query.data;
+  const { pulse, stocks, politicians, unusual, sectors, bipartisan, fresh_faces } =
+    query.data;
 
   return (
     <SafeAreaView edges={["bottom"]} className="flex-1 bg-white dark:bg-gray-900">
@@ -83,12 +87,52 @@ export default function DailyDiveScreen() {
         ))}
 
         <SectionHeader
+          title="Disclosures by sector"
+          sub="Disclosed trades grouped by sector, last 7 days"
+        />
+        {sectors.length === 0 ? (
+          <Text className="px-4 py-3 text-sm text-gray-500 dark:text-gray-400">
+            No sector breakdown in the last 7 days.
+          </Text>
+        ) : (
+          sectors.map((s, i) => <SectorRow key={`${s.sector}-${i}`} s={s} />)
+        )}
+
+        <SectionHeader
+          title="Bought by both parties"
+          sub="Purchased by Democratic and Republican members, last 30 days"
+        />
+        {bipartisan.length === 0 ? (
+          <Text className="px-4 py-3 text-sm text-gray-500 dark:text-gray-400">
+            No securities purchased by both parties in the last 30 days.
+          </Text>
+        ) : (
+          bipartisan.map((b, i) => (
+            <BipartisanRow key={`${b.ticker}-${i}`} b={b} />
+          ))
+        )}
+
+        <SectionHeader
           title="Most active members"
           sub="By disclosure count, last 7 days"
         />
         {politicians.slice(0, 8).map((m, i) => (
           <MemberRow key={`${m.politician}-${i}`} m={m} />
         ))}
+
+        <SectionHeader
+          title="Newly disclosing members"
+          sub="Members with their first disclosure in the last 30 days"
+        />
+        {fresh_faces.length === 0 ? (
+          <Text className="px-4 py-3 text-sm text-gray-500 dark:text-gray-400">
+            No newly disclosing members in the last 30 days.
+          </Text>
+        ) : (
+          fresh_faces.map((f, i) => (
+            <FreshFaceRow key={`${f.politician}-${i}`} f={f} />
+          ))
+        )}
 
         <SectionHeader
           title="Large or late filings"
