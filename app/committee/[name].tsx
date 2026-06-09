@@ -27,6 +27,7 @@ import {
 import type {
   CommitteeMember,
   CommitteeRecentEvent,
+  CommitteeSubcommittee,
 } from "@/features/committees/api/types";
 import { CommitteeEventRow } from "@/features/committees/components/CommitteeEventRow";
 import { CommitteeHeader } from "@/features/committees/components/CommitteeHeader";
@@ -125,6 +126,52 @@ function RecentActivity({ events }: { events: CommitteeRecentEvent[] }) {
   );
 }
 
+// Subcommittees of a parent committee -- structural composition only (name +
+// member count), shown between the header card and the roster. Framing is
+// structure, never evaluation: no "key" / "powerful" / "influential" copy.
+//
+// Non-tappable in v1. Drilling into a subcommittee by name alone would query
+// the worker ambiguously -- generic sub names ("Health", "Oversight") recur
+// across parents, and the /committee/[name] route passes no &parent. Tappable
+// subs need ?parent route + worker-filter support; tracked as a follow-up.
+function Subcommittees({ items }: { items: CommitteeSubcommittee[] }) {
+  return (
+    <View className="border-b border-gray-200 dark:border-gray-800">
+      <View className="px-4 pb-1 pt-5">
+        <Text className="text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">
+          Subcommittees
+        </Text>
+      </View>
+      {items.length === 0 ? (
+        <Text className="px-4 py-3 text-sm text-gray-500 dark:text-gray-400">
+          No subcommittees on file.
+        </Text>
+      ) : (
+        items.map((s) => (
+          <View
+            key={s.name}
+            accessible
+            accessibilityLabel={`${s.name}, ${s.member_count} member${
+              s.member_count === 1 ? "" : "s"
+            }`}
+            className="flex-row items-center justify-between border-t border-gray-100 px-4 py-2.5 dark:border-gray-800"
+          >
+            <Text
+              className="flex-1 pr-3 text-sm text-gray-800 dark:text-gray-200"
+              numberOfLines={2}
+            >
+              {s.name}
+            </Text>
+            <Text className="text-xs text-gray-500 dark:text-gray-400">
+              {s.member_count} member{s.member_count === 1 ? "" : "s"}
+            </Text>
+          </View>
+        ))
+      )}
+    </View>
+  );
+}
+
 export default function CommitteeDetailScreen() {
   const params = useLocalSearchParams<{ name: string }>();
   const name = params.name ? decodeURIComponent(params.name) : "";
@@ -139,6 +186,8 @@ export default function CommitteeDetailScreen() {
   const officialUrl = members.data?.official_url ?? null;
   const recentActivity: CommitteeRecentEvent[] =
     members.data?.recent_activity ?? [];
+  const subcommittees: CommitteeSubcommittee[] =
+    members.data?.subcommittees ?? [];
 
   const retry = () => {
     void members.refetch();
@@ -146,13 +195,16 @@ export default function CommitteeDetailScreen() {
   };
 
   const header = (
-    <CommitteeHeader
-      name={name}
-      chamber={chamber}
-      memberCount={memberCount}
-      reference={reference}
-      officialUrl={officialUrl}
-    />
+    <>
+      <CommitteeHeader
+        name={name}
+        chamber={chamber}
+        memberCount={memberCount}
+        reference={reference}
+        officialUrl={officialUrl}
+      />
+      <Subcommittees items={subcommittees} />
+    </>
   );
 
   return (
