@@ -48,18 +48,22 @@ export function dedupeMembers(members: CommitteeMember[]): CommitteeMember[] {
   return out;
 }
 
-// useCommitteeMembers -- GET /api/committees/members?name={name}. Roster +
-// chamber + official_url + subcommittees for a PARENT committee (chips only
-// ever target parents, so we never pass &parent=). The roster is deduped and
-// member_count recomputed in `select`. staleTime 1h: committee membership
-// moves on the order of weeks, so a warm cache across screen focuses is safe.
-export function useCommitteeMembers(name: string) {
+// useCommitteeMembers -- GET /api/committees/members?name={name}[&parent].
+// Roster + chamber + official_url + subcommittees. Pass `parent` when drilling
+// into a SUBCOMMITTEE (the worker then filters on parent_committee +
+// is_subcommittee=1); omit it for a parent committee. The parent also
+// disambiguates same-named subs across parents (e.g. "Health"). The roster is
+// deduped and member_count recomputed in `select`. staleTime 1h: committee
+// membership moves on the order of weeks, so a warm cache is safe.
+export function useCommitteeMembers(name: string, parent?: string | null) {
   const clean = normalizeCommitteeName(name);
+  const cleanParent = parent ? normalizeCommitteeName(parent) : null;
   return useQuery({
-    queryKey: committeesKeys.members(clean),
+    queryKey: committeesKeys.members(clean, cleanParent),
     queryFn: ({ signal }) =>
       apiFetch<CommitteeMembersEnvelope>(
-        `/api/committees/members?name=${encodeURIComponent(clean)}`,
+        `/api/committees/members?name=${encodeURIComponent(clean)}` +
+          (cleanParent ? `&parent=${encodeURIComponent(cleanParent)}` : ""),
         { signal },
       ),
     enabled: clean.length > 0,

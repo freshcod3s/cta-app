@@ -16,6 +16,9 @@ type Props = {
   memberCount: number;
   reference: CommitteeRef | null;
   officialUrl: string | null;
+  // Set only on a subcommittee page -- renders a "Subcommittee of {parent}"
+  // breadcrumb. null/undefined on a parent committee.
+  parent?: string | null;
 };
 
 export function CommitteeHeader({
@@ -24,6 +27,7 @@ export function CommitteeHeader({
   memberCount,
   reference,
   officialUrl,
+  parent,
 }: Props) {
   const fullName = reference?.full_name ?? null;
   const sectors = reference?.sectors ?? [];
@@ -42,6 +46,11 @@ export function CommitteeHeader({
       <Text className="text-xl font-bold text-gray-900 dark:text-gray-100">
         {name}
       </Text>
+      {parent ? (
+        <Text className="mt-0.5 text-xs font-semibold text-cta-accent">
+          Subcommittee of {parent}
+        </Text>
+      ) : null}
       {fullName && fullName !== name ? (
         <Text className="mt-0.5 text-sm text-gray-600 dark:text-gray-400">
           {fullName}

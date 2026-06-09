@@ -17,7 +17,7 @@
 // top inset (back arrow + title).
 import { FlatList, Pressable, RefreshControl, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { Stack, useLocalSearchParams } from "expo-router";
+import { Link, Stack, useLocalSearchParams } from "expo-router";
 
 import {
   selectCommitteeRef,
@@ -127,14 +127,22 @@ function RecentActivity({ events }: { events: CommitteeRecentEvent[] }) {
 }
 
 // Subcommittees of a parent committee -- structural composition only (name +
-// member count), shown between the header card and the roster. Framing is
-// structure, never evaluation: no "key" / "powerful" / "influential" copy.
+// member count), shown between the header card and the roster (parent pages
+// only). Framing is structure, never evaluation: no "key" / "powerful" /
+// "influential" copy.
 //
-// Non-tappable in v1. Drilling into a subcommittee by name alone would query
-// the worker ambiguously -- generic sub names ("Health", "Oversight") recur
-// across parents, and the /committee/[name] route passes no &parent. Tappable
-// subs need ?parent route + worker-filter support; tracked as a follow-up.
-function Subcommittees({ items }: { items: CommitteeSubcommittee[] }) {
+// Each row drills into the subcommittee via /committee/{sub}?parent={parent}.
+// The parent is REQUIRED: generic sub names ("Health", "Oversight") recur
+// across parents, and the worker needs parent_committee to disambiguate (a sub
+// queried without parent matches nothing). parentName is the current parent
+// committee's name, threaded into the ?parent= query.
+function Subcommittees({
+  items,
+  parentName,
+}: {
+  items: CommitteeSubcommittee[];
+  parentName: string;
+}) {
   return (
     <View className="border-b border-gray-200 dark:border-gray-800">
       <View className="px-4 pb-1 pt-5">
@@ -148,24 +156,29 @@ function Subcommittees({ items }: { items: CommitteeSubcommittee[] }) {
         </Text>
       ) : (
         items.map((s) => (
-          <View
+          <Link
             key={s.name}
-            accessible
-            accessibilityLabel={`${s.name}, ${s.member_count} member${
-              s.member_count === 1 ? "" : "s"
-            }`}
-            className="flex-row items-center justify-between border-t border-gray-100 px-4 py-2.5 dark:border-gray-800"
+            href={`/committee/${encodeURIComponent(s.name)}?parent=${encodeURIComponent(parentName)}`}
+            asChild
           >
-            <Text
-              className="flex-1 pr-3 text-sm text-gray-800 dark:text-gray-200"
-              numberOfLines={2}
+            <Pressable
+              accessibilityRole="button"
+              accessibilityLabel={`${s.name}, ${s.member_count} member${
+                s.member_count === 1 ? "" : "s"
+              }`}
+              className="flex-row items-center justify-between border-t border-gray-100 px-4 py-2.5 dark:border-gray-800"
             >
-              {s.name}
-            </Text>
-            <Text className="text-xs text-gray-500 dark:text-gray-400">
-              {s.member_count} member{s.member_count === 1 ? "" : "s"}
-            </Text>
-          </View>
+              <Text
+                className="flex-1 pr-3 text-sm text-gray-800 dark:text-gray-200"
+                numberOfLines={2}
+              >
+                {s.name}
+              </Text>
+              <Text className="text-xs text-gray-500 dark:text-gray-400">
+                {s.member_count} member{s.member_count === 1 ? "" : "s"}
+              </Text>
+            </Pressable>
+          </Link>
         ))
       )}
     </View>
@@ -173,10 +186,11 @@ function Subcommittees({ items }: { items: CommitteeSubcommittee[] }) {
 }
 
 export default function CommitteeDetailScreen() {
-  const params = useLocalSearchParams<{ name: string }>();
+  const params = useLocalSearchParams<{ name: string; parent?: string }>();
   const name = params.name ? decodeURIComponent(params.name) : "";
+  const parent = params.parent ? decodeURIComponent(params.parent) : null;
 
-  const members = useCommitteeMembers(name);
+  const members = useCommitteeMembers(name, parent);
   const info = useCommitteesInfo();
   const reference = selectCommitteeRef(info.data, name);
 
@@ -202,8 +216,13 @@ export default function CommitteeDetailScreen() {
         memberCount={memberCount}
         reference={reference}
         officialUrl={officialUrl}
+        parent={parent}
       />
-      <Subcommittees items={subcommittees} />
+      {/* Subcommittees only on parent pages -- a sub has no sub-subcommittees,
+          so on a sub page (parent set) the section would be pure empty-state. */}
+      {parent ? null : (
+        <Subcommittees items={subcommittees} parentName={name} />
+      )}
     </>
   );
 
