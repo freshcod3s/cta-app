@@ -558,7 +558,7 @@ incident exposed the cost of cross-chat drift.
 
 ### Section A — Preflight (every feature CC dispatch)
 
-Before any task execution in a fresh CC dispatch, run these five steps
+Before any task execution in a fresh CC dispatch, run these six steps
 in order:
 
 1. `git fetch origin`
@@ -566,14 +566,24 @@ in order:
    `.claude/` and similar are OK; tracked-file diffs are NOT).
 3. If on `master`: `git pull --ff-only origin master`.
    If on a feature branch: `git rebase origin/master`.
-4. Report current `master` SHA + branch state to the chat so the
+4. Verify `node_modules` matches `package.json`: run `npm install` (or
+   `npx expo install --check` for an Expo project) before any build or
+   doctor run. A `git pull` syncs source but NOT installed deps; a
+   stale `node_modules` produces misleading doctor/build failures
+   (e.g., a dep present in `package.json` but never installed locally).
+5. Report current `master` SHA + branch state to the chat so the
    dispatching human can confirm preflight matches their mental model.
-5. Only then begin task execution.
+6. Only then begin task execution.
 
 Why: master drifts under parallel chats (iOS + Android + brand-site +
 worker repos all share contributors). Skipping preflight produces
 exactly the wrong-branch / stale-base / branch-orphan failure modes the
-2026-06-04 session ate two turns recovering from.
+2026-06-04 session ate two turns recovering from. Step 4
+(`node_modules` sync) was added 2026-06-09 after `npm install` drift
+blocked `npx expo install --check` from diagnosing patch versions: a
+dep was on `master` in `package.json` but had never been installed on
+the Windows working copy, so the doctor errored on missing-package
+before it could report on the actual version-resolution question.
 
 ### Section B — Branch lifecycle
 
