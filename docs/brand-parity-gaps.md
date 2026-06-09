@@ -48,6 +48,30 @@ After Tracks A, B, and C plus the Gap-1 Upgrade button shipped, the mobile app n
 
 ---
 
+## Re-audit -- 2026-06-09 (post Gap #13 closure + committee build-out + onboarding + RelatedTrades)
+
+A run of surgical slices since 2026-06-04 (master @ d9feafb) pushed coverage of the meaningful civic-transparency surface to roughly **~85%**. The remaining delta is the intentional omissions (section 2) plus one partially-covered discovery surface (#16).
+
+### Closed / extended since 2026-06-04
+
+| # | Surface | Closed / extended by |
+|---|---|---|
+| 13 | Push targeting -- per-ticker + min-amount threshold | tickers[] + worker selectTokensForTrade `$.tickers` filter (deployed) + `min_amount` floor + Settings "Minimum trade size" chips. #13 push targeting now FULLY closed (per-politician + per-ticker + threshold); channel-mgmt UI stays web/Pro |
+| 19 | Per-committee page -- richer | recent-activity timeline (congress.gov hearings/markups/votes) + Subcommittees section + tappable subcommittees (`?parent` disambiguation) |
+| 21 | Daily Dive -- completeness | rendered the remaining worker sections: sectors, bipartisan, fresh-faces |
+| 25 | Trade-detail richness -- RelatedTrades | other recent trades for the ticker + by the member; #25 now FULLY closed (News + ConflictScore + RelatedTrades) |
+
+### New app-only surface (no web equivalent)
+
+- **First-run onboarding** -- a civic-transparency disclaimer overlay shown once on first launch (persist v4 `hasSeenOnboarding`) before the feed. App Store review-safety placement. Not a site-parity row -- the web has no first-run gate.
+
+### Remaining after this run
+
+- **#16** Top Stocks / Top Earners / Top Trades / Hot Tickers / Sectors -- the sole remaining product gap. Partially covered (Leaderboard + Daily Dive sectors/bipartisan/fresh-faces); the dedicated top-* discovery views are unbuilt. Wide multi-view surface; placement is an open product call.
+- **Unchanged by design:** per-spec v1 omissions (section 2) + web-only / fintech-declined surfaces (#5, #6, #15, #26, #28).
+
+---
+
 ## 1. Full delta inventory
 
 Site nav lifted from the live homepage (top nav + footer). App surfaces from `app/(drawer)/*` + `app/trade/[id].tsx`. Worker route source from `congress-trade-alerts/src/routes/*`.
@@ -66,19 +90,19 @@ Site nav lifted from the live homepage (top nav + footer). App surfaces from `ap
 | 10 | Terms of Service | `terms.html` | About → external browser link | `app/(drawer)/about.tsx:128` via `TERMS_URL` | **OK** — same posture as Privacy |
 | 11 | Pricing tiers (Free, Pro, Trader) | `routes/stripe.ts` + `routes/pro.ts` + dashboard pricing section | None | — | **GAP** — product invariant #1 says Upgrade button opens external Stripe Checkout; the BUTTON itself is missing |
 | 12 | Pro API key login | dashboard form + `middleware/auth.ts` | None | — | **PER-SPEC v1 OMIT** — auth v1 = none per stack lock line 60; API key paste UI lives in product invariants #2-3 but is not built yet |
-| 13 | Alerts configuration (email, Telegram, Discord channels + watchlist rules) | dashboard + `routes/pro.ts:handleProChannels` | Push toggle + per-politician targeting (FollowButton) | `app/(drawer)/settings.tsx`, `features/watchlist/*` | **PARTIAL** -- per-POLITICIAN push targeting CLOSED end-to-end (members[] -> selectTokensForTrade, free tier, audited 2026-06-04); per-TICKER targeting in progress 2026-06-04; min-amount THRESHOLD deferred (separate ticket). Full alerts-config UI (channel mgmt) stays web/Pro |
+| 13 | Alerts configuration (email, Telegram, Discord channels + watchlist rules) | dashboard + `routes/pro.ts:handleProChannels` | Push toggle + per-politician + per-ticker targeting + min-amount threshold | `app/(drawer)/settings.tsx`, `features/watchlist/*`, `features/settings/*` | **PARTIAL (targeting CLOSED)** -- push targeting fully closed 2026-06-09: per-politician (members[]) + per-ticker (tickers[]) + min-amount threshold (min_amount floor) all wired end-to-end through selectTokensForTrade, free tier. Full alerts-config UI (channel mgmt) stays web/Pro by design |
 | 14 | Watchlist (named politicians + tickers) | `routes/watchlist.ts` + dashboard watchlist panel | None — subscription_prefs.members[] exists in `features/settings/store` but no UI | — | **GAP** — product invariant #7 says free/unauth users get a local watchlist; storage primitive is there, screen isn't |
 | 15 | Copy-Trade Simulator | dashboard simulator section + `routes/api.ts:handleRealism` | None | — | **WEB-ONLY BY DESIGN** — per `CLAUDE.md` Strategic positioning, copy-trade framing IS the fintech drift the lock forbids on mobile; declining is correct |
-| 16 | Top Stocks / Top Earners / Top Trades / Hot Tickers / Sectors | `routes/api.ts:handleTopStocks` `:handleTopEarners` `:handleTopTrades` `:handleBigPictureAngles` | None | — | **GAP** — these are the leaderboard / discovery surfaces that make the site feel "full"; on mobile there's just the feed + 4 stat cards |
+| 16 | Top Stocks / Top Earners / Top Trades / Hot Tickers / Sectors | `routes/api.ts:handleTopStocks` `:handleTopEarners` `:handleTopTrades` `:handleBigPictureAngles` | Partial: Leaderboard + Daily Dive (sectors / bipartisan / fresh-faces) | `app/(drawer)/leaderboard.tsx`, `app/(drawer)/daily-dive.tsx` | **GAP (partial)** -- discovery is partly covered by Leaderboard + the Daily Dive sections; the dedicated Top-Stocks / Top-Trades / Hot-Tickers views remain unbuilt. Wide multi-view surface; placement is an open product decision |
 | 17 | Per-politician profile (committee power, activity snapshot, conflict scoring) | `routes/api.ts:handlePoliticianProfile` | None — name shown in feed/detail, not tappable to a profile | `features/trades/components/MemberHeader.tsx` | **GAP** — high-leverage civic surface; ties directly into the "civic-transparency" positioning |
 | 18 | Per-ticker page (who in Congress traded this) | `routes/ticker-info.ts` (6.8KB) + `routes/api.ts:handleTickerCongressional` | None — ticker shown in feed/detail, not tappable | `features/trades/components/TransactionHero.tsx` | **GAP** — natural drill-down from any trade row |
-| 19 | Per-committee page | `routes/committees-info.ts` + `routes/api.ts:handleCommitteeMembers` | `app/committee/[name].tsx` + `features/committees/*`; chips tappable on trade detail + member profile | `features/committees/components/*` | **CLOSED 2026-06-04** -- /committee/[name] roster (deduped by bioguide, role-sorted) + reference header from committees/info; worker endpoint was already live |
+| 19 | Per-committee page | `routes/committees-info.ts` + `routes/api.ts:handleCommitteeMembers` | `app/committee/[name].tsx` + `features/committees/*`; chips tappable on trade detail + member profile | `features/committees/components/*` | **CLOSED 2026-06-04, extended 2026-06-09** -- /committee/[name] roster (deduped by bioguide, role-sorted) + reference header; 2026-06-09 added the recent-activity timeline (congress.gov hearings/markups/votes), the Subcommittees section, and tappable subcommittees (`?parent` disambiguation). Worker endpoint was already live |
 | 20 | Search | dashboard search + `routes/api.ts:handleSearch` | Stub FAB only (Alert popup says "Search ships in CTA-App-1-N") | `app/(drawer)/index.tsx:108-115` | **GAP** — FAB is a placeholder; tap shows "ships in CTA-App-1-N" alert |
-| 21 | Daily Dive / Briefing | `routes/api.ts:handleDailyDive` `:handleBriefing` | None | — | **GAP** — short-read narrative surfaces that fit mobile well |
+| 21 | Daily Dive / Briefing | `routes/api.ts:handleDailyDive` `:handleBriefing` | `app/(drawer)/daily-dive.tsx` + `features/dailydive/*` | `features/dailydive/components/*` | **CLOSED (Track B), completed 2026-06-09** -- pulse + stocks + members + unusual (Track B); 2026-06-09 added the remaining worker sections: sectors, bipartisan, fresh-faces |
 | 22 | Mobile App Signup form (web → email collection for app launch) | dashboard mobile signup section | N/A — app users are post-signup | — | **INVERSE** — web-only by design; app IS the destination |
 | 23 | Waitlist | `routes/waitlist.ts` | N/A — app users are post-waitlist | — | **INVERSE** — same as above |
 | 24 | Account / delete-account | `routes/stripe.ts:handleDeleteAccount` | None | — | **PER-SPEC v1 OMIT** — no accounts in v1; Settings has push-off as the only deletion path |
-| 25 | News enrichment / per-trade context | `enrichment/news.ts` + `services/conflict-detector.ts` | None on trade detail | `app/trade/[id].tsx` components list | **GAP** — trade detail has 6 components (MemberHeader, SubscribeButton, CommitteeChips, TransactionHero, TimelineSection, SourceLink, MethodologyFooter); no NewsSection / ConflictScore / RelatedTrades |
+| 25 | News enrichment / per-trade context | `enrichment/news.ts` + `services/conflict-detector.ts` | NewsSection + ConflictScore + RelatedTrades on trade detail | `features/news/*`, `features/conflict/*`, `features/trades/components/RelatedTrades.tsx` | **CLOSED** -- NewsSection + ConflictScore (Track C) + RelatedTrades (2026-06-09: other trades for the ticker + by the member). #25 fully closed |
 | 26 | Cluster / coordinated-trading detection | `clusters.ts` (26KB) | None | — | **WEB-ONLY BY DESIGN** — research surface, not mobile-shaped |
 | 27 | Social share cards (SVG/PNG per trade) | `social/card.ts` + `social/png.ts` + `social/poster.ts` | None — no Share action on trade detail | `app/trade/[id].tsx` | **GAP** — share-a-trade is mobile-native; worker already generates the cards |
 | 28 | Footer: System Status | embedded | None | — | **WEB-ONLY BY DESIGN** — meta-observability, not user-facing on mobile |
@@ -206,7 +230,7 @@ The 6 gaps from section 3, in order: Upgrade button → Search → Filters → P
 
 Total: 12 tickets, ~6 weeks of CTA-App-2-N work. Pre-launch minimum is Track A; Tracks B+C can land between closed-testing day 1 and the production-track promotion.
 
-**Status (2026-06-04): Tracks A, B, and C are all CLOSED** (plus the Gap-1 Upgrade button) -- see the 2026-06-04 re-audit near the top. Pre-launch surface work is complete. #19 per-committee pages CLOSED 2026-06-04 (`/committee/[name]` roster + tappable CommitteeChips). #13 push targeting is HALF-CLOSED: per-politician works end-to-end; per-ticker closure in progress 2026-06-04, min-amount threshold deferred to a separate ticket.
+**Status (2026-06-09): Tracks A, B, C CLOSED + Gap-1; the 2026-06-09 run closed #13 (full push targeting), extended #19 (committee recent-activity + subcommittees + tappable subs), completed #21 (Daily Dive sections), closed #25 (RelatedTrades), and added first-run onboarding.** Pre-launch surface work is complete; the only remaining product gap is #16 (top-stocks / sectors discovery, partially covered by Leaderboard + Daily Dive).
 
 ### What this audit does NOT recommend
 
@@ -226,4 +250,4 @@ Re-run this audit if:
 - Strategic positioning in `CLAUDE.md` shifts (e.g., a deliberate pivot toward Pro-tier portfolio features would re-classify several "fintech-drift" omissions)
 - Worker's `src/routes/mobile.ts` Pro endpoints get wired in app (this audit's section 4 becomes obsolete)
 
-Last audit: 2026-06-04 against `master` @ `9edb36e` (Gap #13 push-targeting audit: per-politician CLOSED, per-ticker + threshold remain; Gap #19 committee pages closed). Prior: 2026-06-04 @ `c715680` (Tracks A/B/C + Gap 1; 12 surfaces). Earlier: 2026-05-28 @ `a76d6f0`.
+Last audit: 2026-06-09 against `master` @ `d9feafb` (closed #13 full push targeting + extended #19 + completed #21 + closed #25 + added onboarding; only #16 remains). Prior: 2026-06-04 @ `9edb36e` (Gap #13 per-politician CLOSED, per-ticker + threshold remain; #19 committee pages closed). Earlier: 2026-06-04 @ `c715680` (Tracks A/B/C + Gap 1; 12 surfaces); 2026-05-28 @ `a76d6f0`.
