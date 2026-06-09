@@ -11,7 +11,9 @@
     "ios": {
       "bundleIdentifier": "com.congresstradealerts.cta",
       "supportsTablet": false,
-      "associatedDomains": ["applinks:congresstradealerts.com"],
+      "associatedDomains": [
+        "applinks:congresstradealerts.com"
+      ],
       "config": {
         "usesNonExemptEncryption": false
       },
@@ -23,7 +25,9 @@
             "NSPrivacyCollectedDataType": "NSPrivacyCollectedDataTypeDeviceID",
             "NSPrivacyCollectedDataTypeLinked": false,
             "NSPrivacyCollectedDataTypeTracking": false,
-            "NSPrivacyCollectedDataTypePurposes": ["NSPrivacyCollectedDataTypePurposeAppFunctionality"]
+            "NSPrivacyCollectedDataTypePurposes": [
+              "NSPrivacyCollectedDataTypePurposeAppFunctionality"
+            ]
           }
         ],
         "NSPrivacyAccessedAPITypes": []
@@ -31,7 +35,9 @@
     },
     "android": {
       "package": "com.congresstradealerts.cta",
-      "permissions": ["POST_NOTIFICATIONS"],
+      "permissions": [
+        "POST_NOTIFICATIONS"
+      ],
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#0b1220"
@@ -49,7 +55,10 @@
               "pathPrefix": "/trade"
             }
           ],
-          "category": ["BROWSABLE", "DEFAULT"]
+          "category": [
+            "BROWSABLE",
+            "DEFAULT"
+          ]
         }
       ]
     },
@@ -69,7 +78,8 @@
         }
       ],
       "expo-secure-store",
-      "expo-notifications"
+      "expo-notifications",
+      "expo-font"
     ],
     "experiments": {
       "typedRoutes": true,
