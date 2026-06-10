@@ -17,7 +17,7 @@ upload time.
 | Question | Answer | Source |
 |---|---|---|
 | Does your app collect or share any of the required user data types? | YES | Push token is transmitted to worker; see row 1 below. |
-| Is all of the user data collected by your app encrypted in transit? | YES | All worker calls use HTTPS (`lib/api/client.ts` — `API_BASE_URL` is `https://<BRAND_DOMAIN>`). |
+| Is all of the user data collected by your app encrypted in transit? | YES | All worker calls use HTTPS (`lib/api/client.ts` -- `API_BASE_URL` is `https://<BRAND_DOMAIN>`). |
 | Do you provide a way for users to request that their data be deleted? | YES | Push token row supports DELETE via `lib/push/api.ts:107-140` `deletePushToken` (triggered by Settings -> push off). Account-level deletion request via `<SUPPORT_EMAIL>` (CAN-SPAM contact path). |
 | Have you committed to following the Play Families Policy? | NO | App targets 18+ (finance content); see `docs/play-console-metadata.md` target-audience section. |
 
@@ -25,45 +25,45 @@ upload time.
 
 ## Per-data-type rows
 
-### Row 1 — Device or other IDs
+### Row 1 -- Device or other IDs
 
 | Field | Value |
 |---|---|
 | Data type | Device or other IDs |
-| Specific data | Expo push token (`ExponentPushToken[xxx]`) — Expo Push service routing identifier; not a hardware ID |
+| Specific data | Expo push token (`ExponentPushToken[xxx]`) -- Expo Push service routing identifier; not a hardware ID |
 | Collected | YES |
 | Shared with third parties | NO (transmitted to worker only; worker forwards through Expo Push API which is a processor, not a data recipient per Play guidance) |
 | Linked to user | NO (anonymous broadcast in v1 per `lib/push/register.ts:15-16`; no user account in v1) |
 | Used for tracking | NO (no cross-app/cross-site identifier linkage; no advertising IDs) |
 | Purposes | App functionality |
-| Collection required | NO (optional — user toggles push on in Settings; default off) |
+| Collection required | NO (optional -- user toggles push on in Settings; default off) |
 | Source | `lib/push/register.ts:151-156` (Expo Push token issuance) + `lib/push/api.ts:67-105` (POST to worker `/api/push/token`) |
 | Deletion mechanism | Settings -> push off triggers `lib/push/api.ts:107-140` DELETE; local copy cleared from `expo-secure-store` key `cta.push.token` at `lib/push/register.ts:74-80` |
 
-### Row 2 — Other user-generated content
+### Row 2 -- Other user-generated content
 
 | Field | Value |
 |---|---|
 | Data type | Other user-generated content |
-| Specific data | `subscription_prefs` — user-curated alert preferences: `members[]` (politicians), `tickers[]` (stocks), optional `min_amount` (dollar floor) |
+| Specific data | `subscription_prefs` -- user-curated alert preferences: `members[]` (politicians), `tickers[]` (stocks), optional `min_amount` (dollar floor) |
 | Collected | YES |
 | Shared with third parties | NO |
 | Linked to user | NO (linked only to the anonymous push-token row; no user account in v1) |
 | Used for tracking | NO |
 | Purposes | App functionality (filters which trade alerts the user receives) |
-| Collection required | NO (optional — empty `members[]` + `tickers[]` is the default; `min_amount` absent = no floor) |
+| Collection required | NO (optional -- empty `members[]` + `tickers[]` is the default; `min_amount` absent = no floor) |
 | Source | `lib/push/register.ts:162-170` POSTs `subscription_prefs` alongside token; current shape `{members: [], tickers: [], min_amount?: number}` per `features/settings/store` `subscriptionPrefs` selector |
-| Deletion mechanism | Same as push token row — DELETE removes the row including `subscription_prefs` |
+| Deletion mechanism | Same as push token row -- DELETE removes the row including `subscription_prefs` |
 
-### Row 3 — App activity > Other actions
+### Row 3 -- App activity > Other actions
 
 | Field | Value |
 |---|---|
 | Data type | App activity > Other actions |
-| Specific data | Push engagement — `{trade_id}` POSTed when a push notification is tapped and the deep link opens |
+| Specific data | Push engagement -- `{trade_id}` POSTed when a push notification is tapped and the deep link opens |
 | Collected | NO (endpoint exists worker-side at `POST /api/push/engagement`; mobile-side wire-up not yet implemented -- grep confirms zero call sites in cta-app) |
 | Shared with third parties | NO |
-| Linked to user | NO (aggregate-only per `CLAUDE.md` Decisions Log open follow-on — no user or token identifier in payload) |
+| Linked to user | NO (aggregate-only per `CLAUDE.md` Decisions Log open follow-on -- no user or token identifier in payload) |
 | Used for tracking | NO |
 | Purposes | Analytics (server-side aggregate engagement counts on the D1 events table per worker `CLAUDE.md`) |
 | Collection required | NO (only fires on user-initiated push tap) |
@@ -102,7 +102,7 @@ These categories appear on the Play form and require an explicit "No" to avoid r
 | Practice | Declared | Source |
 |---|---|---|
 | Data encrypted in transit | YES | All worker calls via HTTPS; `lib/api/client.ts` `API_BASE_URL` enforces `https://` |
-| Data encrypted at rest | YES | Push token in `expo-secure-store` (Keystore/EncryptedSharedPreferences on Android per product invariant #3); React Query cache + watchlist in AsyncStorage (NOT encrypted — only contains public trade data fetched from the worker; no PII/credentials) |
+| Data encrypted at rest | YES | Push token in `expo-secure-store` (Keystore/EncryptedSharedPreferences on Android per product invariant #3); React Query cache + watchlist in AsyncStorage (NOT encrypted -- only contains public trade data fetched from the worker; no PII/credentials) |
 | User can request data deletion | YES | Push token + `subscription_prefs` deletion via Settings -> push off (`lib/push/api.ts:107-140`). Account-level deletion via `<SUPPORT_EMAIL>` (no user accounts in v1, so no profile to delete; future-state covered when auth lands) |
 | Independent security review | NO (no third-party audit completed) | n/a |
 

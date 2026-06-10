@@ -159,7 +159,7 @@ tailwindcss
 
 ## Pre-scaffold parity checklist (CTA-App-1-1 acceptance criteria)
 
-CTA-App-1-1 ships 9/10 items. Item #10 is split: `.aab` ✓ this ticket;
+CTA-App-1-1 ships 9/10 items. Item #10 is split: `.aab` done in this ticket;
 `.ipa` deferred to CTA-App-1-2 post-Apple-Developer-enrollment.
 
 - [x] `app.json` with both `ios.bundleIdentifier` AND `android.package` set
@@ -558,7 +558,7 @@ dispatch in this repo. Promoted from a one-off iOS broadcast pattern
 `feat/trade-detail-richness` / `parallel-track-c-windows` branch-orphan
 incident exposed the cost of cross-chat drift.
 
-### Section A — Preflight (every feature CC dispatch)
+### Section A -- Preflight (every feature CC dispatch)
 
 Before any task execution in a fresh CC dispatch, run these six steps
 in order:
@@ -587,7 +587,7 @@ dep was on `master` in `package.json` but had never been installed on
 the Windows working copy, so the doctor errored on missing-package
 before it could report on the actual version-resolution question.
 
-### Section B — Branch lifecycle
+### Section B -- Branch lifecycle
 
 - Branch off `master` at task start.
 - Merge to `master` at task end (same session preferred -- carrying a
@@ -604,7 +604,7 @@ branches are SESSION-LOCAL by default. Long-running branches (the
 the EXCEPTION, reserved for multi-day deliverables with explicit
 cross-session intent.
 
-### Section C — Cross-chat coordination
+### Section C -- Cross-chat coordination
 
 After every `master` merge, output a paste-block per the template at
 `docs/cross-chat-broadcast-template.md` containing:

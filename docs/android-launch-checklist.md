@@ -30,17 +30,17 @@ Pre-flight before `eas build -p android --profile production`:
 
 | Field path | Value | Status |
 |---|---|---|
-| `app.json:android.package` | `<APP_PACKAGE>` | OK — locked at scaffold time per `CLAUDE.md` stack lock; reverse-DNS parity with `app.json:ios.bundleIdentifier`. |
-| `app.json:android.versionCode` | absent | INTENTIONAL — EAS owns the counter via remote source. Confirm via `eas build:version:get -p android` after first prod build. |
-| `app.json:android.permissions` | `["POST_NOTIFICATIONS"]` | OK — explicit per T1 commit `30e1b52`. SCHEDULE_EXACT_ALARM absent (no local notification scheduling in `lib/push/register.ts`). |
+| `app.json:android.package` | `<APP_PACKAGE>` | OK -- locked at scaffold time per `CLAUDE.md` stack lock; reverse-DNS parity with `app.json:ios.bundleIdentifier`. |
+| `app.json:android.versionCode` | absent | INTENTIONAL -- EAS owns the counter via remote source. Confirm via `eas build:version:get -p android` after first prod build. |
+| `app.json:android.permissions` | `["POST_NOTIFICATIONS"]` | OK -- explicit per T1 commit `30e1b52`. SCHEDULE_EXACT_ALARM absent (no local notification scheduling in `lib/push/register.ts`). |
 | `app.json:android.adaptiveIcon.foregroundImage` | `./assets/adaptive-icon.png` | OK at 432x432 ARGB. Recommend 1024x1024 upgrade as follow-on art task for crisper density derivation. |
-| `app.json:android.adaptiveIcon.backgroundColor` | `#0b1220` | OK — matches splash. |
-| `app.json:android.adaptiveIcon.monochromeImage` | absent | DEFERRED — Android 13+ themed icons. Real silhouette is design-side; placeholder PNGs forbidden per HALT 2026-05-27. Tracked as Phase-0 blocker below. |
-| `app.json:android.edgeToEdgeEnabled` | `true` | OK — `SafeAreaProvider` wraps root at `app/_layout.tsx:66`. |
-| `app.json:android.predictiveBackGestureEnabled` | `false` | OK — opt-out of Android 14+ predictive-back animation for v1. |
-| `app.json:android.intentFilters[0]` | App Links for `<BRAND_DOMAIN>/trade` with `autoVerify: true` | OK — parity with `app.json:ios.associatedDomains`. |
-| `app.json:android.googleServicesFile` | absent | INTENTIONAL — Expo Push handles APNs/FCM routing internally (verified per HALT 2026-05-27); direct FCM credentials not required. |
-| `app.json:plugins[expo-notifications]` | bare string entry | DEFERRED — config tuple with custom status-bar icon + color requires real art; deferred per HALT 2026-05-27. Default renders app icon as status-bar silhouette (acceptable for testing, ugly for public launch). |
+| `app.json:android.adaptiveIcon.backgroundColor` | `#0b1220` | OK -- matches splash. |
+| `app.json:android.adaptiveIcon.monochromeImage` | absent | DEFERRED -- Android 13+ themed icons. Real silhouette is design-side; placeholder PNGs forbidden per HALT 2026-05-27. Tracked as Phase-0 blocker below. |
+| `app.json:android.edgeToEdgeEnabled` | `true` | OK -- `SafeAreaProvider` wraps root at `app/_layout.tsx:66`. |
+| `app.json:android.predictiveBackGestureEnabled` | `false` | OK -- opt-out of Android 14+ predictive-back animation for v1. |
+| `app.json:android.intentFilters[0]` | App Links for `<BRAND_DOMAIN>/trade` with `autoVerify: true` | OK -- parity with `app.json:ios.associatedDomains`. |
+| `app.json:android.googleServicesFile` | absent | INTENTIONAL -- Expo Push handles APNs/FCM routing internally (verified per HALT 2026-05-27); direct FCM credentials not required. |
+| `app.json:plugins[expo-notifications]` | bare string entry | DEFERRED -- config tuple with custom status-bar icon + color requires real art; deferred per HALT 2026-05-27. Default renders app icon as status-bar silhouette (acceptable for testing, ugly for public launch). |
 
 ---
 
@@ -51,8 +51,8 @@ Pre-flight before `eas build -p android --profile production`:
 | App icon master | `app.json:expo.icon` -> `./assets/icon.png` | 1024x1024 RGB | OK |
 | Adaptive foreground | `app.json:android.adaptiveIcon.foregroundImage` -> `./assets/adaptive-icon.png` | 432x432 ARGB; safe-zone 108dp center | OK (size acceptable; 1024x1024 preferred) |
 | Adaptive background | `app.json:android.adaptiveIcon.backgroundColor` -> `#0b1220` | hex color, matches splash | OK |
-| Adaptive monochrome | (deferred) | 432x432 ARGB, white silhouette on transparent | **PHASE-0 BLOCKER** — Android 13+ themed icon support |
-| Notification status-bar icon | (deferred) | 96x96 white silhouette on transparent | **PHASE-0 BLOCKER** — default uses app icon (renders as solid white square in Android status bar) |
+| Adaptive monochrome | (deferred) | 432x432 ARGB, white silhouette on transparent | **PHASE-0 BLOCKER** -- Android 13+ themed icon support |
+| Notification status-bar icon | (deferred) | 96x96 white silhouette on transparent | **PHASE-0 BLOCKER** -- default uses app icon (renders as solid white square in Android status bar) |
 | Splash image | `app.json:plugins[expo-splash-screen].image` -> `./assets/splash.png` | 1024x1024 ARGB, `resizeMode=contain`, `imageWidth=200` | OK |
 | Splash background | `app.json:plugins[expo-splash-screen].backgroundColor` -> `#0b1220` | hex color | OK |
 
@@ -91,7 +91,7 @@ Notifications.setNotificationChannelAsync("trades", {
 
 Channel importance is HIGH as of the CTA-App-1-7 push-subscription commit. Worker sends `priority: 'high'` at `congress-trade-alerts/src/alerts/push.ts:43,199`; channel importance matches.
 
-**Migration constraint — Android channel cache:** once a channel exists on a device, its importance can only be RAISED by the user in OS Settings, not by client code. `setNotificationChannelAsync` with a new importance value is a silent no-op against an existing channel. Channel ID rotation is forbidden per HALT 2026-05-27 (channel name remains `trades`).
+**Migration constraint -- Android channel cache:** once a channel exists on a device, its importance can only be RAISED by the user in OS Settings, not by client code. `setNotificationChannelAsync` with a new importance value is a silent no-op against an existing channel. Channel ID rotation is forbidden per HALT 2026-05-27 (channel name remains `trades`).
 
 Implications:
 - New installs -> fresh `trades` channel created with HIGH importance.
@@ -147,11 +147,11 @@ Pre-submission artifacts:
   - [ ] 7-inch tablet screenshots (optional but recommended).
   - [ ] 10-inch tablet screenshots (optional but recommended).
   - [ ] Foldable screenshots (optional).
-  - [x] Short description (80 char max) — see `store/app-store/metadata.txt:8`.
-  - [x] Full description (4000 char max) — see `store/app-store/metadata.txt:11-39`.
+  - [x] Short description (80 char max) -- see `store/app-store/metadata.txt:8`.
+  - [x] Full description (4000 char max) -- see `store/app-store/metadata.txt:11-39`.
 - [ ] News-app declaration (civic-data tool is likely NOT a Play "news" app; confirm against Play news-app policy definition).
-- [ ] Financial-features declaration (likely YES — surfaces securities trades).
-- [ ] Ads declaration: NO (per `CLAUDE.md` product invariant — no ads, no client analytics SDK).
+- [ ] Financial-features declaration (likely YES -- surfaces securities trades).
+- [ ] Ads declaration: NO (per `CLAUDE.md` product invariant -- no ads, no client analytics SDK).
 - [ ] Government-app declaration: NO.
 
 Testing track sequencing:
@@ -180,7 +180,7 @@ Both companions follow the same field-path-only OPSEC posture as this checklist;
 | Google Play Console enrollment on `<LLC_NAME>` seller identity | BLOCKED | Awaits D-U-N-S clearance + Apple migration sequencing (per `CLAUDE.md` Decisions Log) |
 | Google Play service-account JSON for EAS Submit | BLOCKED | Awaits Play Console enrollment; will land at `cta-app/store/google-play/service-account-key.json` per `eas.json:submit.production.android.serviceAccountKeyPath` |
 
-Until the org account is provisioned, production-track submission is blocked. Internal/closed testing under the existing `<DEV_HANDLE>` is technically possible but should be deferred — the closed-testing day counter resets on account transfer.
+Until the org account is provisioned, production-track submission is blocked. Internal/closed testing under the existing `<DEV_HANDLE>` is technically possible but should be deferred -- the closed-testing day counter resets on account transfer.
 
 ---
 
