@@ -12,8 +12,8 @@
 // is responsible for surfacing the "Open OS Settings" affordance.
 //
 // Registration scope: anonymous broadcast in v1. subscription_prefs
-// always omitted from POST body in this flow; targeted prefs ship in
-// CTA-App-1-N.
+// (members[], tickers[], min_amount) shipped alongside the token at
+// :158-164 since CTA-App-1-7.
 
 import * as Notifications from "expo-notifications";
 import * as SecureStore from "expo-secure-store";

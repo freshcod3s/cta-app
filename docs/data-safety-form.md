@@ -61,7 +61,7 @@ upload time.
 |---|---|
 | Data type | App activity > Other actions |
 | Specific data | Push engagement — `{trade_id}` POSTed when a push notification is tapped and the deep link opens |
-| Collected | YES (pending mobile-side wire-up; endpoint exists worker-side) |
+| Collected | NO (endpoint exists worker-side at `POST /api/push/engagement`; mobile-side wire-up not yet implemented -- grep confirms zero call sites in cta-app) |
 | Shared with third parties | NO |
 | Linked to user | NO (aggregate-only per `CLAUDE.md` Decisions Log open follow-on — no user or token identifier in payload) |
 | Used for tracking | NO |

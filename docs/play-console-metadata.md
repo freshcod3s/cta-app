@@ -13,17 +13,19 @@ literal strings live in Joe's offline copy doc.
 
 ## 1. Store listing copy
 
-| Field | Constraint | Placeholder |
+Committed copy source: `store/app-store/metadata.txt` (shared between
+ASC and Play). Play-specific field mapping below.
+
+| Field | Constraint | Source |
 |---|---|---|
-| App name | 30 char max | `<PRODUCT_NAME>` |
-| Short description | 80 char max | `<SHORT_DESC>` |
-| Full description | 4000 char max | `<FULL_DESC>` -- positions the product as a civic-transparency tool per `CLAUDE.md` Strategic positioning; NEVER positions as a fintech / copy-trade / actionable-signal product |
-| Promo text / tagline | 80 char max | `<TAGLINE>` |
-| Elevator pitch (one-liner) | n/a | `<ELEVATOR_PITCH>` |
+| App name | 30 char max | `metadata.txt:7` (NAME) |
+| Short description | 80 char max | `metadata.txt:8` (SUBTITLE -- Play's short desc is analogous to Apple's subtitle) |
+| Full description | 4000 char max | `metadata.txt:11-39` (DESCRIPTION) -- positions as civic-transparency tool per `CLAUDE.md` Strategic positioning; NEVER fintech framing |
+| Promo text / tagline | 80 char max | `metadata.txt:9` (PROMOTIONAL_TEXT -- truncate to 80 for Play) |
 | Developer name (public seller) | shown publicly | `<LLC_NAME>` -- LLC seller identity |
 | Developer contact email | shown publicly | `<SUPPORT_EMAIL>` -- mirrored across `app/(drawer)/about.tsx` PRESS_EMAIL constant + worker repo `privacy.html` + worker repo `press.ts` per `CLAUDE.md` three-surface email rule |
-| Website | URL | `<BRAND_DOMAIN>` |
-| Privacy policy URL | URL, must be reachable | `<BRAND_DOMAIN>/privacy` |
+| Website | URL | `metadata.txt:44` (SUPPORT_URL) |
+| Privacy policy URL | URL, must be reachable | `metadata.txt:46` (PRIVACY_POLICY_URL) |
 
 ---
 

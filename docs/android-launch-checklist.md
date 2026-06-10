@@ -85,20 +85,20 @@ Test matrix on physical Android 13+ device (Joe-task per `CLAUDE.md` "Real-devic
 ```
 Notifications.setNotificationChannelAsync("trades", {
   name: "trades",
-  importance: Notifications.AndroidImportance.DEFAULT,
+  importance: Notifications.AndroidImportance.HIGH,
 })
 ```
 
-**Target state (post-T4):** importance bumped to `HIGH` with explicit `sound`, `vibrationPattern`, and `lockscreenVisibility`. Worker sends `priority: 'high'` at `congress-trade-alerts/src/alerts/push.ts:43,199`; without matching client-channel importance, Android silently downgrades to tray-only / no heads-up / no sound, muting the user-perceived urgency of a trade alert.
+Channel importance is HIGH as of the CTA-App-1-7 push-subscription commit. Worker sends `priority: 'high'` at `congress-trade-alerts/src/alerts/push.ts:43,199`; channel importance matches.
 
 **Migration constraint — Android channel cache:** once a channel exists on a device, its importance can only be RAISED by the user in OS Settings, not by client code. `setNotificationChannelAsync` with a new importance value is a silent no-op against an existing channel. Channel ID rotation is forbidden per HALT 2026-05-27 (channel name remains `trades`).
 
 Implications:
-- New installs after T4 deploy -> fresh `trades` channel created with HIGH importance.
-- Existing test cohort (any device that toggled push on under DEFAULT) -> stuck on DEFAULT until uninstall+reinstall, OR until user manually opens OS Settings -> Apps -> CTA -> Notifications -> `trades` -> raises importance.
+- New installs -> fresh `trades` channel created with HIGH importance.
+- Existing test cohort (any device that toggled push on under the old DEFAULT) -> stuck on DEFAULT until uninstall+reinstall, OR until user manually opens OS Settings -> Apps -> CTA -> Notifications -> `trades` -> raises importance.
 - Pre-public-launch this is acceptable; test cohort is internal-only and can reinstall.
 
-Verification on a fresh Android 13+ device install post-T4:
+Verification on a fresh Android 13+ device install:
 - [ ] Install build, toggle push on, accept permission.
 - [ ] Trigger test push from worker -> notification displays as heads-up overlay with sound + vibration.
 - [ ] OS Settings -> Apps -> CTA -> Notifications -> `trades` shows importance = "Urgent" / "High".
@@ -130,22 +130,25 @@ End-to-end smoke on physical Android 13+ device:
 
 ## 7. Play Console checklist
 
-(No store-listing copy in this doc; copy is the T6 deliverable.)
+Store-listing copy committed at `store/app-store/metadata.txt` (shared
+source for both ASC and Play). Data Safety schema at
+`docs/data-safety-form.md`. Play-specific metadata draft at
+`docs/play-console-metadata.md`.
 
 Pre-submission artifacts:
-- [ ] Data Safety form completed (T6 deliverable).
+- [x] Data Safety form schema committed (`docs/data-safety-form.md`).
 - [ ] Privacy policy URL live and accessible at `<BRAND_DOMAIN>/privacy`.
 - [ ] Content rating questionnaire completed.
 - [ ] Target audience declared (finance content -> likely 18+; confirm against Play Families policy).
 - [ ] Store listing assets uploaded:
-  - [ ] App icon 512x512 (Play Console asset, separate from in-app `assets/icon.png`).
+  - [ ] App icon 512x512 (Play Console asset; `store/google-play/icon-512.png`).
   - [ ] Feature graphic 1024x500.
   - [ ] Phone screenshots (minimum 2; recommend 4-8).
   - [ ] 7-inch tablet screenshots (optional but recommended).
   - [ ] 10-inch tablet screenshots (optional but recommended).
   - [ ] Foldable screenshots (optional).
-  - [ ] Short description (80 char max).
-  - [ ] Full description (4000 char max).
+  - [x] Short description (80 char max) — see `store/app-store/metadata.txt:8`.
+  - [x] Full description (4000 char max) — see `store/app-store/metadata.txt:11-39`.
 - [ ] News-app declaration (civic-data tool is likely NOT a Play "news" app; confirm against Play news-app policy definition).
 - [ ] Financial-features declaration (likely YES — surfaces securities trades).
 - [ ] Ads declaration: NO (per `CLAUDE.md` product invariant — no ads, no client analytics SDK).

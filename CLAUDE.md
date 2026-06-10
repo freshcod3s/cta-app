@@ -92,8 +92,9 @@ push-notification provider (APNs vs FCM) and (b) build artifact format.
 
 ### Permissions (declare at scaffold time, not retrofitted)
 
-- iOS:     `app.json` -> `ios.infoPlist` with `NS*UsageDescription` strings
-           REQUIRED for push: `NSUserNotificationsUsageDescription`
+- iOS:     `expo-notifications` plugin auto-injects
+           `NSUserNotificationsUsageDescription` at EAS prebuild time.
+           No explicit `ios.infoPlist` needed in `app.json`.
 - Android: `app.json` -> `android.permissions` array
            REQUIRED for push: auto-included by `expo-notifications`
 
@@ -163,8 +164,9 @@ CTA-App-1-1 ships 9/10 items. Item #10 is split: `.aab` ✓ this ticket;
 
 - [x] `app.json` with both `ios.bundleIdentifier` AND `android.package` set
       (both `com.congresstradealerts.cta`)
-- [x] `app.json` with `ios.infoPlist` usage strings for every permission
-      used (incl. `NSUserNotificationsUsageDescription`)
+- [x] Push notification permission -- `expo-notifications` plugin
+      auto-injects `NSUserNotificationsUsageDescription` at EAS prebuild
+      (no explicit `ios.infoPlist` in `app.json`)
 - [x] `app.json` with `android.adaptiveIcon` (foregroundImage +
       backgroundColor `#0b1220`)
 - [x] `/assets/icon.png` 1024x1024 master committed
