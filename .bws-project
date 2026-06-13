@@ -13,4 +13,5 @@
 # bws-exec.sh reads the first non-comment, non-blank line as BWS_PROJECT_ID,
 # or you may override per-invocation with the BWS_PROJECT_ID env var.
 #
-# (No UUID set yet — bws-exec.sh will refuse to run until this line exists.)
+# Secrets Manager project UUID for the cta-app mobile repo (Expo/EAS secrets).
+ac76651c-c42c-4f49-abd6-b468010fbdec
