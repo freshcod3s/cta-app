@@ -125,7 +125,7 @@ fi
 # environment. To fix a "command/var not found" failure under minimal mode, ADD
 # the variable NAME here (do NOT fall back to full inherit). BWS_ACCESS_TOKEN is
 # kept so bws can authenticate; bws strips it from the child itself.
-BWS_ENV_ALLOWLIST="${BWS_ENV_ALLOWLIST:-PATH SystemRoot APPDATA LOCALAPPDATA USERPROFILE TEMP TMP HOME ComSpec PROGRAMFILES BWS_ACCESS_TOKEN}"
+BWS_ENV_ALLOWLIST="${BWS_ENV_ALLOWLIST:-PATH SystemRoot APPDATA LOCALAPPDATA USERPROFILE TEMP TMP HOME ComSpec PROGRAMFILES PATHEXT windir BWS_ACCESS_TOKEN}"
 
 # --- run the wrapped command with vault-injected secrets ---
 set +e
