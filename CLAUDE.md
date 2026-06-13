@@ -626,3 +626,66 @@ in those chats begins. Recipient chats run their own Section A preflight
 against the new `master` SHA before they pick up tasks.
 
 ---
+
+## SECRETS POLICY (vault-first -- Bitwarden Secrets Manager)
+
+Added 2026-06-11. Secrets are injected from the Bitwarden Secrets Manager (BWS)
+vault at runtime and never stored in the repo. Tooling: the `bws` CLI (v2.x)
+plus the wrappers in `scripts/`. Binding for every session in this repo.
+
+### Hard rules
+
+- **Never ask Joe to paste a token, key, or password into chat or a terminal.**
+  The access token is loaded once, by Joe, into Windows Credential Manager (via
+  `scripts/set-bws-token.ps1` or the Credential Manager GUI). Claude never sees it.
+- **Refer to secrets by NAME only** (e.g. `BWS_ACCESS_TOKEN`, `EXPO_TOKEN`),
+  never by value. Do not read, grep, source, or echo any `.env` file. If you need
+  to know which key names exist, STOP and ask Joe to list them manually.
+- **All credentialed commands go through `scripts/bws-exec.sh`** (or the named
+  wrappers `scripts/dev.sh` / `scripts/deploy.sh`). No ad-hoc `bws run` with a
+  token pulled some other way.
+- **Never run `env`, `printenv`, `set`, `export`, or any env-dumping command
+  inside `bws run`** (as the wrapped command). `bws-exec.sh` refuses these, but
+  the rule stands regardless of the guard.
+- **Never write secret values** to `wrangler.toml`, `package.json`, `app.json`,
+  `eas.json`, logs, docs, commits, or chat output.
+- **On auth failure, report only**: the secret NAME, the provider (Windows
+  Credential Manager / Bitwarden Secrets Manager), and the failing command.
+  Never the value, never a partial value.
+
+### How it works
+
+- Bootstrap token: `BWS_ACCESS_TOKEN` is stored as a Windows Credential Manager
+  *Generic* credential (target `bws_access_token`) and read at runtime by
+  `scripts/cred-get.ps1` (Win32 CredRead). It is exported only inside
+  `bws-exec.sh`, unset by a trap on exit, and never hits disk.
+- Project id: `.bws-project` holds the BWS project UUID. Project IDs are NOT
+  secrets, so the file is committed. Set the UUID after creating the machine
+  account + project in the web vault.
+- Wrappers:
+  - `scripts/bws-exec.sh <cmd>` -- generic runner. Child-env mode via
+    `BWS_ENV_MODE` (default `isolated`): `isolated` = bws `--no-inherit-env`
+    (child gets PATH + SystemRoot + ComSpec + windir + secrets); `minimal` =
+    inherit mode but the env is pruned to an explicit allowlist
+    (`BWS_ENV_ALLOWLIST`) + secrets; `full` (alias `BWS_INHERIT_ENV=1`) = whole
+    parent env minus the token + secrets.
+  - `scripts/dev.sh [args]` -- `expo start`, runs `BWS_ENV_MODE=minimal`.
+  - `scripts/deploy.sh [args]` -- `eas build|submit|update ...`, runs
+    `BWS_ENV_MODE=minimal`.
+
+### Scope notes
+
+- cta-app is an Expo app: deploy = EAS, not wrangler. There is **no Cloudflare
+  Worker in this repo**, so there is no `sync-worker-secrets.sh` here. The
+  `wrangler secret put` sync pattern from the secrets spec belongs in the Worker
+  repo `congress-trade-alerts/`, against its own `bws-exec.sh`.
+- Verified against bws v2.1.0 (`crates/bws/src/command/run.rs`): bws **strips
+  `BWS_ACCESS_TOKEN` from the wrapped command's environment in every mode**, so
+  the bootstrap token never reaches expo/eas. `--no-inherit-env` is NOT a full
+  wipe -- on Windows it keeps PATH/SystemRoot/ComSpec/windir, which is too little
+  for Node tools (no APPDATA/USERPROFILE/TEMP); that is why `minimal` mode
+  prunes to an allowlist instead. The child env still carries the injected vault
+  **secrets** in every mode, so the env-dump prohibition above stands (dumping
+  would print secret values). `full` inherit additionally exposes every other
+  shell var (including any other exported secrets) to the child -- prefer
+  `minimal`.

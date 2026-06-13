@@ -1,0 +1,7 @@
+# Shell scripts must stay LF so Git Bash can execute them on Windows
+# (a CRLF shebang line breaks `#!/usr/bin/env bash`).
+*.sh text eol=lf
+.bws-project text eol=lf
+
+# PowerShell helpers are Windows-side; keep them CRLF.
+*.ps1 text eol=crlf

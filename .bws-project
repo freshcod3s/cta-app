@@ -1,0 +1,16 @@
+# Bitwarden Secrets Manager — project UUID for cta-app.
+#
+# This file is NOT a secret. Secrets Manager project IDs are non-sensitive
+# identifiers and are safe to commit. The ACCESS TOKEN is the secret; it lives
+# in the Windows Credential Manager (generic target "bws_access_token"), never
+# in this repo. See scripts/bws-exec.sh and the SECRETS POLICY in CLAUDE.md.
+#
+# SETUP (Joe): after you create the machine account + project in the Bitwarden
+# web vault, paste the project's UUID on its own line below (uncommented), e.g.
+#
+#     00000000-0000-0000-0000-000000000000
+#
+# bws-exec.sh reads the first non-comment, non-blank line as BWS_PROJECT_ID,
+# or you may override per-invocation with the BWS_PROJECT_ID env var.
+#
+# (No UUID set yet — bws-exec.sh will refuse to run until this line exists.)

@@ -33,6 +33,16 @@ yarn-error.*
 # local env files
 .env*.local
 
+# Vault-first secrets (Bitwarden Secrets Manager) -- never commit secret-bearing
+# files. Real values live in the BWS vault; the bootstrap access token lives in
+# the Windows Credential Manager. NOTE: .bws-project (project UUID, non-secret)
+# is intentionally NOT ignored. Template files (.env.example) stay committable.
+.env*
+.dev.vars*
+.bws-token*
+!.env.example
+!.env.sample
+
 # Google Play service account key (eas submit credential — never commit)
 store/google-play/service-account-key.json
 
