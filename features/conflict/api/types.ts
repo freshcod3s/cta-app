@@ -11,13 +11,21 @@
 
 export type ConflictSeverity = "direct" | "adjacent";
 
-// Per-trade conflict (profile.trades[].conflict). Worker ConflictResult.
+// Per-trade conflict (profile.trades[].conflict, and now inline on the served
+// trade record). Worker ConflictResult.
+export type ConflictBasis = "current_roster" | "as_of_date";
+
 export type TradeConflict = {
   committee: string;
   severity: ConflictSeverity;
   subcommittee?: string | null;
   role?: string;
   weight?: number;
+  // Time-basis of the roster the Worker resolved the overlap against.
+  // 'current_roster' = present assignments (caveat applies); 'as_of_date' =
+  // assignments as of the trade date (caveat relaxes). Absent on the legacy
+  // profile path -- treat missing as 'current_roster'.
+  basis?: ConflictBasis;
 };
 
 // Aggregate member conflict scorecard (profile.scorecard).

@@ -16,6 +16,7 @@ import {
   House,
   Star,
   Trophy,
+  Scale,
   Newspaper,
   BookOpen,
   HelpCircle,
@@ -87,6 +88,14 @@ export default function DrawerLayout() {
           title: "Leaderboard",
           drawerLabel: "Leaderboard",
           drawerIcon: ({ color }) => <Trophy size={ICON_SIZE} color={color} />,
+        }}
+      />
+      <Drawer.Screen
+        name="conflicts"
+        options={{
+          title: "Conflicts",
+          drawerLabel: "Conflicts",
+          drawerIcon: ({ color }) => <Scale size={ICON_SIZE} color={color} />,
         }}
       />
       <Drawer.Screen
