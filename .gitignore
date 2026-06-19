@@ -65,3 +65,6 @@ local-ai/litellm.config.yaml
 *.gguf
 *.safetensors
 *.bin
+
+# Claude Code local config (per-project settings, never commit)
+.claude/
