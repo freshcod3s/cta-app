@@ -30,6 +30,7 @@ import { ThemeProvider } from "@/lib/theme/provider";
 import { ctaColors } from "@/lib/theme/tokens";
 import { useSettingsStore } from "@/features/settings/store";
 import { syncPushRegistration } from "@/lib/push/register";
+import { useNotificationDeepLink } from "@/lib/push/deep-link";
 import { Onboarding } from "@/features/onboarding/components/Onboarding";
 
 const SYNC_DEBOUNCE_MS = 5 * 60 * 1000;
@@ -82,6 +83,11 @@ function PushSyncBridge() {
 }
 
 export default function RootLayout() {
+  // Route push-notification taps through the same expo-router deep-link tree
+  // that Universal / App Links use. Hookless on re-render (empty-dep effect),
+  // so it is safe to call directly in the root component.
+  useNotificationDeepLink();
+
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
       <SafeAreaProvider>
