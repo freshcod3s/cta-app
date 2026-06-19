@@ -5,13 +5,13 @@ for Play's plain-text rendering (sentence-case section headers, no
 all-caps).
 
 APP_NAME (max 30): Congress Trade Alerts
-SHORT_DESCRIPTION (max 80): Real-time STOCK Act alerts when Congress members file stock disclosures.
+SHORT_DESCRIPTION (max 80): STOCK Act alerts when Congress members file stock disclosures.
 
 FULL_DESCRIPTION (max 4000):
-Congress Trade Alerts surfaces every stock trade disclosed under the STOCK Act by members of the US House and Senate -- drawn from official public records, with no opinions, no spin, and no guesswork.
+Congress Trade Alerts surfaces stock trades disclosed under the STOCK Act by members of the US House and Senate -- drawn from public disclosure records, with no opinions and no spin.
 
 What you get
-- Live feed of every congressional stock trade as it's disclosed
+- Feed of congressional stock trades, refreshed regularly as new filings are processed
 - Filter by individual member to follow specific Representatives or Senators
 - Push alerts when a member you follow files a new disclosure
 - Plain-language methodology so you know exactly where the data comes from and how it's processed
@@ -23,9 +23,10 @@ Who it's for
 - Researchers studying public-record financial disclosure data
 
 Data sources
-- US House Clerk Periodic Transaction Reports (PTR)
-- US Senate Office of Public Records (Senate EFD)
-- Refreshed every 30 minutes from official filings
+- Trade data aggregated from public STOCK Act disclosures via the third-party aggregator Capitol Trades, which compiles US House Clerk Periodic Transaction Reports (PTR) and US Senate Electronic Financial Disclosure (EFD) filings
+- Company and sector classification (GICS) provided by Finnhub
+- Refreshed periodically; each trade links to its official source filing
+- Individual records may contain errors, including a trade shown under the wrong member; verify against the official source linked on each trade
 
 Privacy
 - No user accounts required
@@ -34,6 +35,8 @@ Privacy
 - Open source: github.com/freshcod3s/cta-app
 
 This app is not affiliated with the United States government or with any member of Congress. All data comes from public records that members of Congress are required by law to file under the Stop Trading on Congressional Knowledge Act of 2012.
+
+Not investment advice. Disclosures may be delayed, amended, or contain errors -- verify against the official source filing linked on each trade.
 
 Free. No ads. Updated daily.
 

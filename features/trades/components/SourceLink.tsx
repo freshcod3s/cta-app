@@ -10,9 +10,13 @@ export function SourceLink({ trade }: Props) {
   if (!trade.source_url) return null;
 
   const open = async () => {
+    // Only follow http(s) URLs -- guards against javascript:, file:, and
+    // other schemes that could ride in on a malformed source_url.
+    const url = trade.source_url;
+    if (!/^https?:\/\//i.test(url)) return;
     try {
-      const can = await Linking.canOpenURL(trade.source_url);
-      if (can) await Linking.openURL(trade.source_url);
+      const can = await Linking.canOpenURL(url);
+      if (can) await Linking.openURL(url);
     } catch {
       // Swallow -- failed link open is a non-fatal UI affordance miss;
       // surfacing an alert here adds noise without recovery action.

@@ -6,13 +6,13 @@ ASC field. Body text under "DESCRIPTION (max 4000):" is verbatim.
 
 NAME (max 30): Congress Trade Alerts
 SUBTITLE (max 30): Capitol Hill Stock Disclosures
-PROMOTIONAL_TEXT (max 170): See every stock trade disclosed by members of Congress. Push alerts for members and tickers, conflict scores, and full methodology -- no account, no tracking, no ads.
+PROMOTIONAL_TEXT (max 170): Track stock trades disclosed by members of Congress. Push alerts for members and tickers, conflict scores, and full methodology -- no account, no tracking, no ads.
 
 DESCRIPTION (max 4000):
-Congress Trade Alerts surfaces every stock trade disclosed under the STOCK Act by members of the US House and Senate -- drawn from official public records, updated in real time, with no opinions and no ads.
+Congress Trade Alerts surfaces stock trades disclosed under the STOCK Act by members of the US House and Senate -- drawn from public disclosure records, with no opinions and no ads.
 
 FEATURES
-- Real-time feed of every congressional stock trade as disclosures are filed
+- Feed of congressional stock trades, refreshed regularly as new filings are processed
 - Push alerts for specific members and tickers, with minimum trade-size filter
 - Trade detail with filing date, amount range, and market return comparison
 - Conflict Score measuring overlap between committee assignments and sectors traded
@@ -26,7 +26,9 @@ FEATURES
 - Full methodology with data sources, update frequency, lag stats, and calculation details
 
 DATA SOURCES
-All data derived from public STOCK Act filings via the US House Office of the Clerk and the US Senate Select Committee on Ethics. Market data from public financial data providers.
+Trade data is aggregated from public STOCK Act disclosures via the third-party aggregator Capitol Trades, which compiles filings originating from the US House Office of the Clerk and the US Senate. Company and sector classification (GICS) is provided by Finnhub. Each trade links to its official source filing.
+
+Individual records may contain errors, including a trade shown under the wrong member; verify against the official source linked on each trade.
 
 WHO IT'S FOR
 - Journalists tracking congressional compliance and conflicts of interest
