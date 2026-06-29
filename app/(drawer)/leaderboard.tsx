@@ -29,6 +29,7 @@ import { BenchmarkCard } from "@/features/leaderboard/components/BenchmarkCard";
 import { BoardToggle } from "@/features/leaderboard/components/BoardToggle";
 import { LeaderboardRow } from "@/features/leaderboard/components/LeaderboardRow";
 import { LeaderboardSkeleton } from "@/features/leaderboard/components/LeaderboardSkeleton";
+import { RETURNS_DISPLAY } from "@/lib/flags";
 
 function Divider() {
   return <View className="ml-[76px] h-px bg-gray-200 dark:bg-gray-800" />;
@@ -87,7 +88,7 @@ export default function LeaderboardScreen() {
 
   const Header = (
     <View>
-      <BenchmarkCard />
+      {RETURNS_DISPLAY ? <BenchmarkCard /> : null}
       <Text className="px-4 pt-5 text-base font-bold text-gray-900 dark:text-gray-100">
         Member accountability
       </Text>

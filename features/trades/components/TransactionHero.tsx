@@ -13,6 +13,7 @@
 //   └──────────────────────────┘
 import { Text, View } from "react-native";
 import { isBuy, type TradeRecord } from "@/features/trades/api/types";
+import { RETURNS_DISPLAY } from "@/lib/flags";
 
 type Props = { trade: TradeRecord };
 
@@ -56,7 +57,7 @@ export function TransactionHero({ trade }: Props) {
           {trade.amount_range}
         </Text>
 
-        {(trade.trade_price != null || trade.current_price != null) && (
+        {RETURNS_DISPLAY && (trade.trade_price != null || trade.current_price != null) && (
           <View className="mt-3 flex-row gap-6">
             <View>
               <Text className="text-xs uppercase text-gray-500 dark:text-gray-400">
