@@ -21,6 +21,7 @@ import { Image, Text, View } from "react-native";
 import type { TradeRecord } from "@/features/trades/api/types";
 import type { TickerInfo } from "@/features/ticker/api/types";
 import { FollowTickerButton } from "@/features/watchlist/components/FollowTickerButton";
+import { RETURNS_DISPLAY } from "@/lib/flags";
 
 type Props = {
   symbol: string;
@@ -140,8 +141,8 @@ export function TickerHeader({
         </View>
       ) : null}
 
-      {/* Price snapshot -- only when the latest trade carried enrichment. */}
-      {price != null ? (
+      {/* Price snapshot -- returns-gated; only when the latest trade carried enrichment. */}
+      {RETURNS_DISPLAY && price != null ? (
         <View className="mt-4 rounded-lg bg-gray-50 p-3 dark:bg-gray-800">
           <View className="flex-row items-baseline justify-between">
             <Text className="text-2xl font-bold text-gray-900 dark:text-gray-100">

@@ -17,6 +17,7 @@ import { useTradeFiltersStore } from "@/features/trades/store";
 import { FilterBar } from "@/features/trades/components/FilterBar";
 import { StatsBanner } from "@/features/trades/components/StatsBanner";
 import { PulseHero } from "@/features/pulse/components/PulseHero";
+import { RETURNS_DISPLAY } from "@/lib/flags";
 import { TradeRow } from "@/features/trades/components/TradeRow";
 import { FeedSkeleton } from "@/features/trades/components/FeedSkeleton";
 
@@ -104,7 +105,7 @@ export default function FeedScreen() {
           ListHeaderComponent={
             filtered ? null : (
               <View>
-                <PulseHero />
+                {RETURNS_DISPLAY ? <PulseHero /> : null}
                 <StatsBanner />
               </View>
             )
