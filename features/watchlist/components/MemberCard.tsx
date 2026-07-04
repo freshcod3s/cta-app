@@ -17,6 +17,7 @@
 // or signal feed -- copy stays civic ("disclosures", "View all trades").
 import { Image, Pressable, Text, View } from "react-native";
 import { useRouter } from "expo-router";
+import { displayName } from "@/lib/util/display";
 
 import { TradeRow } from "@/features/trades/components/TradeRow";
 import { useTradeFiltersStore } from "@/features/trades/store";
@@ -73,7 +74,7 @@ export function MemberCard({ politician }: Props) {
         ) : (
           <View className="h-11 w-11 items-center justify-center rounded-full bg-gray-200 dark:bg-gray-700">
             <Text className="text-sm font-bold text-gray-600 dark:text-gray-300">
-              {initials(politician)}
+              {initials(displayName(politician))}
             </Text>
           </View>
         )}
@@ -82,7 +83,7 @@ export function MemberCard({ politician }: Props) {
             className="text-base font-semibold text-gray-900 dark:text-gray-100"
             numberOfLines={1}
           >
-            {politician}
+            {displayName(politician)}
           </Text>
           {!isLoading && !isError ? (
             <Text className="text-xs text-gray-500 dark:text-gray-400">
@@ -131,7 +132,7 @@ export function MemberCard({ politician }: Props) {
           <Pressable
             onPress={viewAll}
             accessibilityRole="button"
-            accessibilityLabel={`View all disclosures from ${politician}`}
+            accessibilityLabel={`View all disclosures from ${displayName(politician)}`}
             className="border-t border-gray-100 px-4 py-3 dark:border-gray-800"
           >
             <Text className="text-center text-sm font-semibold text-cta-accent">

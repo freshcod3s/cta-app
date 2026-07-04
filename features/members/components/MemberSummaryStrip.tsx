@@ -8,9 +8,10 @@
 // profile stats (authoritative). `late` is derived by the screen from the
 // trades currently LOADED into the feed using isLateFiling (>45 days, the
 // STOCK Act line), so it is a "late so far" count that grows as the user
-// paginates. The label says "late in loaded trades" to avoid implying it
-// is the lifetime late total -- we never fabricate a number the data
-// doesn't support.
+// paginates. The caption labels the TRUE scope using the authoritative
+// total (web's relabeling approach): "in the N most recent of M
+// disclosures" -- we never fabricate a number the data doesn't support,
+// and we never imply the loaded slice is the lifetime record.
 //
 // Committee chips reuse the existing CommitteeChips presentation contract
 // (committees: string[]); the worker profile endpoint DOES expose
@@ -41,6 +42,13 @@ export function MemberSummaryStrip({
   const total = totalTrades ?? loadedCount;
   const tradeLabel = total === 1 ? "disclosed trade" : "disclosed trades";
 
+  // True-scope caption: when more disclosures exist than are loaded,
+  // say so explicitly instead of the bare "N loaded".
+  const scope =
+    total > loadedCount
+      ? `the ${loadedCount.toLocaleString()} most recent of ${total.toLocaleString()}`
+      : `all ${loadedCount.toLocaleString()}`;
+
   return (
     <View>
       <View className="px-4 pt-1 pb-3">
@@ -52,12 +60,12 @@ export function MemberSummaryStrip({
         </Text>
         {lateCount > 0 ? (
           <Text className="mt-0.5 text-xs text-cta-late">
-            {lateCount.toLocaleString()} filed late ({">"}45 days) in{" "}
-            {loadedCount.toLocaleString()} loaded
+            {lateCount.toLocaleString()} filed late ({">"}45 days) in {scope}{" "}
+            disclosures
           </Text>
         ) : (
           <Text className="mt-0.5 text-xs text-gray-500 dark:text-gray-400">
-            No late filings in {loadedCount.toLocaleString()} loaded
+            No late filings in {scope} disclosures
           </Text>
         )}
       </View>

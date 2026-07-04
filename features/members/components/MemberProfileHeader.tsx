@@ -13,6 +13,7 @@
 import { Image, Text, View } from "react-native";
 
 import type { MemberProfile } from "@/features/members/api/types";
+import { displayName } from "@/lib/util/display";
 
 type Props = { profile: MemberProfile };
 
@@ -26,6 +27,8 @@ function initials(name: string) {
 }
 
 export function MemberProfileHeader({ profile }: Props) {
+  // Render-only alias: "Gil Cisneros", not the filing's "Gilbert Cisneros".
+  const name = displayName(profile.name);
   const partyClass =
     profile.party === "D"
       ? "bg-cta-dem"
@@ -53,18 +56,18 @@ export function MemberProfileHeader({ profile }: Props) {
         <Image
           source={{ uri: profile.photo_url }}
           className="h-20 w-20 rounded-full bg-gray-200 dark:bg-gray-700"
-          accessibilityLabel={`${profile.name} portrait`}
+          accessibilityLabel={`${name} portrait`}
         />
       ) : (
         <View className="h-20 w-20 items-center justify-center rounded-full bg-gray-200 dark:bg-gray-700">
           <Text className="text-2xl font-bold text-gray-600 dark:text-gray-300">
-            {initials(profile.name)}
+            {initials(name)}
           </Text>
         </View>
       )}
       <View className="flex-1">
         <Text className="text-xl font-bold text-gray-900 dark:text-gray-100">
-          {profile.name}
+          {name}
         </Text>
         <View className="mt-1 flex-row items-center gap-2">
           {profile.party ? (
