@@ -13,6 +13,11 @@
 // Any later surface (Feed in CTA-App-1-5, etc.) inherits via these
 // utility classes (e.g. `bg-cta-buy`, `text-cta-late`).
 module.exports = {
+  // Product Invariant #6: dark-only in v1. NativeWind requires darkMode:
+  // "class" to honor colorScheme.set("dark") from lib/theme/provider.tsx;
+  // without it NativeWind follows the device OS and the app renders light
+  // on a light-OS device (e.g. the emulator), ignoring the store default.
+  darkMode: "class",
   content: [
     "./app/**/*.{js,jsx,ts,tsx}",
     "./components/**/*.{js,jsx,ts,tsx}",
