@@ -29,18 +29,19 @@ function Cell({ label, value, valueColor, a11y }: CellProps) {
     <View
       accessibilityRole="text"
       accessibilityLabel={a11y ?? `${label}: ${value}`}
-      className="min-h-[64px] flex-1 justify-center rounded-lg border border-gray-200 bg-gray-50 px-3 py-2 dark:border-gray-700 dark:bg-gray-800"
+      className="min-h-[76px] flex-1 justify-center rounded-lg border border-gray-200 bg-gray-50 px-2 py-2 dark:border-gray-700 dark:bg-gray-800"
     >
       <Text
         className="text-lg font-bold text-gray-900 dark:text-gray-100"
         style={valueColor ? { color: valueColor } : undefined}
         numberOfLines={1}
+        adjustsFontSizeToFit
       >
         {value}
       </Text>
       <Text
         className="mt-0.5 text-[10px] uppercase tracking-wide text-gray-500 dark:text-gray-400"
-        numberOfLines={1}
+        numberOfLines={2}
       >
         {label}
       </Text>
