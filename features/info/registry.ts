@@ -49,7 +49,20 @@ export type InfoEntry = {
 const METHODOLOGY = "https://congresstradealerts.com/methodology";
 
 export const INFO_REGISTRY: Record<string, InfoEntry> = {
-  // ---- Home feed StatsBanner tiles -------------------------------------
+  // ---- Home feed modules -----------------------------------------------
+  "home-volume": {
+    eyebrow: "Corpus total",
+    title: "All Tracked Trades",
+    body:
+      "The total disclosed dollar value of every congressional trade we track. Filings disclose ranges, not exact amounts, so this is shown as a band: the low end sums the bottom of each range, the high end sums the top.",
+    method:
+      "Sum of each trade's disclosed amount range. Bought / Sold / Exchanged split the high-end total by transaction type; 'Other' is the residual (placeholder or unclassified filings), surfaced rather than hidden.",
+    caveats: [
+      "Ranges, not exact dollars -- one disclosed 'trade' may be several fills.",
+      "Trades over $50M disclose as an open-ended bracket, so the true total is higher than shown.",
+    ],
+    sources: [{ label: "Full stats breakdown", url: "https://congresstradealerts.com/stats" }],
+  },
   "home-overdue": {
     eyebrow: "119th Congress",
     title: "Overdue members",

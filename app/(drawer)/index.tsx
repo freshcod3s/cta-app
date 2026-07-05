@@ -16,6 +16,7 @@ import { activeFilterCount, type TradeRecord } from "@/features/trades/api/types
 import { useTradeFiltersStore } from "@/features/trades/store";
 import { FilterBar } from "@/features/trades/components/FilterBar";
 import { StatsBanner } from "@/features/trades/components/StatsBanner";
+import { HomeVolumeTile } from "@/features/trades/components/HomeVolumeTile";
 import { PulseHero } from "@/features/pulse/components/PulseHero";
 import { RETURNS_DISPLAY } from "@/lib/flags";
 import { TradeRow } from "@/features/trades/components/TradeRow";
@@ -106,6 +107,7 @@ export default function FeedScreen() {
             filtered ? null : (
               <View>
                 {RETURNS_DISPLAY ? <PulseHero /> : null}
+                <HomeVolumeTile />
                 <StatsBanner />
               </View>
             )

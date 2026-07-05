@@ -9,15 +9,29 @@ import type {
   TradesListPage,
 } from "./types";
 
-type StatsPayload = {
-  ok: boolean;
-  data: {
-    overdue_members_119th?: number;
-    disclosures_last_7d?: number;
-    committee_overlap_trades_7d?: number;
-    congress_alpha?: { avg_stock?: number; avg_spx?: number };
-  };
+export type TradeBreakdown = {
+  total_volume?: number;
+  total_volume_low?: number;
+  buy_volume_high?: number;
+  sale_volume_high?: number;
+  exchange_volume_high?: number;
+  buy_count?: number;
+  sale_count?: number;
+  exchange_count?: number;
+  open_bucket_count?: number;
 };
+
+export type StatsData = {
+  total_trades?: number;
+  total_politicians?: number;
+  overdue_members_119th?: number;
+  disclosures_last_7d?: number;
+  committee_overlap_trades_7d?: number;
+  congress_alpha?: { avg_stock?: number; avg_spx?: number };
+  trade_breakdown?: TradeBreakdown;
+};
+
+type StatsPayload = { ok: boolean; data: StatsData };
 
 export function useStats() {
   return useQuery({
