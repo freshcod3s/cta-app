@@ -15,6 +15,7 @@ import { useTradesList } from "@/features/trades/api/queries";
 import { activeFilterCount, type TradeRecord } from "@/features/trades/api/types";
 import { useTradeFiltersStore } from "@/features/trades/store";
 import { FilterBar } from "@/features/trades/components/FilterBar";
+import { TickerTape } from "@/features/trades/components/TickerTape";
 import { StatsBanner } from "@/features/trades/components/StatsBanner";
 import { HomeVolumeTile } from "@/features/trades/components/HomeVolumeTile";
 import { HighConflictClusters } from "@/features/clusters/components/HighConflictClusters";
@@ -95,6 +96,7 @@ export default function FeedScreen() {
 
   return (
     <SafeAreaView edges={["bottom"]} className="flex-1 bg-white dark:bg-gray-900">
+      <TickerTape />
       <FilterBar />
 
       {query.isLoading ? (
