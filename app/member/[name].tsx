@@ -41,6 +41,7 @@ import type { MemberProfile } from "@/features/members/api/types";
 import { MemberProfileHeader } from "@/features/members/components/MemberProfileHeader";
 import { MemberStatsRow } from "@/features/members/components/MemberStatsRow";
 import { MemberSummaryStrip } from "@/features/members/components/MemberSummaryStrip";
+import { ConstellationCard } from "@/features/members/components/cards/ConstellationCard";
 import { ConflictScorecardCard } from "@/features/members/components/cards/ConflictScorecardCard";
 import { CommitteePowerCard } from "@/features/members/components/cards/CommitteePowerCard";
 import { SectorBreakdownCard } from "@/features/members/components/cards/SectorBreakdownCard";
@@ -214,8 +215,9 @@ export default function MemberProfileScreen() {
         loadedCount={trades.length}
         committees={profile.committees}
       />
-      {/* Web-parity profile cards (P3). Each self-hides when its data is
+      {/* Web-parity profile cards (P3/P4). Each self-hides when its data is
           absent (e.g. the name-only fallback profile), so no inert boxes. */}
+      <ConstellationCard profile={profile} />
       <ConflictScorecardCard scorecard={profile.scorecard} />
       <CommitteePowerCard
         trades={profile.trades}
