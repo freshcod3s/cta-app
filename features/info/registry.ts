@@ -104,6 +104,25 @@ export const INFO_REGISTRY: Record<string, InfoEntry> = {
     ],
     sources: [{ label: "Methodology", url: METHODOLOGY }],
   },
+  "home-highest-volume": {
+    eyebrow: "Last 90 days",
+    title: "Highest Volume",
+    body:
+      "Members ranked by their disclosed trading activity over the last 90 days. Tap a member to open their full profile.",
+    caveats: [
+      "A '*' marks a former member.",
+      "Per-member profit/loss estimates are hidden while return figures are turned off.",
+    ],
+    sources: [{ label: "Methodology", url: METHODOLOGY }],
+  },
+  "home-most-traded": {
+    eyebrow: "By trade count",
+    title: "Most Traded Stocks",
+    body:
+      "The stocks with the most disclosed congressional trades. Tap a ticker to see every member who traded it and the full congressional activity.",
+    caveats: ["Ranks by number of trades, not by dollar volume."],
+    sources: [{ label: "Methodology", url: METHODOLOGY }],
+  },
   "home-overdue": {
     eyebrow: "119th Congress",
     title: "Overdue members",

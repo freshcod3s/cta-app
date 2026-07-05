@@ -20,6 +20,7 @@ import { HomeVolumeTile } from "@/features/trades/components/HomeVolumeTile";
 import { HighConflictClusters } from "@/features/clusters/components/HighConflictClusters";
 import { FeaturedMembers } from "@/features/members/components/FeaturedMembers";
 import { TopTradesList } from "@/features/trades/components/TopTradesList";
+import { HomeLists } from "@/features/home/components/HomeLists";
 import { PulseHero } from "@/features/pulse/components/PulseHero";
 import { RETURNS_DISPLAY } from "@/lib/flags";
 import { TradeRow } from "@/features/trades/components/TradeRow";
@@ -115,6 +116,7 @@ export default function FeedScreen() {
                 <FeaturedMembers />
                 <HighConflictClusters />
                 <TopTradesList />
+                <HomeLists />
               </View>
             )
           }
