@@ -91,6 +91,19 @@ export const INFO_REGISTRY: Record<string, InfoEntry> = {
     ],
     sources: [{ label: "Full trade feed", url: "https://congresstradealerts.com" }],
   },
+  "home-featured": {
+    eyebrow: "Last 90 days",
+    title: "Most Active Members",
+    body:
+      "The members with the most disclosed trading volume over the last 90 days. Tap any member to open their full history, conflict scoring, and committee assignments.",
+    method:
+      "Ranked by total disclosed volume (the midpoint of each range) over the last 90 days; current members only.",
+    caveats: [
+      "Volume is a range-based midpoint, not an exact figure.",
+      "Sorted by dollars traded, not by policy importance.",
+    ],
+    sources: [{ label: "Methodology", url: METHODOLOGY }],
+  },
   "home-overdue": {
     eyebrow: "119th Congress",
     title: "Overdue members",

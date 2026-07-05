@@ -18,6 +18,7 @@ import { FilterBar } from "@/features/trades/components/FilterBar";
 import { StatsBanner } from "@/features/trades/components/StatsBanner";
 import { HomeVolumeTile } from "@/features/trades/components/HomeVolumeTile";
 import { HighConflictClusters } from "@/features/clusters/components/HighConflictClusters";
+import { FeaturedMembers } from "@/features/members/components/FeaturedMembers";
 import { TopTradesList } from "@/features/trades/components/TopTradesList";
 import { PulseHero } from "@/features/pulse/components/PulseHero";
 import { RETURNS_DISPLAY } from "@/lib/flags";
@@ -111,6 +112,7 @@ export default function FeedScreen() {
                 {RETURNS_DISPLAY ? <PulseHero /> : null}
                 <HomeVolumeTile />
                 <StatsBanner />
+                <FeaturedMembers />
                 <HighConflictClusters />
                 <TopTradesList />
               </View>
