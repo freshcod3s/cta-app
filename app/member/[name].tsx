@@ -43,6 +43,9 @@ import { MemberStatsRow } from "@/features/members/components/MemberStatsRow";
 import { MemberSummaryStrip } from "@/features/members/components/MemberSummaryStrip";
 import { ConflictScorecardCard } from "@/features/members/components/cards/ConflictScorecardCard";
 import { SectorBreakdownCard } from "@/features/members/components/cards/SectorBreakdownCard";
+import { DisclosureSpeedCard } from "@/features/members/components/cards/DisclosureSpeedCard";
+import { Trades12moCard } from "@/features/members/components/cards/Trades12moCard";
+import { Top5TickersCard } from "@/features/members/components/cards/Top5TickersCard";
 import { displayName } from "@/lib/util/display";
 
 // Rows here render with hideMember (no per-row avatar), so the divider
@@ -213,7 +216,10 @@ export default function MemberProfileScreen() {
       {/* Web-parity profile cards (P3). Each self-hides when its data is
           absent (e.g. the name-only fallback profile), so no inert boxes. */}
       <ConflictScorecardCard scorecard={profile.scorecard} />
+      <Trades12moCard trades={profile.trades} />
       <SectorBreakdownCard trades={profile.trades} />
+      <DisclosureSpeedCard trades={profile.trades} />
+      <Top5TickersCard trades={profile.trades} />
     </View>
   );
 

@@ -181,6 +181,47 @@ export const INFO_REGISTRY: Record<string, InfoEntry> = {
     ],
     sources: [{ label: "How we count", url: METHODOLOGY }],
   },
+  "profile-discspeed": {
+    eyebrow: "This member",
+    title: "Disclosure Speed",
+    body:
+      "How promptly this member files -- the gap in days between when they trade and when they disclose it. The STOCK Act sets a 45-day deadline.",
+    method:
+      "Per dated filing, disclosure date minus trade date; we report the median, fastest, and slowest across all such filings (needs at least 5).",
+    caveats: [
+      "Only filings with both a trade date and a disclosure date are counted.",
+      "The late-filing penalty is only $200, so filing delay is a meaningful signal.",
+    ],
+    sources: [
+      { label: "STOCK Act reporting rules", url: "https://www.congress.gov/bill/112th-congress/senate-bill/2038" },
+    ],
+  },
+  "profile-trades-12mo": {
+    eyebrow: "Last 12 months",
+    title: "Trades · Last 12 Months",
+    body:
+      "Every disclosed transaction in the trailing 365 days, split into buys vs sells, with an estimated dollar volume.",
+    method:
+      "Trades with a trade date in the last 365 days, classified by transaction type; estimated volume sums the midpoint of each disclosed amount range.",
+    caveats: [
+      "Amounts are disclosed ranges, so estimated volume is approximate.",
+      "Transactions that are neither a clear buy nor sell (e.g. exchanges) are counted in the total but not the buy/sell split.",
+    ],
+    sources: [{ label: "How we count", url: METHODOLOGY }],
+  },
+  "profile-top5": {
+    eyebrow: "Last 12 months",
+    title: "Top 5 Tickers",
+    body:
+      "The five tickers this member traded most often in the trailing 12 months, by number of transactions. Tap any ticker to see its full congressional activity.",
+    method:
+      "Trades in the last 365 days grouped by ticker and counted; the top five by count are shown, ties broken by most recent.",
+    caveats: [
+      "Ranks by trade count, not dollar volume.",
+      "Fund holdings without a ticker are excluded.",
+    ],
+    sources: [{ label: "How we count", url: METHODOLOGY }],
+  },
 };
 
 export function getInfoEntry(slug: string | null): InfoEntry | null {
