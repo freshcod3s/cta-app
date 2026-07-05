@@ -150,6 +150,37 @@ export const INFO_REGISTRY: Record<string, InfoEntry> = {
     ],
     sources: [{ label: "STOCK Act reporting rules", url: "https://www.congress.gov/bill/112th-congress/senate-bill/2038" }],
   },
+
+  // ---- Member profile cards (P3) ---------------------------------------
+  "profile-scorecard": {
+    eyebrow: "Committee overlap",
+    title: "Conflict Scorecard",
+    body:
+      "The share of this member's disclosed trading dollars -- measured at the HIGH end of each amount range -- that falls in industries their committees oversee. It is a transparency flag, NOT a claim of wrongdoing and NOT a trading signal.",
+    method:
+      "Trades whose sector matches a committee's jurisdiction are summed (at range-high) and divided by the member's total disclosed dollars. Direct = the member's own committee; Adjacent = a related committee.",
+    caveats: [
+      "Amounts are disclosed ranges, so the percentage is an upper-bound estimate.",
+      "Members may legally trade; overlap is not evidence of insider trading.",
+    ],
+    sources: [
+      { label: "Conflict-scoring methodology", url: `${METHODOLOGY}#how-conflict-scoring-works` },
+    ],
+    tone: "flag",
+  },
+  "profile-sectors": {
+    eyebrow: "This member",
+    title: "Sector Breakdown",
+    body:
+      "Where this member's disclosed trades concentrate -- the top sectors by number of trades.",
+    method:
+      "Each trade's sector (worker-resolved, with a ticker-to-sector fallback) is counted; trades with no resolvable sector are excluded from the total.",
+    caveats: [
+      "Sector is read as delivered per trade; the ticker-to-sector fallback provenance isn't visible here.",
+      "Computed over the most-recent loaded trades, not always the full history.",
+    ],
+    sources: [{ label: "How we count", url: METHODOLOGY }],
+  },
 };
 
 export function getInfoEntry(slug: string | null): InfoEntry | null {

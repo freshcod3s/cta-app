@@ -3,12 +3,10 @@
 // handlePoliticianProfile (the worker is canonical per CLAUDE.md
 // Product Invariant #8). Field names match the response verbatim.
 //
-// We model ONLY the fields this slice renders (header + summary +
-// committees). The worker also returns committee_tree, committee_context,
-// scorecard, news, social, disclosureLag, and the full trades array; those
-// are intentionally typed loosely / omitted here to keep the v1 slice
-// tight. When a future ticket renders them, promote them to explicit
-// shapes at that point.
+// The web-parity rebuild (P2) promoted the fields the profile cards +
+// constellation consume: scorecard, disclosureLag, the 500-cap trades[]
+// array, committee_tree, and committee_context. `news` and `social`
+// remain omitted until a surface renders them.
 //
 // Framing note: the worker's `scorecard` exposes conflict-of-interest
 // counts. That is civic accountability data (committee-jurisdiction
@@ -16,8 +14,23 @@
 // mandate. Surfaced since the v1-credibility pass (MemberStatsRow) with
 // exactly that framing.
 
-import type { Chamber, Party } from "@/features/trades/api/types";
+import type { Chamber, Party, TradeRecord } from "@/features/trades/api/types";
 import type { ConflictScorecard } from "@/features/conflict/api/types";
+
+// One committee assignment from the worker's buildCommitteeTree (feeds the
+// Committee Power Ranking card + the constellation rings). `role` is the
+// seat role (chair / ranking-member / member); `url`/`thomas_id` are the
+// official committee refs.
+export type CommitteeSeat = {
+  committee: string;
+  role: string | null;
+  url: string | null;
+  thomas_id: string | null;
+};
+
+export type CommitteeTreeNode = CommitteeSeat & {
+  subcommittees: CommitteeSeat[];
+};
 
 // Aggregate trade stats block (worker computes these in SQL).
 export type MemberStats = {
@@ -61,6 +74,22 @@ export type MemberProfile = {
   // the profile; optional here so the name-only fallbackProfile stays
   // valid). Counts + dollars, civic-accountability framing.
   scorecard?: ConflictScorecard | null;
+  // The member's most-recent trades (worker caps at 500, ORDER BY
+  // trade_date DESC), each with inline `conflict` + `sector`. This is the
+  // ONE-SHOT profile array that powers the profile cards + constellation
+  // (distinct from the paginated feed via useTradesList). Web parity:
+  // window._allTrades. Optional so the name-only fallbackProfile stays
+  // valid; scope-relabel figures against stats.total_trades when
+  // trades.length < stats.total_trades (the 500 cap).
+  trades?: TradeRecord[] | null;
+  // Committee assignments as a tree (parent committee -> subcommittees),
+  // worker buildCommitteeTree. Powers the Committee Power Ranking card and
+  // the constellation rings.
+  committee_tree?: CommitteeTreeNode[] | null;
+  // Per-committee "why it matters" context copy, keyed by committee name;
+  // shown in the no-direct-conflicts branch. Loosely typed until a card
+  // renders it explicitly.
+  committee_context?: Record<string, unknown> | null;
 };
 
 export type MemberProfileEnvelope = {
