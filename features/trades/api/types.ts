@@ -12,6 +12,8 @@
 // disclosure_lag_days > 45 is a STOCK Act violation. Use that threshold
 // for the cta-late pill in TimelineSection.
 
+import type { TradeConflict } from "@/features/conflict/api/types";
+
 export type Party = "D" | "R" | "I" | string;
 export type Chamber = "House" | "Senate" | string;
 export type TxType = "Purchase" | "Sale" | "Sale (partial)" | string;
@@ -49,6 +51,12 @@ export type TradeRecord = {
   enrichment_error: string | null;
   date_quality: string | null;
   photo_url: string | null;
+  // Served inline on /api/trades + /api/trades/{id} since the Worker's
+  // conflicts pass (cta-app 85b607c) -- committee-jurisdiction overlap for
+  // this trade, null/absent when there is none. Same shape the profile's
+  // trades[] carries (features/conflict/api/types.ts).
+  conflict?: TradeConflict | null;
+  owner_type?: string | null;
 };
 
 export type TradeDetailEnvelope = {

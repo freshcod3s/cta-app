@@ -19,6 +19,7 @@ import { useRouter } from "expo-router";
 import { Bell, BellPlus } from "lucide-react-native";
 
 import type { TradeRecord } from "@/features/trades/api/types";
+import { displayName } from "@/lib/util/display";
 import { useSettingsStore } from "@/features/settings/store";
 import { getCurrentPlatform, getStoredPushToken } from "@/lib/push/register";
 import { syncSubscriptionPrefs, PushApiError } from "@/lib/push/api";
@@ -119,8 +120,8 @@ export function SubscribeButton({ trade }: Props) {
         accessibilityRole="button"
         accessibilityLabel={
           isSubscribed
-            ? `Unsubscribe from ${trade.politician}'s trades`
-            : `Subscribe to ${trade.politician}'s trades`
+            ? `Unsubscribe from ${displayName(trade.politician)}'s trades`
+            : `Subscribe to ${displayName(trade.politician)}'s trades`
         }
         accessibilityState={{ selected: isSubscribed, busy }}
         className={`min-h-[44px] flex-row items-center justify-center gap-2 rounded-full border px-4 py-2 ${containerClass} ${busy ? "opacity-60" : ""}`}

@@ -15,6 +15,7 @@
 // notes. Kept local here to stay self-contained within the slice.
 import { Image, Pressable, Text, View } from "react-native";
 import { Link } from "expo-router";
+import { displayName } from "@/lib/util/display";
 import type {
   LeaderboardMember,
   LeaderboardSort,
@@ -66,7 +67,7 @@ export function LeaderboardRow({ member, rank, metric }: Props) {
     (member.state ? ` - ${member.state}` : "");
 
   const a11y =
-    `Rank ${rank}, ${member.name}, ${subtitle}, ` +
+    `Rank ${rank}, ${displayName(member.name)}, ${subtitle}, ` +
     (metric === "late_filer"
       ? `average disclosure lag ${lagDays == null ? "unknown" : `${lagDays} days`}` +
         (overdue ? ", overdue" : "")
@@ -94,7 +95,7 @@ export function LeaderboardRow({ member, rank, metric }: Props) {
         ) : (
           <View className="h-10 w-10 items-center justify-center rounded-full bg-gray-200 dark:bg-gray-700">
             <Text className="text-xs font-bold text-gray-600 dark:text-gray-300">
-              {initials(member.name)}
+              {initials(displayName(member.name))}
             </Text>
           </View>
         )}
@@ -104,7 +105,7 @@ export function LeaderboardRow({ member, rank, metric }: Props) {
             className="text-sm font-semibold text-gray-900 dark:text-gray-100"
             numberOfLines={1}
           >
-            {member.name}
+            {displayName(member.name)}
           </Text>
           <View className="mt-0.5 flex-row items-center gap-1.5">
             <View

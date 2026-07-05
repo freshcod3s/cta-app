@@ -39,10 +39,14 @@ import { TradeRow } from "@/features/trades/components/TradeRow";
 import { useMemberProfile } from "@/features/members/api/queries";
 import type { MemberProfile } from "@/features/members/api/types";
 import { MemberProfileHeader } from "@/features/members/components/MemberProfileHeader";
+import { MemberStatsRow } from "@/features/members/components/MemberStatsRow";
 import { MemberSummaryStrip } from "@/features/members/components/MemberSummaryStrip";
+import { displayName } from "@/lib/util/display";
 
+// Rows here render with hideMember (no per-row avatar), so the divider
+// indents past the 3px buy/sell border + padding only.
 function Divider() {
-  return <View className="ml-[68px] h-px bg-gray-200 dark:bg-gray-800" />;
+  return <View className="ml-4 h-px bg-gray-200 dark:bg-gray-800" />;
 }
 
 function ShimmerBlock({ className = "" }: { className?: string }) {
@@ -154,6 +158,7 @@ function fallbackProfile(name: string): MemberProfile {
     status_date: null,
     stats: null,
     disclosureLag: null,
+    scorecard: null,
   };
 }
 
@@ -186,8 +191,9 @@ export default function MemberProfileScreen() {
     void profileQuery.refetch();
   };
 
-  // ListHeader: identity header (or skeleton while profile loads) + the
-  // disclosure summary strip. Scrolls with the feed, like StatsBanner.
+  // ListHeader: identity header (or skeleton while profile loads), the
+  // web-parity stats tiles, then the disclosure summary strip. Scrolls
+  // with the feed, like StatsBanner.
   const listHeader = (
     <View>
       {profileQuery.isLoading ? (
@@ -195,6 +201,7 @@ export default function MemberProfileScreen() {
       ) : (
         <MemberProfileHeader profile={profile} />
       )}
+      <MemberStatsRow profile={profile} />
       <MemberSummaryStrip
         totalTrades={totalTrades}
         lateCount={lateCount}
@@ -206,7 +213,7 @@ export default function MemberProfileScreen() {
 
   return (
     <SafeAreaView edges={["bottom"]} className="flex-1 bg-white dark:bg-gray-900">
-      <Stack.Screen options={{ title: name || "Member" }} />
+      <Stack.Screen options={{ title: name ? displayName(name) : "Member" }} />
       {!name ? (
         // Empty/invalid route param: never fall through to the GLOBAL feed
         // (an absent politician filter would load all trades). Show the
@@ -215,15 +222,15 @@ export default function MemberProfileScreen() {
       ) : feedQuery.isLoading ? (
         <MemberFeedSkeleton />
       ) : feedQuery.isError && trades.length === 0 ? (
-        <ErrorState name={name} onRetry={retryAll} />
+        <ErrorState name={displayName(name)} onRetry={retryAll} />
       ) : (
         <FlatList
           data={trades}
           keyExtractor={(t) => String(t.id)}
-          renderItem={({ item }) => <TradeRow trade={item} />}
+          renderItem={({ item }) => <TradeRow trade={item} hideMember />}
           ItemSeparatorComponent={Divider}
           ListHeaderComponent={listHeader}
-          ListEmptyComponent={<EmptyState name={name} />}
+          ListEmptyComponent={<EmptyState name={displayName(name)} />}
           ListFooterComponent={
             <ListFooter loading={feedQuery.isFetchingNextPage} />
           }

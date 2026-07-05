@@ -13,19 +13,23 @@ import { useStats } from "@/features/trades/api/queries";
 
 function ShimmerCell() {
   return (
-    <View className="h-20 flex-1 rounded-lg bg-gray-200 dark:bg-gray-700" />
+    <View className="h-[100px] flex-1 rounded-lg bg-gray-200 dark:bg-gray-700" />
   );
 }
 
 type CellProps = {
   label: string;
+  // Context sublabel under the label -- the web tiles' explanatory copy
+  // (e.g. "Past the 45-day STOCK Act deadline"), so a number is never a
+  // bare figure without its meaning.
+  sub: string;
   value: string;
   valueClassName?: string;
 };
 
-function Cell({ label, value, valueClassName }: CellProps) {
+function Cell({ label, sub, value, valueClassName }: CellProps) {
   return (
-    <View className="h-20 flex-1 justify-center rounded-lg border border-gray-200 bg-gray-50 px-3 dark:border-gray-700 dark:bg-gray-800">
+    <View className="min-h-[100px] flex-1 justify-center rounded-lg border border-gray-200 bg-gray-50 px-3 py-2 dark:border-gray-700 dark:bg-gray-800">
       <Text
         className={`text-2xl font-bold text-gray-900 dark:text-gray-100 ${valueClassName ?? ""}`}
         numberOfLines={1}
@@ -33,14 +37,38 @@ function Cell({ label, value, valueClassName }: CellProps) {
         {value}
       </Text>
       <Text
-        className="mt-0.5 text-xs text-gray-500 dark:text-gray-400"
+        className="mt-0.5 text-xs font-medium text-gray-600 dark:text-gray-300"
         numberOfLines={2}
       >
         {label}
       </Text>
+      <Text
+        className="mt-0.5 text-[10px] leading-3 text-gray-500 dark:text-gray-500"
+        numberOfLines={3}
+      >
+        {sub}
+      </Text>
     </View>
   );
 }
+
+// Web-parity context copy for the three tiles (congresstradealerts.com
+// hero tiles) -- shared by the data and error branches so layout and
+// meaning never diverge.
+const CELL_COPY = {
+  overdue: {
+    label: "Overdue (119th)",
+    sub: "Members past the 45-day STOCK Act deadline",
+  },
+  disclosures: {
+    label: "Disclosures last 7d",
+    sub: "By disclosure date, incl. late filings",
+  },
+  overlap: {
+    label: "Committee overlap 7d",
+    sub: "Trades in the filer's committee remit",
+  },
+} as const;
 
 export function StatsBanner() {
   const stats = useStats();
@@ -64,9 +92,9 @@ export function StatsBanner() {
     return (
       <View className="px-4 py-3">
         <View className="flex-row gap-3">
-          <Cell label="Overdue (119th)" value="-" />
-          <Cell label="Disclosures last 7d" value="-" />
-          <Cell label="Committee overlap 7d" value="-" />
+          <Cell {...CELL_COPY.overdue} value="-" />
+          <Cell {...CELL_COPY.disclosures} value="-" />
+          <Cell {...CELL_COPY.overlap} value="-" />
         </View>
       </View>
     );
@@ -83,12 +111,12 @@ export function StatsBanner() {
     <View className="px-4 py-3">
       <View className="flex-row gap-3">
         <Cell
-          label="Overdue (119th)"
+          {...CELL_COPY.overdue}
           value={overdue.toLocaleString()}
           valueClassName={overdueTint}
         />
-        <Cell label="Disclosures last 7d" value={disclosures.toLocaleString()} />
-        <Cell label="Committee overlap 7d" value={overlap.toLocaleString()} />
+        <Cell {...CELL_COPY.disclosures} value={disclosures.toLocaleString()} />
+        <Cell {...CELL_COPY.overlap} value={overlap.toLocaleString()} />
       </View>
     </View>
   );

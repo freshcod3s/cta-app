@@ -13,9 +13,11 @@
 // Framing note: the worker's `scorecard` exposes conflict-of-interest
 // counts. That is civic accountability data (committee-jurisdiction
 // overlap), NOT a trading signal -- consistent with the transparency
-// mandate. This slice does not surface it yet; left out of the v1 type.
+// mandate. Surfaced since the v1-credibility pass (MemberStatsRow) with
+// exactly that framing.
 
 import type { Chamber, Party } from "@/features/trades/api/types";
+import type { ConflictScorecard } from "@/features/conflict/api/types";
 
 // Aggregate trade stats block (worker computes these in SQL).
 export type MemberStats = {
@@ -55,6 +57,10 @@ export type MemberProfile = {
   status_date: string | null;
   stats: MemberStats | null;
   disclosureLag: MemberDisclosureLag | null;
+  // Aggregate committee-overlap scorecard (worker always includes it on
+  // the profile; optional here so the name-only fallbackProfile stays
+  // valid). Counts + dollars, civic-accountability framing.
+  scorecard?: ConflictScorecard | null;
 };
 
 export type MemberProfileEnvelope = {

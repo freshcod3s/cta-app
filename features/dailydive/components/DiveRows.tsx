@@ -3,6 +3,7 @@
 // routes). Framing throughout is disclosure-activity, never "buy this".
 import { Image, Pressable, Text, View } from "react-native";
 import { Link } from "expo-router";
+import { displayName } from "@/lib/util/display";
 
 import { ctaColors } from "@/lib/theme/tokens";
 import type {
@@ -51,7 +52,7 @@ export function MemberRow({ m }: { m: DailyDiveMember }) {
     <Link href={`/member/${encodeURIComponent(m.politician)}`} asChild>
       <Pressable
         accessibilityRole="button"
-        accessibilityLabel={`${m.politician}, ${m.trade_count} disclosures`}
+        accessibilityLabel={`${displayName(m.politician)}, ${m.trade_count} disclosures`}
         className="flex-row items-center gap-3 border-t border-gray-100 px-4 py-3 dark:border-gray-800"
       >
         {m.photo_url ? (
@@ -67,7 +68,7 @@ export function MemberRow({ m }: { m: DailyDiveMember }) {
             className="text-sm font-semibold text-gray-900 dark:text-gray-100"
             numberOfLines={1}
           >
-            {m.politician}
+            {displayName(m.politician)}
           </Text>
           {meta ? (
             <Text className="text-xs text-gray-500 dark:text-gray-400">

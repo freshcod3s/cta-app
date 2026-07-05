@@ -8,6 +8,7 @@
 // follow-up still applies; not expanded here to keep this slice surgical.
 import { Image, Pressable, Text, View } from "react-native";
 import { Link } from "expo-router";
+import { displayName } from "@/lib/util/display";
 
 import type { CommitteeMember } from "../api/types";
 
@@ -59,7 +60,7 @@ export function CommitteeMemberRow({ member }: Props) {
       <Pressable
         accessibilityRole="button"
         accessibilityLabel={
-          `View ${member.name} profile` +
+          `View ${displayName(member.name)} profile` +
           (isLeadership ? `, ${member.role}` : "")
         }
         className="h-[72px] flex-row items-center gap-3 px-4"
@@ -72,7 +73,7 @@ export function CommitteeMemberRow({ member }: Props) {
         ) : (
           <View className="h-10 w-10 items-center justify-center rounded-full bg-gray-200 dark:bg-gray-700">
             <Text className="text-xs font-bold text-gray-600 dark:text-gray-300">
-              {initials(member.name)}
+              {initials(displayName(member.name))}
             </Text>
           </View>
         )}
@@ -90,7 +91,7 @@ export function CommitteeMemberRow({ member }: Props) {
               className="flex-1 text-sm font-semibold text-gray-900 dark:text-gray-100"
               numberOfLines={1}
             >
-              {member.name}
+              {displayName(member.name)}
             </Text>
           </View>
           <Text
