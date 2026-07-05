@@ -24,6 +24,7 @@ import { PersistQueryClientProvider } from "@tanstack/react-query-persist-client
 import "react-native-reanimated";
 
 import { ThemeProvider as NavThemeProvider, DarkTheme } from "@react-navigation/native";
+import { colorScheme } from "nativewind";
 
 import { queryClient, queryPersister } from "@/lib/query/client";
 import { ThemeProvider } from "@/lib/theme/provider";
@@ -32,6 +33,15 @@ import { useSettingsStore } from "@/features/settings/store";
 import { syncPushRegistration } from "@/lib/push/register";
 import { Onboarding } from "@/features/onboarding/components/Onboarding";
 import { InfoSheet } from "@/features/info/components/InfoSheet";
+
+// Force dark from the very first frame (Product Invariant #6: dark-only in
+// v1). ThemeProvider also calls colorScheme.set("dark") in a useEffect, but
+// that runs AFTER first paint -- on a cold boot / deep-link (push-tap)
+// launch it races the first render and can commit light frames that
+// NativeWind never recomputes. Setting the scheme at module load, before
+// RootLayout renders, guarantees dark from frame zero. Remove this line if
+// v1's dark-only invariant is ever relaxed to support light/system.
+colorScheme.set("dark");
 
 const SYNC_DEBOUNCE_MS = 5 * 60 * 1000;
 
