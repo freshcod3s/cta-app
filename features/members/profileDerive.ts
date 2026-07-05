@@ -7,6 +7,7 @@
 // file watcher -- which misses newly-created directories until a restart --
 // picks it up without one.
 import type { TradeRecord } from "@/features/trades/api/types";
+import type { CommitteeTreeNode } from "@/features/members/api/types";
 
 const DAY_MS = 86_400_000;
 const YEAR_MS = 365 * DAY_MS;
@@ -128,4 +129,59 @@ export function topTickers(
         (b.lastDate ?? "").localeCompare(a.lastDate ?? ""),
     )
     .slice(0, limit);
+}
+
+export type CommitteeExposure = {
+  committee: string;
+  role: string | null;
+  conflictCount: number;
+  conflictDollars: number;
+};
+
+// Case-insensitive substring match either direction (web parity:
+// rankCommitteesByExposure fuzzy-matches conflict.committee to the seat name).
+function committeeMatch(a: string, b: string): boolean {
+  const x = a.toLowerCase();
+  const y = b.toLowerCase();
+  return x.includes(y) || y.includes(x);
+}
+
+// Rank the member's committees by trading overlap: tally each conflicted
+// trade (trade.conflict.committee, at range-high) against the committee_tree
+// seats. Committees with no overlap sort to the bottom (kept, web parity).
+export function committeeExposure(
+  trades: TradeRecord[],
+  tree: CommitteeTreeNode[],
+): CommitteeExposure[] {
+  const tally = new Map<string, { count: number; dollars: number }>();
+  for (const t of trades) {
+    const c = t.conflict;
+    if (!c || !c.committee) continue;
+    const cur = tally.get(c.committee) ?? { count: 0, dollars: 0 };
+    cur.count += 1;
+    cur.dollars += t.amount_high ?? 0;
+    tally.set(c.committee, cur);
+  }
+  return tree
+    .map((node) => {
+      let conflictCount = 0;
+      let conflictDollars = 0;
+      for (const [cname, v] of tally) {
+        if (committeeMatch(node.committee, cname)) {
+          conflictCount += v.count;
+          conflictDollars += v.dollars;
+        }
+      }
+      return {
+        committee: node.committee,
+        role: node.role,
+        conflictCount,
+        conflictDollars,
+      };
+    })
+    .sort(
+      (a, b) =>
+        b.conflictCount - a.conflictCount ||
+        b.conflictDollars - a.conflictDollars,
+    );
 }

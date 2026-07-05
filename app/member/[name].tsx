@@ -42,6 +42,7 @@ import { MemberProfileHeader } from "@/features/members/components/MemberProfile
 import { MemberStatsRow } from "@/features/members/components/MemberStatsRow";
 import { MemberSummaryStrip } from "@/features/members/components/MemberSummaryStrip";
 import { ConflictScorecardCard } from "@/features/members/components/cards/ConflictScorecardCard";
+import { CommitteePowerCard } from "@/features/members/components/cards/CommitteePowerCard";
 import { SectorBreakdownCard } from "@/features/members/components/cards/SectorBreakdownCard";
 import { DisclosureSpeedCard } from "@/features/members/components/cards/DisclosureSpeedCard";
 import { Trades12moCard } from "@/features/members/components/cards/Trades12moCard";
@@ -216,6 +217,10 @@ export default function MemberProfileScreen() {
       {/* Web-parity profile cards (P3). Each self-hides when its data is
           absent (e.g. the name-only fallback profile), so no inert boxes. */}
       <ConflictScorecardCard scorecard={profile.scorecard} />
+      <CommitteePowerCard
+        trades={profile.trades}
+        committeeTree={profile.committee_tree}
+      />
       <Trades12moCard trades={profile.trades} />
       <SectorBreakdownCard trades={profile.trades} />
       <DisclosureSpeedCard trades={profile.trades} />

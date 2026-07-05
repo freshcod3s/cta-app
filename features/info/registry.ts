@@ -222,6 +222,22 @@ export const INFO_REGISTRY: Record<string, InfoEntry> = {
     ],
     sources: [{ label: "How we count", url: METHODOLOGY }],
   },
+  "profile-committees": {
+    eyebrow: "Committee overlap",
+    title: "Committee Power Ranking",
+    body:
+      "This member's committee seats, ranked by how much of their disclosed trading falls in each committee's jurisdiction. It orders by overlap, NOT a numeric influence score -- and overlap is a transparency signal, not a claim of wrongdoing.",
+    method:
+      "Each conflicted trade (measured at range-high) is tallied against the committee whose jurisdiction it overlaps; committees are ranked by overlapping-trade count, then dollars. Seats with no overlap are kept, ranked last.",
+    caveats: [
+      "Role (chair / ranking member / member) reflects the current roster.",
+      "Coverage is limited to committees we have seeded; some assignments may be missing.",
+    ],
+    sources: [
+      { label: "Conflict-scoring methodology", url: `${METHODOLOGY}#how-conflict-scoring-works` },
+    ],
+    tone: "flag",
+  },
 };
 
 export function getInfoEntry(slug: string | null): InfoEntry | null {
