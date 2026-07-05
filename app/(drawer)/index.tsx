@@ -17,6 +17,7 @@ import { useTradeFiltersStore } from "@/features/trades/store";
 import { FilterBar } from "@/features/trades/components/FilterBar";
 import { StatsBanner } from "@/features/trades/components/StatsBanner";
 import { HomeVolumeTile } from "@/features/trades/components/HomeVolumeTile";
+import { HighConflictClusters } from "@/features/clusters/components/HighConflictClusters";
 import { PulseHero } from "@/features/pulse/components/PulseHero";
 import { RETURNS_DISPLAY } from "@/lib/flags";
 import { TradeRow } from "@/features/trades/components/TradeRow";
@@ -109,6 +110,7 @@ export default function FeedScreen() {
                 {RETURNS_DISPLAY ? <PulseHero /> : null}
                 <HomeVolumeTile />
                 <StatsBanner />
+                <HighConflictClusters />
               </View>
             )
           }

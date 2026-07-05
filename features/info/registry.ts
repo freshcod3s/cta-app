@@ -63,6 +63,22 @@ export const INFO_REGISTRY: Record<string, InfoEntry> = {
     ],
     sources: [{ label: "Full stats breakdown", url: "https://congresstradealerts.com/stats" }],
   },
+  "home-high-conflict": {
+    eyebrow: "Same ticker, same window",
+    title: "High-Conflict Activity",
+    body:
+      "Clusters of members who bought the same stock within a short window. A cluster is flagged when at least one of those members sits on a committee whose jurisdiction covers that stock's sector.",
+    method:
+      "Clusters come from a rolling 30-day detector (minimum 3 distinct members). The conflict flag fires when a member's committee-jurisdiction sector matches the stock's sector; clusters with a flag sort first.",
+    caveats: [
+      "Overlap is NOT evidence of wrongdoing or insider trading -- members can legally trade.",
+      "Conflict checks are limited to the committees we've seeded.",
+    ],
+    sources: [
+      { label: "Methodology", url: `${METHODOLOGY}#committee-jurisdiction-overlap` },
+    ],
+    tone: "flag",
+  },
   "home-overdue": {
     eyebrow: "119th Congress",
     title: "Overdue members",
