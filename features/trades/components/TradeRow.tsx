@@ -34,7 +34,6 @@ import {
 import { FollowButton } from "@/features/watchlist/components/FollowButton";
 import { ctaColors } from "@/lib/theme/tokens";
 import {
-  cleanAssetName,
   displayName,
   formatMoneyShort,
   formatShortDate,
@@ -59,7 +58,7 @@ export function TradeRow({ trade, hideMember = false }: Props) {
   const pillLabel = buy ? "BUY" : "SELL";
 
   const name = displayName(trade.politician);
-  const asset = cleanAssetName(trade.asset_name);
+  const asset = trade.asset_name ?? "";
   const mid = formatMoneyShort(
     midEstimate(trade.amount_low, trade.amount_high),
   );
