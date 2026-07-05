@@ -40,6 +40,29 @@ export function useStats() {
   });
 }
 
+type TopTradesEnvelope = { ok: boolean; data: TradeRecord[] };
+
+// GET /api/top-trades?days=7|14|30 -- the 5 largest single trades by midpoint.
+// Web parity: cascade 7 -> 14 -> 30 until a window has rows, and surface the
+// window that hit so the header can label it honestly. One query; the queryFn
+// walks the windows server-side-ish (three cheap edge-cached calls at worst).
+export function useTopTrades() {
+  return useQuery({
+    queryKey: ["top-trades", "cascade"] as const,
+    staleTime: 1000 * 60 * 15,
+    queryFn: async ({ signal }) => {
+      for (const days of [7, 14, 30]) {
+        const env = await apiFetch<TopTradesEnvelope>(
+          `/api/top-trades?days=${days}`,
+          { signal },
+        );
+        if (env.data && env.data.length > 0) return { rows: env.data, days };
+      }
+      return { rows: [] as TradeRecord[], days: 30 };
+    },
+  });
+}
+
 // useTradeDetail -- GET /api/trades/{id}. Trades don't update post-disclosure
 // (price fields can refresh via cron, but the headline transaction record is
 // immutable), so a 5-min staleTime is generous without staleness risk. The id

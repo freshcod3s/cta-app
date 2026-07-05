@@ -79,6 +79,18 @@ export const INFO_REGISTRY: Record<string, InfoEntry> = {
     ],
     tone: "flag",
   },
+  "home-top-trades": {
+    eyebrow: "Biggest recent",
+    title: "Top Trades",
+    body:
+      "The largest single disclosures by midpoint dollar value in the most recent active window. Tap a row to see that ticker's full congressional activity.",
+    method:
+      "Trades sorted by the midpoint of their disclosed range (needs both range ends and a ticker). The window cascades 7 -> 14 -> 30 days until one has trades, and the header labels the window that hit.",
+    caveats: [
+      "Ranges aren't exact, so the midpoint is a rough sort key.",
+    ],
+    sources: [{ label: "Full trade feed", url: "https://congresstradealerts.com" }],
+  },
   "home-overdue": {
     eyebrow: "119th Congress",
     title: "Overdue members",
