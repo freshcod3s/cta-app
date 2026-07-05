@@ -240,6 +240,22 @@ reactive magic; delete > add; state machines > booleans; contracts > conventions
    path.
 8. Worker contract mirroring -- client API types stay in sync with Worker
    `congress-trade-alerts/src/types.ts` (Worker is the single source of truth).
+9. Interaction density -- every data surface is live (parity target =
+   congresstradealerts.com). NO inert boxes: every stat tile, card, chip,
+   chart segment, constellation bubble, and list row is either interactive or
+   simplified away -- never a dead decorative box. Tapping a surface opens an
+   info sheet (the RN port of the web dashboard's `#card-info-modal` +
+   `CARD_INFO` / `HOMEPAGE_METRIC_INFO` registries) carrying the same richer
+   context: what the number means, how it's computed (method), caveats, and
+   sources. Inside that sheet, indexed variables -- member names, tickers,
+   committees, sectors -- are themselves tappable and deep-link to the matching
+   native route (`/member/[name]`, `/ticker/[symbol]`, committee detail, or a
+   filtered feed), so disclosure chains one level deeper on each tap. When a
+   value can't yet be computed, the surface says so honestly instead of
+   rendering an inert placeholder. The two flagship surfaces this invariant
+   mandates and the app still lacks: the InfoSheet registry (it multiplies
+   every surface) and the profile Constellation (`features/members`). Parity
+   source of truth = `congress-trade-alerts/src/dashboard.html`.
 
 ---
 
