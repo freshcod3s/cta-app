@@ -31,6 +31,7 @@ import { ctaColors } from "@/lib/theme/tokens";
 import { useSettingsStore } from "@/features/settings/store";
 import { syncPushRegistration } from "@/lib/push/register";
 import { Onboarding } from "@/features/onboarding/components/Onboarding";
+import { InfoSheet } from "@/features/info/components/InfoSheet";
 
 const SYNC_DEBOUNCE_MS = 5 * 60 * 1000;
 
@@ -130,6 +131,7 @@ export default function RootLayout() {
               <StatusBar style="light" />
             </NavThemeProvider>
             <Onboarding />
+            <InfoSheet />
           </ThemeProvider>
         </PersistQueryClientProvider>
       </SafeAreaProvider>

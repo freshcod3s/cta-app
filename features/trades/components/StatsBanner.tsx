@@ -8,8 +8,11 @@
 //   * Overdue members  -> cta-late tint when value > 0
 //   * Disclosures 7d    -> neutral
 //   * Committee overlap -> neutral
-import { Text, View } from "react-native";
+import { Pressable, Text, View } from "react-native";
+import { Info } from "lucide-react-native";
 import { useStats } from "@/features/trades/api/queries";
+import { useOpenInfo } from "@/features/info/store";
+import { ctaColors } from "@/lib/theme/tokens";
 
 function ShimmerCell() {
   return (
@@ -23,13 +26,26 @@ type CellProps = {
   // (e.g. "Past the 45-day STOCK Act deadline"), so a number is never a
   // bare figure without its meaning.
   sub: string;
+  // InfoSheet registry slug this tile opens (Product Invariant #9 -- no
+  // inert tiles).
+  infoSlug: string;
   value: string;
   valueClassName?: string;
 };
 
-function Cell({ label, sub, value, valueClassName }: CellProps) {
+function Cell({ label, sub, infoSlug, value, valueClassName }: CellProps) {
+  const open = useOpenInfo();
   return (
-    <View className="min-h-[100px] flex-1 justify-center rounded-lg border border-gray-200 bg-gray-50 px-3 py-2 dark:border-gray-700 dark:bg-gray-800">
+    <Pressable
+      accessibilityRole="button"
+      accessibilityLabel={`${label}: ${value}. ${sub}. Tap for details.`}
+      onPress={() => open(infoSlug)}
+      android_ripple={{ color: "rgba(99,102,241,0.12)" }}
+      className="min-h-[100px] flex-1 justify-center rounded-lg border border-gray-200 bg-gray-50 px-3 py-2 dark:border-gray-700 dark:bg-gray-800"
+    >
+      <View className="absolute right-1.5 top-1.5">
+        <Info size={11} color={ctaColors.accent} />
+      </View>
       <Text
         className={`text-2xl font-bold text-gray-900 dark:text-gray-100 ${valueClassName ?? ""}`}
         numberOfLines={1}
@@ -48,7 +64,7 @@ function Cell({ label, sub, value, valueClassName }: CellProps) {
       >
         {sub}
       </Text>
-    </View>
+    </Pressable>
   );
 }
 
@@ -59,14 +75,17 @@ const CELL_COPY = {
   overdue: {
     label: "Overdue (119th)",
     sub: "Members past the 45-day STOCK Act deadline",
+    infoSlug: "home-overdue",
   },
   disclosures: {
     label: "Disclosures last 7d",
     sub: "By disclosure date, incl. late filings",
+    infoSlug: "home-disclosures-7d",
   },
   overlap: {
     label: "Committee overlap 7d",
     sub: "Trades in the filer's committee remit",
+    infoSlug: "home-overlap-7d",
   },
 } as const;
 
