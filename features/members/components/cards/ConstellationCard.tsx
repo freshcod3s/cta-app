@@ -127,6 +127,15 @@ export function ConstellationCard({ profile }: { profile: MemberProfile }) {
                       : undefined
                   }
                 >
+                  {/* invisible hit target: keep tap area >= 24px diameter
+                      even for tiny bubbles (r can be as low as 6px). */}
+                  <Circle
+                    cx={n.x}
+                    cy={n.y}
+                    r={Math.max(n.r, 12)}
+                    fill="#334155"
+                    fillOpacity={0.01}
+                  />
                   {s ? (
                     <Circle
                       cx={n.x}

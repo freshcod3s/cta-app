@@ -99,9 +99,13 @@ export function ConflictScorecardCard({
 
   const direct = scorecard.directConflictCount ?? 0;
   const adjacent = scorecard.adjacentConflictCount ?? 0;
-  const pct = Math.round(scorecard.conflictedPortfolioPct ?? 0);
+  const pctRaw = scorecard.conflictedPortfolioPct ?? 0;
+  const pct = Math.round(pctRaw); // gauge arc + color threshold
   const clean = direct === 0 && adjacent === 0;
   const color = clean ? ctaColors.buy : gaugeColor(pct);
+  // Carry one decimal in the label when the payload provides it (35.6%),
+  // but drop a trailing .0 (36%).
+  const pctLabel = clean ? "0%" : `${(Math.round(pctRaw * 10) / 10).toString()}%`;
 
   return (
     <ProfileCard title="Conflict Scorecard" infoSlug="profile-scorecard">
@@ -115,7 +119,7 @@ export function ConflictScorecardCard({
               className="text-2xl font-extrabold"
               style={{ color }}
             >
-              {clean ? "0%" : `${pct}%`}
+              {pctLabel}
             </Text>
             <Text className="text-[10px] uppercase tracking-wide text-gray-500 dark:text-gray-400">
               conflicted
