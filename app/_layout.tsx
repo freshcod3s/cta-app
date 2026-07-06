@@ -15,7 +15,7 @@
 // per-token rate limit (10/hr from CTA-31) and add no value.
 import "../global.css";
 import { useEffect, useRef } from "react";
-import { AppState, type AppStateStatus } from "react-native";
+import { AppState, Appearance, type AppStateStatus } from "react-native";
 import { Stack } from "expo-router";
 import { StatusBar } from "expo-status-bar";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
@@ -35,12 +35,15 @@ import { Onboarding } from "@/features/onboarding/components/Onboarding";
 import { InfoSheet } from "@/features/info/components/InfoSheet";
 
 // Force dark from the very first frame (Product Invariant #6: dark-only in
-// v1). ThemeProvider also calls colorScheme.set("dark") in a useEffect, but
-// that runs AFTER first paint -- on a cold boot / deep-link (push-tap)
-// launch it races the first render and can commit light frames that
-// NativeWind never recomputes. Setting the scheme at module load, before
-// RootLayout renders, guarantees dark from frame zero. Remove this line if
-// v1's dark-only invariant is ever relaxed to support light/system.
+// v1). ThemeProvider re-asserts dark on mount + every Appearance change, but
+// that runs AFTER first paint -- on a cold boot / deep-link (push-tap) launch
+// it races the first render and can commit light frames that NativeWind never
+// recomputes. Setting BOTH the RN Appearance override (authoritative -- makes
+// useColorScheme() return dark app-wide so NativeWind can't revert to the
+// light OS) and NativeWind's own scheme at module load, before RootLayout
+// renders, guarantees dark from frame zero. Remove these if v1's dark-only
+// invariant is ever relaxed to support light/system.
+Appearance.setColorScheme("dark");
 colorScheme.set("dark");
 
 const SYNC_DEBOUNCE_MS = 5 * 60 * 1000;
