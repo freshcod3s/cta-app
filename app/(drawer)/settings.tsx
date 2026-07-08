@@ -10,7 +10,7 @@
 // the website's external Stripe Checkout in the system browser (see
 // UpgradeButton). No in-app payment UI, no IAP.
 import { useEffect, useState } from "react";
-import { Linking, Pressable, Switch, Text, View } from "react-native";
+import { Linking, Platform, Pressable, Switch, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import Constants from "expo-constants";
 
@@ -235,7 +235,12 @@ export default function SettingsScreen() {
           </Text>
         ) : null}
 
-        {isUS && (
+        {/* Android (Google Play): render NO in-app purchase surface at all.
+            The bare external Stripe link-out (UpgradeButton) is not enrolled
+            in Play's external-offers / alternative-billing program, so the
+            whole Subscription section is hidden on Android. iOS is untouched:
+            it keeps the US-storefront locale gate (Apple 3.1.1(a) carveout). */}
+        {isUS && Platform.OS !== "android" && (
           <>
             <Text className="mb-4 mt-8 text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">
               Subscription
