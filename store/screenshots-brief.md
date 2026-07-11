@@ -1,22 +1,28 @@
 # Screenshots brief
 
 Capture sequence for App Store Connect + Google Play Console listings.
-Updated 2026-06-09 after Mac CC shipped 5x 6.9" iOS screenshots
-(commit a9d573a).
+Updated 2026-07-11 after the RETURNS_DISPLAY-gated re-capture (7-shot
+set, Release build, production flags). Authoritative spec:
+`store/app-store/screenshot-spec.md`.
 
 ## Current iOS set (shipped)
 
-Device: **6.9" iPhone 17 Pro Max (1320 x 2868 portrait)**. Apple
-auto-scales this master to smaller iOS sizes. 5 screenshots committed
-to `store/app-store/screenshots/`.
+Device: **6.9" iPhone 17 Pro Max simulator (1320 x 2868 portrait)**.
+Apple auto-scales this master to smaller iOS sizes. 7 screenshots
+committed to `store/app-store/screenshots/`. 01/02/05 re-captured and
+06/07 added 2026-07-11 on the shipping posture (RETURNS_DISPLAY=false,
+SHOW_UPGRADE_CTA=false -- no price-derived UI, no purchase surface);
+03/04 reused from the 2026-06-09 set (commit a9d573a).
 
 | # | File | Surface |
 |---|---|---|
-| 1 | 01-feed.png | Trade feed |
-| 2 | 02-trade-detail.png | Trade detail |
+| 1 | 01-feed.png | Trade feed (stat tiles, no benchmark card) |
+| 2 | 02-trade-detail.png | Trade detail (amount range, overlap card, timeline; no price snapshot) |
 | 3 | 03-daily-dive.png | Daily Dive |
 | 4 | 04-committee.png | Committee page |
-| 5 | 05-ticker.png | Ticker page |
+| 5 | 05-ticker.png | Ticker page (trade list, no price hero) |
+| 6 | 06-settings-push.png | Settings: push opt-in toggle, no account, no upgrade card |
+| 7 | 07-methodology.png | Methodology: data sources + lag stats |
 
 ## Android (not yet updated)
 
@@ -48,6 +54,8 @@ store/app-store/screenshots/
   03-daily-dive.png
   04-committee.png
   05-ticker.png
+  06-settings-push.png
+  07-methodology.png
 
 store/google-play/screenshots/
   (re-capture pending -- currently stale 8-shot set)

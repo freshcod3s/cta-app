@@ -6,6 +6,15 @@ screenshot-specifications/, fetched 2026-07-11). Supersedes the screenshot
 notes in store/mac-cc-asc-prompt.md and store/screenshots-brief.md where
 they conflict.
 
+RE-CAPTURE DONE 2026-07-11 (Mac CC): 01/02/05 re-captured and
+06-settings-push/07-methodology added per section 3, from a Release
+simulator build of feat/web-parity @ 589e9bd (RETURNS_DISPLAY=false,
+SHOW_UPGRADE_CTA=false), iPhone 17 Pro Max, status bar per section 4.
+The section-2 verdicts below describe the superseded 2026-06-09 set and
+are kept for the audit trail. Shots 6-7 from the section-3 list are
+committed; ASC upload still pending (blocked on the app record / ASC
+API key).
+
 ---
 
 ## 1. ASC requirements (verified 2026-07-11, primary source)
