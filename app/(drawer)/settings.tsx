@@ -22,6 +22,7 @@ import {
   type RegisterErrorCode,
 } from "@/lib/push/register";
 import { UpgradeButton } from "@/features/billing/components/UpgradeButton";
+import { SHOW_UPGRADE_CTA } from "@/lib/flags";
 import * as Localization from "expo-localization";
 
 // US App Store storefront gate for the Upgrade button. Apple's 3.1.1(a)
@@ -235,12 +236,16 @@ export default function SettingsScreen() {
           </Text>
         ) : null}
 
-        {/* Android (Google Play): render NO in-app purchase surface at all.
-            The bare external Stripe link-out (UpgradeButton) is not enrolled
-            in Play's external-offers / alternative-billing program, so the
-            whole Subscription section is hidden on Android. iOS is untouched:
-            it keeps the US-storefront locale gate (Apple 3.1.1(a) carveout). */}
-        {isUS && Platform.OS !== "android" && (
+        {/* v1 store posture: NO in-app purchase surface on ANY platform.
+            Android: the bare external Stripe link-out (UpgradeButton) is not
+            enrolled in Play's external-offers / alternative-billing program.
+            iOS: option (a) for the first App Store review (2026-07-11) --
+            ship as a free stand-alone companion app (3.1.3(f)) with no
+            upgrade CTA, even though the US-storefront external link is
+            currently permitted under 3.1.1(a). Flip SHOW_UPGRADE_CTA
+            (lib/flags.ts) to restore the isUS-gated link-out on iOS in a
+            post-approval release. */}
+        {SHOW_UPGRADE_CTA && isUS && Platform.OS !== "android" && (
           <>
             <Text className="mb-4 mt-8 text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">
               Subscription
