@@ -1,32 +1,62 @@
-App Store Connect listing fields. Filled by CTA-App-1-10, updated
-2026-06-09 post-v2 feature completeness. ASCII only per global rule.
-Char limits annotated; counts verified at write time. Prefix lines
-with the field label so Joe can paste each value into the matching
-ASC field. Body text under "DESCRIPTION (max 4000):" is verbatim.
+App Store Connect listing fields. Filled by CTA-App-1-10 (2026-06-09),
+rewritten 2026-07-11 to match the decided iOS v1 posture: NO purchase
+surface on any platform (App Store option (a), guideline 3.1.3(f) free
+stand-alone companion; SHOW_UPGRADE_CTA=false in lib/flags.ts), no
+auth/sign-in, push opt-in only, RETURNS_DISPLAY=false (no price-derived
+display in the shipped build). ASCII only per global rule. Char limits
+annotated; counts verified at write time. Prefix lines with the field
+label so Joe can paste each value into the matching ASC field. Body text
+under "DESCRIPTION (max 4000):" and "APP_REVIEW_NOTES:" is verbatim.
+
+LISTING POLICY: no pricing, no Pro promises, no upgrade language
+anywhere in this listing. The paid tier exists only on the developer
+website; the app does not link to checkout, so the listing stays silent
+on it (safest reading of 3.1.1 / 3.1.3(f) / 2.3.x).
+
+=======================================================================
+1. CORE LISTING FIELDS
+=======================================================================
 
 NAME (max 30): Congress Trade Alerts
+(count: 21/30)
+
 SUBTITLE (max 30): Capitol Hill Stock Disclosures
-PROMOTIONAL_TEXT (max 170): See every stock trade disclosed by members of Congress. Push alerts for members and tickers, conflict scores, and full methodology -- no account, no tracking, no ads.
+(count: 30/30 -- exactly at limit; do not edit without recounting)
+
+KEYWORDS (max 100, comma-separated, no spaces after commas, no words
+duplicated from name/subtitle -- name uses congress/trade/alerts,
+subtitle uses capitol/hill/stock/disclosures, so none of those appear
+below):
+politician,senate,house,pelosi,government,transparency,ethics,civic,watchdog,tracker,insider,records
+(count: 100/100 -- exactly at limit)
+(Note: "pelosi" is a high-volume search term for this category and is
+factually relevant -- her disclosures appear in-app -- but a person's
+name in keywords carries some 2.3.7 rejection risk. If App Review
+flags it, swap to this pre-counted alternate, 94/100:
+politician,senate,house,lawmaker,government,transparency,ethics,civic,watchdog,tracker,insider )
+
+PROMOTIONAL_TEXT (max 170, optional): See every stock trade disclosed by members of Congress. Push alerts for members and tickers, conflict scores, and full methodology -- no account, no tracking, no ads.
+(count: 166/170)
 
 DESCRIPTION (max 4000):
-Congress Trade Alerts surfaces every stock trade disclosed under the STOCK Act by members of the US House and Senate -- drawn from official public records, updated in real time, with no opinions and no ads.
+Congress Trade Alerts surfaces every stock trade disclosed under the STOCK Act by members of the US House and Senate -- drawn from official public records, refreshed throughout the day, with no opinions and no ads.
 
 FEATURES
-- Real-time feed of every congressional stock trade as disclosures are filed
-- Push alerts for specific members and tickers, with minimum trade-size filter
-- Trade detail with filing date, amount range, and market return comparison
+- Feed of every congressional stock trade as disclosures are filed
+- Push alerts for specific members and tickers, with an optional minimum trade-size filter
+- Trade detail with filing date, transaction type, amount range, and a link to the source filing
 - Conflict Score measuring overlap between committee assignments and sectors traded
 - Related trades for the same ticker or by the same member
 - Daily Dive with sector analysis, bipartisan trading patterns, and newly filing members
 - Member profiles with full trading history, committee seats, party, state, and chamber
 - Ticker pages showing all congressional trades for any stock
 - Committee pages with rosters, subcommittees, hearings, markups, and votes
-- Leaderboard ranking members by trading frequency and volume
-- Local watchlist -- saved on your device, never uploaded
+- Leaderboard ranking members by trading frequency and disclosed volume
+- Watchlist saved on your device -- shared with our server only as anonymous alert preferences if you enable push
 - Full methodology with data sources, update frequency, lag stats, and calculation details
 
 DATA SOURCES
-All data derived from public STOCK Act filings via the US House Office of the Clerk and the US Senate Select Committee on Ethics. Market data from public financial data providers.
+All data derived from public STOCK Act filings via the US House Office of the Clerk and the US Senate Office of Public Records electronic financial disclosure system.
 
 WHO IT'S FOR
 - Journalists tracking congressional compliance and conflicts of interest
@@ -34,36 +64,108 @@ WHO IT'S FOR
 - Researchers studying public financial-disclosure data
 
 PRIVACY
-No account required. No tracking. No ads. No third-party analytics. The only data stored is an anonymous push token if you enable notifications -- delete it anytime from Settings. Source code viewable at github.com/freshcod3s/cta-app.
+No account required. No tracking. No ads. No third-party analytics. If you enable notifications, the only data stored is an anonymous push token plus your alert preferences -- turn push off in Settings to delete both. Source code viewable at github.com/freshcod3s/cta-app.
 
-Not affiliated with the US government. Not investment advice. Disclosures may be delayed or amended. Verify at disclosures-clerk.house.gov and ethics.senate.gov. Free. No ads. No tracking.
+Congress Trade Alerts is an informational civic-transparency tool. It does not provide investment advice, does not recommend buying or selling any security, and does not connect to brokerages or enable trading. Not affiliated with the US government. Disclosures may be delayed or amended -- verify at disclosures-clerk.house.gov and efdsearch.senate.gov. Free. No ads. No tracking.
+(count: see DESCRIPTION_CHAR_COUNT note at end of this section)
 
-KEYWORDS (max 100, comma-separated): stock,politician,disclosure,senate,house,pelosi,government,civic,transparency,insider,capitol,ethics
+DESCRIPTION_CHAR_COUNT: 2279/4000 (verified 2026-07-11; recount after
+any edit -- node -e on the block between "Congress Trade Alerts
+surfaces" and "No tracking." inclusive)
+
+Changes from the 2026-06-09 draft, for the record:
+- Removed "market return comparison" and "Market data from public
+  financial data providers" -- RETURNS_DISPLAY=false means no
+  price-derived display ships in this build; claiming it would be a
+  2.3 metadata-accuracy violation.
+- "updated in real time" -> "refreshed throughout the day" (ingest is
+  a 30-minute cycle; do not overclaim).
+- Watchlist line now matches the privacy declarations: local until
+  push opt-in, then synced as anonymous alert preferences.
+- Senate source corrected to the Office of Public Records EFD system
+  (the Select Committee on Ethics attribution was wrong).
+- Verify link corrected to efdsearch.senate.gov.
+
+=======================================================================
+2. APP REVIEW NOTES (REQUIRED -- paste verbatim into ASC App Review
+   Information -> Notes)
+=======================================================================
+
+APP_REVIEW_NOTES:
+Congress Trade Alerts is an informational civic-transparency tool built on public STOCK Act disclosure data: the periodic transaction reports that members of the US House and Senate are required by law to file. All data comes from official government sources -- the US House Office of the Clerk financial disclosure portal and the US Senate Office of Public Records electronic financial disclosure system.
+
+WHAT THE APP DOES NOT DO (re guidelines 3.1.1 and 3.2.1):
+- No trading of any kind. The app cannot place, route, or facilitate any order or transaction.
+- No brokerage integration and no links to any brokerage, exchange, or trading service.
+- No investment advice or recommendations. The app reports what elected officials have publicly disclosed; a prominent not-investment-advice disclaimer appears on the About and Methodology screens.
+- No handling of money, payments, deposits, or financial accounts of any kind.
+- The word "Trade" in the name refers to the disclosed trades of members of Congress that the app reports on, not to any trading functionality.
+
+ACCOUNTS AND SIGN-IN:
+- The app has no account system, no sign-in, and no registration anywhere. Sign-in is not required for review and no demo account exists or is needed: every feature is reachable on first launch.
+
+PUSH NOTIFICATIONS:
+- Push is strictly opt-in via a toggle in Settings (off by default). Enabling it registers an anonymous push token plus alert preferences with our server; turning it off deletes both from the server. No personal data is collected. No analytics SDK, no tracking, no third-party SDKs.
+
+PURCHASES (re guideline 3.1.3(f) -- free stand-alone app):
+- There is no purchase surface anywhere in the app: no in-app purchases, no external purchase links, no checkout, and no pricing displayed in the app.
+- A paid tier exists only on the developer website for the companion web product. The app does not link to that checkout and does not promote it. One FAQ answer factually describes the free-vs-paid split of the web service, with no prices, no links, and no call to action.
+
+METADATA ACCURACY (re guideline 2.3):
+- The description and screenshots reflect the shipped build. Price-performance comparisons that exist on the web product are not present in this build and are not claimed in the listing.
+
+Developer: Freshcod3s LLC. Website: https://congresstradealerts.com (privacy policy at /privacy, terms at /terms, data deletion at /delete).
+
+(ASC "Sign-in required" checkbox: NO. Leave demo credentials blank.)
+
+=======================================================================
+3. CATEGORY RECOMMENDATION
+=======================================================================
+
 PRIMARY_CATEGORY: News
 SECONDARY_CATEGORY: Reference
+
+Rationale: the app is a feed of newly filed public government records
+plus daily analysis, which is News; the member/ticker/committee lookup
+and methodology surfaces are Reference. Explicitly NOT Finance: the
+Finance category invites 3.1.1/3.2.1 financial-services scrutiny
+(trading, advice, money movement) that this app has none of, and the
+civic-transparency positioning (per CLAUDE.md strategic positioning:
+civic tool, not fintech) is better served by News. Matches the Play
+listing's News & Magazines primary for cross-store consistency.
+
+=======================================================================
+4. URLS
+=======================================================================
+
 SUPPORT_URL: https://congresstradealerts.com
 MARKETING_URL: https://congresstradealerts.com
 PRIVACY_POLICY_URL: https://congresstradealerts.com/privacy
-COPYRIGHT: (c) 2026 Joe Crosen
+(Terms at https://congresstradealerts.com/terms and data deletion at
+https://congresstradealerts.com/delete -- no dedicated ASC fields, but
+both are cited in the review notes above and must stay live.)
 
-AGE_RATING_QUESTIONNAIRE_INPUTS:
-The ASC age-rating questionnaire computes the final rating from a
-multi-question form. Apple's questionnaire output decides the rating;
-the inputs below are documented so Joe can reproduce the answer set
-during submission. Expected outcome at these inputs is 12+ (driven by
-"Infrequent/Mild Mature/Suggestive Themes" being plausibly NO and the
-news-reporting nature triggering at most a 12+ default for unrestricted
-financial reporting context).
+=======================================================================
+5. COPYRIGHT + AGE RATING
+=======================================================================
 
-- Frequent/Intense Mature or Suggestive Themes: NO
-- Frequent/Intense Realistic Violence: NO
-- Information about Gambling: NO
-- Frequent/Intense Cartoon or Fantasy Violence: NO
-- Unrestricted Web Access: NO
-- Gambling: NO
-- Sexual Content or Nudity: NO
-- Profanity or Crude Humor: NO
-- Alcohol, Tobacco, or Drug Use: NO
-- Mature/Suggestive Themes: NO
-- Horror/Fear Themes: NO
-- Medical/Treatment Information: NO
+COPYRIGHT: (c) 2026 Freshcod3s LLC
+(Seller identity is the LLC per launch decisions; supersedes the
+personal-name line in the 2026-06-09 draft.)
+
+AGE_RATING_SUMMARY: Expected 4+ -- informational app over public
+government records; every ASC content toggle answers NO (no gambling,
+no violence, no mature themes, no medical info, no unrestricted web
+access). Assumption stated for the record: at all-NO inputs Apple's
+questionnaire computes the minimum band (4+ on the legacy scale; the
+lowest band on the post-2025 global scale). If the current ASC form
+adds a financial-topics or news-context question that bumps the
+computed result to 12+/13+, accept the computed output -- do NOT
+self-select a higher rating and do not overclaim. The questionnaire
+output is authoritative; the inputs below reproduce the answer set.
+
+AGE_RATING_QUESTIONNAIRE_INPUTS: see store/app-store/age-rating.md --
+the authoritative answer set for the current (2026) ASC questionnaire,
+including the Unrestricted Web Access rationale and export-compliance
+notes. (The legacy pre-2026 input list that used to live here is
+superseded by that file.)

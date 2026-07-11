@@ -6,9 +6,9 @@ in `store/app-store/metadata.txt` and privacy declarations in
 branch; content stays stable post-merge.
 
 URL values (privacy policy, support URL, marketing URL) are not
-inlined here -- they live in `store/app-store/metadata.txt:44-46` as
-the single source of truth. This doc references those lines so any
-URL change updates one file, not two.
+inlined here -- they live in `store/app-store/metadata.txt` section
+"4. URLS" as the single source of truth. This doc references that
+section so any URL change updates one file, not two.
 
 ## Pre-flight gates (blocking)
 
@@ -25,22 +25,24 @@ URL change updates one file, not two.
 
 ## ASC App Information
 
-Source: `store/app-store/metadata.txt` (line refs below). Joe pastes
-each value into the matching ASC field.
+Source: `store/app-store/metadata.txt` (restructured 2026-07-11 into
+numbered sections; section refs below). Joe pastes each value into the
+matching ASC field.
 
-| ASC field | Source | metadata.txt line |
+| ASC field | Source | metadata.txt section |
 | --- | --- | --- |
-| Name (30 chars) | `Congress Trade Alerts` | 7 |
-| Subtitle (30) | `Capitol Hill Stock Disclosures` | 8 |
-| Promotional Text (170) | per file | 9 |
-| Description (4000) | per file | 11-39 |
-| Keywords (100) | per file | 41 |
-| Primary Category | News | 42 |
-| Secondary Category | Reference | 43 |
-| Support URL | per metadata.txt | 44 |
-| Marketing URL | per metadata.txt | 45 |
-| Privacy Policy URL | per metadata.txt | 46 |
-| Copyright | per metadata.txt | 47 |
+| Name (30 chars) | `Congress Trade Alerts` | 1. CORE LISTING FIELDS |
+| Subtitle (30) | `Capitol Hill Stock Disclosures` | 1. CORE LISTING FIELDS |
+| Promotional Text (170) | per file | 1. CORE LISTING FIELDS |
+| Description (4000) | per file | 1. CORE LISTING FIELDS |
+| Keywords (100) | per file | 1. CORE LISTING FIELDS |
+| Review Notes | APP_REVIEW_NOTES, paste verbatim | 2. APP REVIEW NOTES |
+| Primary Category | News | 3. CATEGORY RECOMMENDATION |
+| Secondary Category | Reference | 3. CATEGORY RECOMMENDATION |
+| Support URL | per metadata.txt | 4. URLS |
+| Marketing URL | per metadata.txt | 4. URLS |
+| Privacy Policy URL | per metadata.txt | 4. URLS |
+| Copyright | `(c) 2026 Freshcod3s LLC` | 5. COPYRIGHT + AGE RATING |
 
 ## App Privacy questionnaire
 
@@ -49,8 +51,9 @@ into ASC -> My Apps -> (CTA) -> App Privacy.
 
 - Tracking: **NO**
 - Data Linked to You: **NONE**
-- Data Not Linked to You: **Device ID** (Expo push token) for
-  App Functionality (push delivery); not tracked across apps
+- Data Not Linked to You: **Device ID** (Expo push token) + **Other
+  User Content** (watchlist alert preferences, sent only after push
+  opt-in), both App Functionality only; not tracked across apps
 
 ### Device ID classification -- rationale
 
@@ -66,15 +69,16 @@ classification:
 - aligns the `app.json` `privacyManifests` declaration with the
   questionnaire answer (consistency between manifest and ASC form is a
   review-flag risk if they disagree)
-- is consistent with the existing
-  `store/app-store/privacy-checklist.md:37` declaration
+- is consistent with the declaration in
+  `store/app-store/privacy-checklist.md` (Device ID row)
 
 Disclosed as: Device ID, Not Linked to User, Not Used for Tracking,
 Purpose: App Functionality.
 
 ### ASC review-notes box (paste verbatim)
 
-Source: `store/app-store/privacy-checklist.md:63-67`.
+Source: `store/app-store/privacy-checklist.md` (ASC review-notes
+one-liner section).
 
 > This app collects only an anonymous Expo push token plus subscription
 > preferences. The token is used solely to deliver push notifications.
@@ -83,20 +87,10 @@ Source: `store/app-store/privacy-checklist.md:63-67`.
 
 ## Age Rating questionnaire
 
-Source: `store/app-store/metadata.txt:49-69`. Expected outcome **12+**.
-All content-warning toggles = NO. Re-verify in ASC:
-
-- Frequent/Intense Mature or Suggestive Themes: NO
-- Realistic Violence: NO
-- Cartoon or Fantasy Violence: NO
-- Sexual Content or Nudity: NO
-- Profanity or Crude Humor: NO
-- Alcohol/Tobacco/Drug Use: NO
-- Mature/Suggestive Themes: NO
-- Horror/Fear Themes: NO
-- Medical/Treatment Information: NO
-- Gambling: NO
-- Unrestricted Web Access: NO
+Source: `store/app-store/age-rating.md` (authoritative -- the current
+2026 questionnaire answer set, incl. the Unrestricted Web Access
+rationale). Expected computed outcome **4+**; accept whatever ASC
+computes, never self-select higher. All content toggles = None/No.
 
 ## Export Compliance
 
@@ -122,7 +116,8 @@ software using only standard TLS).
 **Answer: NO third-party content.**
 
 All trade data is derived from US Government public records
-(House Clerk PTR + Senate EFD per `store/app-store/metadata.txt:27-29`).
+(House Clerk PTR + Senate EFD per `store/app-store/metadata.txt`
+section 1, DATA SOURCES).
 Government works are not subject to copyright (17 USC 105). No
 user-generated content, no licensed third-party media, no embedded
 fonts requiring license attribution beyond OSS licenses.
@@ -158,11 +153,11 @@ and cover their own required-reason API usage:
 | `expo-notifications` | UserDefaults [CA92.1] |
 | `expo-system-ui` | UserDefaults [CA92.1] |
 | `@react-native-async-storage/async-storage` | FileTimestamp [C617.1] |
-| `react-native/React/Resources` | UserDefaults [CA92.1], FileTimestamp [C617.1] |
-| `react-native/ReactCommon/cxxreact` | FileTimestamp [C617.1] |
-| `react-native/third-party-podspecs/boost` | FileTimestamp [C617.1], SystemBootTime [35F9.1] |
-| `react-native/third-party-podspecs/glog` | FileTimestamp [C617.1] |
-| `react-native/third-party-podspecs/RCT-Folly` | FileTimestamp [C617.1] |
+| `node_modules/react-native/React/Resources` | UserDefaults [CA92.1], FileTimestamp [C617.1] |
+| `node_modules/react-native/ReactCommon/cxxreact` | FileTimestamp [C617.1] |
+| `node_modules/react-native/third-party-podspecs/boost` | FileTimestamp [C617.1], SystemBootTime [35F9.1] |
+| `node_modules/react-native/third-party-podspecs/glog` | FileTimestamp [C617.1] |
+| `node_modules/react-native/third-party-podspecs/RCT-Folly` | FileTimestamp [C617.1] |
 | `expo-secure-store` (15.0.8) | No manifest -- Keychain access is exempt from required-reason API rules |
 
 Re-run the inventory after any `expo install` or major SDK bump:
@@ -217,7 +212,8 @@ requires a separate Beta App Review per build.
   - [ ] Receive a real push (worker dispatches a test trade)
   - [ ] Tap push -> deep link opens Trade Detail (`/trade/<id>`)
   - [ ] Universal link: open a production `/trade/<id>` URL (host per
-        `store/app-store/metadata.txt:44`) from Mail or Messages ->
+        `store/app-store/metadata.txt` section 4, URLS) from Mail or
+        Messages ->
         opens in-app (validates `associatedDomains` entitlement)
   - [ ] Toggle push OFF -> token removed from backend (verify via
         worker D1 query)
