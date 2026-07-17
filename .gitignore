@@ -73,3 +73,6 @@ local-ai/litellm.config.yaml
 # belongs in the private Worker repo, NOT this public repo. Keep local, never commit.
 docs/launch-gap-check-2026-06-12.md
 store/mac-cc-asc-prompt.md
+
+# EAS local credentials (keystore path + passwords) -- never commit, esp. in a PUBLIC repo
+credentials.json
