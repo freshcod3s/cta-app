@@ -122,17 +122,19 @@ Developer: Freshcod3s LLC. Website: https://congresstradealerts.com (privacy pol
 3. CATEGORY RECOMMENDATION
 =======================================================================
 
-PRIMARY_CATEGORY: News
+PRIMARY_CATEGORY: Finance
 SECONDARY_CATEGORY: Reference
 
-Rationale: the app is a feed of newly filed public government records
-plus daily analysis, which is News; the member/ticker/committee lookup
-and methodology surfaces are Reference. Explicitly NOT Finance: the
-Finance category invites 3.1.1/3.2.1 financial-services scrutiny
-(trading, advice, money movement) that this app has none of, and the
-civic-transparency positioning (per CLAUDE.md strategic positioning:
-civic tool, not fintech) is better served by News. Matches the Play
-listing's News & Magazines primary for cross-store consistency.
+Rationale: flipped from News on 2026-07-18 to keep the News +
+Reference slot clear for Track Lobby (its launch prep targets that
+pairing -- track-lobby/docs/ios-launch-prep.md) and keep the two
+listings differentiated; Finance is also where congressional-trading
+searches concentrate. Accepted trade-offs: Finance invites 3.1.1/3.2.1
+financial-services scrutiny, but the app has no trading, advice, or
+money movement and the review notes already say so; the Play listing
+stays News & Magazines for now, so the stores diverge deliberately.
+Civic-transparency positioning (per CLAUDE.md: civic tool, not
+fintech) carries in the listing copy rather than the category.
 
 =======================================================================
 4. URLS
