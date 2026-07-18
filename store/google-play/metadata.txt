@@ -33,15 +33,21 @@ Privacy
 - Anonymous push tokens only -- we do not collect any personal data
 - Open source: github.com/freshcod3s/cta-app
 
+Congress Trade Alerts is an informational public-records tool. It does not execute trades, connect to brokerage accounts, or provide investment advice.
+
 This app is not affiliated with the United States government or with any member of Congress. All data comes from public records that members of Congress are required by law to file under the Stop Trading on Congressional Knowledge Act of 2012.
 
 Free. No ads. Updated daily.
 
-PRIMARY_CATEGORY: News & Magazines
-SECONDARY_CATEGORY: Finance
-(Note: Play has a single primary category. "Finance" goes in the Tags
-field below, not as a true secondary category. ASC has true secondary;
-this field is for Joe's reference, NOT a paste target on Play.)
+PRIMARY_CATEGORY: Finance
+(Changed 2026-07-18. News & Magazines subjects the app to Play's News
+policy requirements -- article content, bylines, editorial contact
+page -- which a disclosure-data app cannot meet. Finance matches the
+core in-app experience (transaction feed, tickers, alerts) and the
+closest comparables. CTA provides no financial features: the
+Financial-features declaration in App content stays "My app doesn't
+provide any financial features" -- no trades, no brokerage links, no
+personalized advice.)
 
 CONTENT_RATING: Everyone
 (Final answer determined by Play's IARC questionnaire output. Inputs
