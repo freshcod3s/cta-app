@@ -346,3 +346,27 @@ Tooling: `bws` CLI v2.x + the wrappers in `scripts/`. Binding every session.
   why `minimal` prunes to an allowlist instead. The child still carries
   injected vault secrets in every mode (hence the env-dump ban); prefer
   `minimal` over `full`.
+
+---
+
+## Known Issues / Operational Notes
+
+Verified operational dead-ends -- do NOT re-attempt these:
+
+1. **Bitwarden vault route is DEAD for cta-app.** The cta-app BWS project
+   (UUID prefix `ac76651c-...`) returns 404 from Bitwarden, so `bws-exec.sh`
+   cannot inject `GOOGLE_PLAY_SA_JSON` -- or any cta-app secret -- until that
+   project is recreated. Working fallback for Play credentials: the gitignored
+   on-disk key at `store/google-play/service-account-key.json` (the same
+   credential `eas.json` uses).
+
+2. **CTA Play store-listing edits cannot be pushed via the androidpublisher
+   API.** The service account
+   `cta-play-publisher@freshcod3s-llc.iam.gserviceaccount.com` has
+   release-to-track rights (what `eas submit` uses) but NOT "Manage store
+   presence": `edits.commit` returns 403 (it can stage a `listings.update`, not
+   commit it). Separately, while the app is under active Misleading-Claims
+   enforcement the API refuses auto-send-for-review (`edits.commit` with
+   `changesNotSentForReview=false` -> 400, which points to the Console UI).
+   Conclusion: CTA store-listing changes and the policy re-review / appeal are
+   Console-only for now.
