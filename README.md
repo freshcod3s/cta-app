@@ -105,3 +105,8 @@ on the CTA Worker. Hardcoded in `/lib/api/client.ts`. No auth in v1.
 
 The workers.dev URL (`congress-trade-alerts.congresstrades.workers.dev`)
 is staging/canonical-infra; do NOT use it from the mobile client.
+
+## License
+
+AGPL-3.0 — the extraction of public records stays public; improvements stay
+open. Copyright (C) 2026 Freshcod3s LLC. Full text in [LICENSE](LICENSE).
