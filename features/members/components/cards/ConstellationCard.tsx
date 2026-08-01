@@ -11,7 +11,7 @@
 import { useMemo, useState } from "react";
 import { Pressable, Text, View } from "react-native";
 import { useRouter } from "expo-router";
-import Svg, { Circle, Line, Text as SvgText, G } from "react-native-svg";
+import Svg, { Circle, Line, Rect, Text as SvgText, G } from "react-native-svg";
 
 import type { MemberProfile } from "@/features/members/api/types";
 import {
@@ -19,6 +19,10 @@ import {
   RING_COLORS,
   type CNode,
 } from "@/features/members/constellation";
+import {
+  ConstellationDrillSheet,
+  type DrillEntry,
+} from "@/features/members/components/cards/ConstellationDrillSheet";
 import { useOpenInfo } from "@/features/info/store";
 import { ctaColors } from "@/lib/theme/tokens";
 import { Info } from "lucide-react-native";
@@ -43,6 +47,45 @@ export function ConstellationCard({ profile }: { profile: MemberProfile }) {
   const openInfo = useOpenInfo();
   const [width, setWidth] = useState(0);
   const height = heightFor(width || 360);
+
+  // In-place drill-down stack (web parity: pd-trade-panel). A node/ring tap
+  // pushes a card onto this stack instead of navigating away.
+  const [stack, setStack] = useState<DrillEntry[]>([]);
+  const pushEntry = (e: DrillEntry) => setStack((s) => [...s, e]);
+  const popEntry = () => setStack((s) => s.slice(0, -1));
+  const closeSheet = () => setStack([]);
+
+  // Tap-isolate (RN equivalent of the web's hover isolate :8122): selecting
+  // a node dims everything not connected to it (its committee ring stays);
+  // selecting a ring dims all other rings + off-ring nodes. Tap-out (the
+  // canvas background) clears.
+  const [isolate, setIsolate] = useState<{
+    nodeKey: string | null;
+    ringIdx: number | null;
+  } | null>(null);
+
+  const nodeDimmed = (n: CNode) =>
+    isolate != null &&
+    n.key !== isolate.nodeKey &&
+    !(isolate.ringIdx != null && n.ringIdx === isolate.ringIdx);
+  const ringDimmed = (i: number) =>
+    isolate != null && isolate.ringIdx !== i;
+
+  const openNode = (n: CNode) => {
+    setIsolate({ nodeKey: n.key, ringIdx: n.ringIdx >= 0 ? n.ringIdx : null });
+    pushEntry({
+      kind: "ticker",
+      symbol: n.ticker,
+      label: n.label,
+      memberName: profile.name,
+      memberTrades: (profile.trades ?? []).filter((t) => {
+        const k = (t.ticker ?? "").trim() || (t.asset_name ?? "").trim();
+        return k === n.key;
+      }),
+      conflict: n.conflict,
+      sector: n.sector,
+    });
+  };
 
   const data = useMemo(
     () =>
@@ -84,8 +127,20 @@ export function ConstellationCard({ profile }: { profile: MemberProfile }) {
       <View onLayout={(e) => setWidth(e.nativeEvent.layout.width)}>
         {data ? (
           <Svg width={width} height={height}>
-            {/* rings ("Other" is an overflow bucket, not a committee --
-                no navigation target, so no onPress) */}
+            {/* tap-out target: a background tap clears the isolate */}
+            <Rect
+              x={0}
+              y={0}
+              width={width}
+              height={height}
+              fill="#000000"
+              fillOpacity={0.01}
+              onPress={() => setIsolate(null)}
+            />
+
+            {/* rings -- tap opens the committee card IN PLACE (web parity:
+                highlightRing -> showCommitteeDetail) and isolates the ring.
+                "Other" is an overflow bucket, not a committee -- no card. */}
             {data.rings.map((ring, i) => (
               <Circle
                 key={`ring-${i}`}
@@ -93,16 +148,16 @@ export function ConstellationCard({ profile }: { profile: MemberProfile }) {
                 cy={cy}
                 r={ring.radius}
                 stroke={RING_COLORS[ring.colorIdx]}
-                strokeOpacity={0.22}
+                strokeOpacity={ringDimmed(i) ? 0.08 : 0.22}
                 strokeWidth={1}
                 fill="none"
                 onPress={
                   ring.isOther
                     ? undefined
-                    : () =>
-                        router.push(
-                          `/committee/${encodeURIComponent(ring.name)}`,
-                        )
+                    : () => {
+                        setIsolate({ nodeKey: null, ringIdx: i });
+                        pushEntry({ kind: "committee", name: ring.name });
+                      }
                 }
               />
             ))}
@@ -117,26 +172,24 @@ export function ConstellationCard({ profile }: { profile: MemberProfile }) {
                   x2={n.x}
                   y2={n.y}
                   stroke={n.conflict.severity === "direct" ? DIRECT : ADJACENT}
-                  strokeOpacity={0.18}
+                  strokeOpacity={nodeDimmed(n) ? 0.04 : 0.18}
                   strokeWidth={1}
                 />
               ) : null,
             )}
 
             {/* bubbles -- onPress on the G so taps on the halo, circle, OR
-                the label all navigate (react-native-svg hit-tests top-down,
-                and a bare SvgText on top would otherwise swallow the tap). */}
+                the label all open the in-place detail card (react-native-svg
+                hit-tests top-down, and a bare SvgText on top would otherwise
+                swallow the tap). Fund nodes (no ticker) open a card too --
+                the card handles the no-full-page case. */}
             {data.nodes.map((n) => {
               const s = strokeFor(n);
-              const tk = n.ticker;
               return (
                 <G
                   key={`node-${n.key}`}
-                  onPress={
-                    tk
-                      ? () => router.push(`/ticker/${encodeURIComponent(tk)}`)
-                      : undefined
-                  }
+                  opacity={nodeDimmed(n) ? 0.15 : 1}
+                  onPress={() => openNode(n)}
                 >
                   {/* invisible hit target: keep tap area >= 24px diameter
                       even for tiny bubbles (r can be as low as 6px). */}
@@ -259,6 +312,14 @@ export function ConstellationCard({ profile }: { profile: MemberProfile }) {
           </Text>
         ) : null}
       </View>
+
+      {/* in-place drill-down card stack (node/ring taps push onto it) */}
+      <ConstellationDrillSheet
+        stack={stack}
+        onPush={pushEntry}
+        onPop={popEntry}
+        onClose={closeSheet}
+      />
     </View>
   );
 }
