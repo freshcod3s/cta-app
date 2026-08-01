@@ -23,7 +23,11 @@ import { useOpenInfo } from "@/features/info/store";
 import { ctaColors } from "@/lib/theme/tokens";
 import { Info } from "lucide-react-native";
 
-const HEIGHT = 320;
+// Canvas height derives from the measured width (web parity: _sizeCanvas
+// narrow branch, H = clamp(360..520, W * 1.1)) so the disc radius scales
+// with the device instead of freezing at the old fixed-320 floor.
+const heightFor = (w: number) =>
+  Math.max(360, Math.min(520, Math.round(w * 1.1)));
 const DIRECT = ctaColors.sell; // red
 const ADJACENT = ctaColors.late; // amber
 
@@ -38,6 +42,7 @@ export function ConstellationCard({ profile }: { profile: MemberProfile }) {
   const router = useRouter();
   const openInfo = useOpenInfo();
   const [width, setWidth] = useState(0);
+  const height = heightFor(width || 360);
 
   const data = useMemo(
     () =>
@@ -47,17 +52,17 @@ export function ConstellationCard({ profile }: { profile: MemberProfile }) {
             profile.committee_tree ?? [],
             profile.name,
             width,
-            HEIGHT,
+            height,
           )
         : null,
-    [width, profile],
+    [width, height, profile],
   );
 
   // Need trades to draw anything.
   if (!profile.trades || profile.trades.length === 0) return null;
 
   const cx = width / 2;
-  const cy = HEIGHT / 2;
+  const cy = height / 2;
 
   return (
     <View className="mx-4 mb-3 overflow-hidden rounded-xl border border-gray-200 bg-gray-50 dark:border-gray-700 dark:bg-gray-800">
@@ -78,8 +83,9 @@ export function ConstellationCard({ profile }: { profile: MemberProfile }) {
       {/* canvas */}
       <View onLayout={(e) => setWidth(e.nativeEvent.layout.width)}>
         {data ? (
-          <Svg width={width} height={HEIGHT}>
-            {/* rings */}
+          <Svg width={width} height={height}>
+            {/* rings ("Other" is an overflow bucket, not a committee --
+                no navigation target, so no onPress) */}
             {data.rings.map((ring, i) => (
               <Circle
                 key={`ring-${i}`}
@@ -90,8 +96,13 @@ export function ConstellationCard({ profile }: { profile: MemberProfile }) {
                 strokeOpacity={0.22}
                 strokeWidth={1}
                 fill="none"
-                onPress={() =>
-                  router.push(`/committee/${encodeURIComponent(ring.name)}`)
+                onPress={
+                  ring.isOther
+                    ? undefined
+                    : () =>
+                        router.push(
+                          `/committee/${encodeURIComponent(ring.name)}`,
+                        )
                 }
               />
             ))}
@@ -154,7 +165,7 @@ export function ConstellationCard({ profile }: { profile: MemberProfile }) {
                     stroke={s?.color}
                     strokeWidth={s?.width ?? 0}
                   />
-                  {n.r >= 11 ? (
+                  {n.labeled ? (
                     <SvgText
                       x={n.x}
                       y={n.y + 3}
@@ -184,7 +195,7 @@ export function ConstellationCard({ profile }: { profile: MemberProfile }) {
             </SvgText>
           </Svg>
         ) : (
-          <View style={{ height: HEIGHT }} />
+          <View style={{ height }} />
         )}
       </View>
 
@@ -194,8 +205,12 @@ export function ConstellationCard({ profile }: { profile: MemberProfile }) {
           {data.rings.map((ring, i) => (
             <Pressable
               key={`legend-${i}`}
-              onPress={() =>
-                router.push(`/committee/${encodeURIComponent(ring.name)}`)
+              disabled={!!ring.isOther}
+              onPress={
+                ring.isOther
+                  ? undefined
+                  : () =>
+                      router.push(`/committee/${encodeURIComponent(ring.name)}`)
               }
               accessibilityRole="button"
               className="flex-row items-center gap-1.5 py-0.5"

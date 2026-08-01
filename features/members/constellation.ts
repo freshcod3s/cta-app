@@ -27,6 +27,7 @@ export const RING_COLORS = [
 
 const NODE_CAP = 30; // mobile cap (web uses 30 mobile / 60 desktop)
 const RING_CAP = 5; // fewer rings than web's 8 -- smaller canvas
+const LABEL_CAP = 10; // label the top-N bubbles by disclosed value
 
 export type CNodeConflict = {
   severity: "direct" | "adjacent";
@@ -44,7 +45,8 @@ export type CNode = {
   y: number;
   r: number;
   ringIdx: number; // -1 = inner core
-  targetR: number; // radius the relaxation re-pins this node to
+  targetR: number; // radius the relaxation attracts this node to
+  labeled: boolean; // top-LABEL_CAP by value -> draw the ticker label
 };
 
 export type CRing = {
@@ -52,6 +54,9 @@ export type CRing = {
   radius: number;
   colorIdx: number;
   conflictCount: number;
+  // The overflow "Other" ring (committees past RING_CAP). Not a real
+  // committee name -- callers must not link it to /committee/{name}.
+  isOther?: boolean;
 };
 
 export type Constellation = {
@@ -65,7 +70,7 @@ export type Constellation = {
 
 function aggregate(
   trades: TradeRecord[],
-): Omit<CNode, "x" | "y" | "r" | "ringIdx" | "targetR">[] {
+): Omit<CNode, "x" | "y" | "r" | "ringIdx" | "targetR" | "labeled">[] {
   const byKey = new Map<
     string,
     {
@@ -125,40 +130,67 @@ export function computeConstellation(
   const visible = agg.slice(0, NODE_CAP);
   const moreCount = Math.max(0, agg.length - visible.length);
 
-  // Rings = committees with overlap, ranked by exposure (cap RING_CAP).
-  const ranked = committeeExposure(trades, committeeTree ?? []).filter(
-    (c) => c.conflictCount > 0,
-  );
+  // Rings = the member's committees ranked by exposure -- UNFILTERED (web
+  // parity: ranked.slice(0,8)). Zero-conflict committees still ring the
+  // disc so the layout keeps structure instead of collapsing every bubble
+  // into the core band. Committees past the cap fold into one "Other" ring
+  // (web parity: otherComms), which catches conflicted bubbles whose
+  // committee didn't make the visual cap.
+  const ranked = committeeExposure(trades, committeeTree ?? []);
   const ringComms = ranked.slice(0, RING_CAP);
+  const otherComms = ranked.slice(RING_CAP);
+  const hasOther = otherComms.length > 0;
 
   const cx = width / 2;
   const cy = height / 2;
   const maxR = Math.min(width, height) / 2 - 22;
-  const ringCount = Math.max(ringComms.length, 1);
+  const ringCount = ringComms.length + (hasOther ? 1 : 0);
 
+  // Ring band 0.35-0.95 of maxR (web parity: _sizeCanvas ringRadii).
+  const ringRadius = (i: number) =>
+    maxR * (0.35 + 0.6 * ((i + 1) / Math.max(ringCount, 1)));
   const rings: CRing[] = ringComms.map((c, i) => ({
     name: c.committee,
-    radius: maxR * (0.45 + 0.5 * ((i + 1) / ringCount)),
+    radius: ringRadius(i),
     colorIdx: i % RING_COLORS.length,
     conflictCount: c.conflictCount,
   }));
+  if (hasOther) {
+    rings.push({
+      name: "Other",
+      radius: ringRadius(ringComms.length),
+      colorIdx: ringComms.length % RING_COLORS.length,
+      conflictCount: otherComms.reduce((s, c) => s + c.conflictCount, 0),
+      isOther: true,
+    });
+  }
 
-  // sqrt size scale -> radius [6, rMax]
+  // sqrt size scale toward the web's [9, 44], proportional to the disc.
+  // (The old Math.min(26, maxR * 0.28) clamp meant 26 always won at phone
+  // sizes -- the responsive term was dead code.)
   const maxHi = Math.max(...visible.map((n) => n.totalHi), 1);
-  const rMax = Math.max(12, Math.min(26, maxR * 0.28));
+  const rMin = 8;
+  const rMax = Math.max(18, Math.min(44, maxR * 0.26));
   const sizeFor = (hi: number) =>
-    6 + (Math.sqrt(hi) / Math.sqrt(maxHi)) * (rMax - 6);
+    rMin + (Math.sqrt(hi) / Math.sqrt(maxHi)) * (rMax - rMin);
 
-  // Assign each node a ring (matched committee) or the inner core (-1).
-  const withRing = visible.map((n) => {
+  // Assign each node a ring (matched committee), the Other ring (conflicted
+  // but past the ring cap, web parity), or the inner core (-1). `visible`
+  // is sorted by value desc, so index < LABEL_CAP = the top bubbles.
+  const withRing = visible.map((n, idx) => {
     let ringIdx = -1;
     if (n.conflict) {
-      const idx = ringComms.findIndex((c) =>
+      const found = ringComms.findIndex((c) =>
         committeeMatch(c.committee, n.conflict!.committee),
       );
-      ringIdx = idx; // -1 if the committee didn't make the ring cap
+      ringIdx = found >= 0 ? found : hasOther ? ringComms.length : -1;
     }
-    return { ...n, ringIdx, r: sizeFor(n.totalHi) };
+    return {
+      ...n,
+      ringIdx,
+      r: sizeFor(n.totalHi),
+      labeled: idx < LABEL_CAP,
+    };
   });
 
   // Seed positions: group by ring, spread evenly by angle around the ring.
@@ -170,7 +202,11 @@ export function computeConstellation(
   }
   const GOLDEN = 2.399963; // golden angle -> even phyllotaxis packing
   const coreBase = 26 + 18; // clear of the center node
-  const coreSpan = Math.max(24, maxR * 0.32);
+  // Core disc reaches the innermost ring (or 90% of the disc when the
+  // member has no committees at all) instead of a fixed 44px band -- the
+  // fixed band left ~2/3 of the canvas empty for ring-less members.
+  const coreMax = rings.length ? rings[0].radius - 14 : maxR * 0.9;
+  const coreSpan = Math.max(24, coreMax - coreBase);
   const nodes: CNode[] = [];
   for (const [ringIdx, group] of groups) {
     const count = group.length;
@@ -226,18 +262,23 @@ export function computeConstellation(
         }
       }
     }
-    // re-pin toward each node's target radius (ring or sunflower band),
-    // keeping clear of the center node. A soft blend lets collisions spread
-    // nodes angularly without collapsing the ring/disc structure.
+    // SOFT radial attraction toward each node's target radius (web parity:
+    // forceRadial(0.35)). The pull is partial and decays across iterations
+    // (like d3's alpha), so collision pressure can push crowded nodes off
+    // their exact radius -- the old hard re-pin (blend 1) snapped every
+    // ring node back each pass, so collision could only ever slide nodes
+    // angularly and dense rings never spread. Clearance of the center node
+    // stays a hard floor; the disc edge is a hard ceiling.
+    const decay = 1 - iter / ITER;
     for (const n of nodes) {
       let ang = Math.atan2(n.y - cy, n.x - cx);
       if (Number.isNaN(ang)) ang = 0;
       const minClear = centerR + n.r + 4;
       const cur = Math.hypot(n.x - cx, n.y - cy);
       const want = Math.max(minClear, n.targetR);
-      // ring nodes pin hard to their ring; core nodes keep some freedom
-      const blend = n.ringIdx >= 0 ? 1 : 0.5;
-      const rr = cur + (want - cur) * blend;
+      const blend = (n.ringIdx >= 0 ? 0.35 : 0.22) * decay;
+      let rr = cur + (want - cur) * blend;
+      rr = Math.min(Math.max(rr, minClear), maxR);
       n.x = cx + Math.cos(ang) * rr;
       n.y = cy + Math.sin(ang) * rr;
     }
