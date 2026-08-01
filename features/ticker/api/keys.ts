@@ -11,4 +11,8 @@ export const tickerKeys = {
   // Paginated congressional trades on a ticker from
   // GET /api/trades?ticker={symbol}.
   trades: (symbol: string) => [...tickerKeys.all, "trades", symbol] as const,
+  // Per-politician aggregates + cluster buys from
+  // GET /api/tickers/{symbol}/congressional.
+  congressional: (symbol: string) =>
+    [...tickerKeys.all, "congressional", symbol] as const,
 };

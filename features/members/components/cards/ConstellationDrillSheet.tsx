@@ -16,10 +16,11 @@
 // router.push navigation for every card kind.
 //
 // Presentation mirrors InfoSheet (Modal + dimmed backdrop + rounded sheet);
-// data comes from the existing feature hooks (useTickerInfo, useTickerTrades,
-// useCommitteeMembers, useMemberProfile) so no new endpoints and no cache
-// forks. All figures are disclosure-derived (no price/return display).
-import { useMemo } from "react";
+// data comes from the feature hooks (useTickerInfo, useTickerCongressional,
+// useCommitteeMembers, useMemberProfile) with no cache forks. All figures are
+// disclosure-derived (no price/return display) -- the congressional table's
+// dollar fields are amount-band midpoints, outside the RETURNS_DISPLAY gate.
+import { useMemo, useState } from "react";
 import { Modal, Pressable, ScrollView, Text, View } from "react-native";
 import { useRouter } from "expo-router";
 import { openBrowserAsync } from "expo-web-browser";
@@ -36,11 +37,19 @@ import {
 } from "lucide-react-native";
 
 import type { TradeRecord } from "@/features/trades/api/types";
+import type { TickerCongressionalTrader } from "@/features/ticker/api/types";
 import type { CNodeConflict } from "@/features/members/constellation";
-import { useTickerInfo, useTickerTrades } from "@/features/ticker/api/queries";
+import {
+  useTickerCongressional,
+  useTickerInfo,
+} from "@/features/ticker/api/queries";
 import { useCommitteeMembers } from "@/features/committees/api/queries";
 import { useMemberProfile } from "@/features/members/api/queries";
-import { displayName, formatMoneyShort } from "@/lib/util/display";
+import {
+  displayName,
+  formatMoneyShort,
+  formatShortDate,
+} from "@/lib/util/display";
 import { ctaColors } from "@/lib/theme/tokens";
 
 export type DrillEntry =
@@ -180,6 +189,156 @@ const isBuyTx = (tx: string | null | undefined) =>
   /buy|purchase/i.test(tx ?? "");
 const isSellTx = (tx: string | null | undefined) => /sell|sale/i.test(tx ?? "");
 
+// --- congressional activity table (web parity: renderTickerCongressional) --
+//
+// Sort + filter run CLIENT-side over the cached congressional payload (web
+// parity: the modal re-renders from window._tickerCongState, no re-fetch).
+// Badges toggle: tapping the active party/chamber filter clears it.
+
+type CongSort = "recent" | "trades" | "position";
+
+const CONG_SORTS: { mode: CongSort; label: string }[] = [
+  { mode: "recent", label: "Most recent" },
+  { mode: "trades", label: "Most trades" },
+  { mode: "position", label: "Biggest position" },
+];
+
+const CONG_ROW_CAP = 50;
+
+const byLatestDate = (
+  a: TickerCongressionalTrader,
+  b: TickerCongressionalTrader,
+) => (b.latest_trade_date ?? "").localeCompare(a.latest_trade_date ?? "");
+
+const CONG_CMP: Record<
+  CongSort,
+  (a: TickerCongressionalTrader, b: TickerCongressionalTrader) => number
+> = {
+  recent: byLatestDate,
+  trades: (a, b) => b.trade_count - a.trade_count || byLatestDate(a, b),
+  position: (a, b) =>
+    b.biggest_position - a.biggest_position || byLatestDate(a, b),
+};
+
+// One member row: [party][chamber][name][net pill] over [count + date].
+// Every indexed value is tappable -- party/chamber badges toggle the in-card
+// filter, the date opens the source filing, the row pushes the member card.
+function CongTraderRow({
+  t,
+  onPush,
+  onToggleParty,
+  onToggleChamber,
+}: {
+  t: TickerCongressionalTrader;
+  onPush: (e: DrillEntry) => void;
+  onToggleParty: (party: string) => void;
+  onToggleChamber: (chamber: string) => void;
+}) {
+  const netLabel =
+    t.net_direction === "buy"
+      ? "Net buy"
+      : t.net_direction === "sell"
+        ? "Net sell"
+        : "Mixed";
+  const netCls =
+    t.net_direction === "buy"
+      ? "text-cta-buy"
+      : t.net_direction === "sell"
+        ? "text-cta-sell"
+        : "text-gray-500 dark:text-gray-400";
+  const partyCls =
+    t.party === "D"
+      ? "bg-cta-dem"
+      : t.party === "R"
+        ? "bg-cta-rep"
+        : "bg-gray-400 dark:bg-gray-600";
+  const dateStr = t.latest_trade_date
+    ? formatShortDate(t.latest_trade_date)
+    : null;
+  const breakdown =
+    t.buy_count > 0 && t.sell_count > 0
+      ? ` (${t.buy_count}B/${t.sell_count}S)`
+      : "";
+
+  return (
+    <Pressable
+      accessibilityRole="button"
+      accessibilityLabel={`View ${displayName(t.politician)}'s profile`}
+      onPress={() => onPush({ kind: "member", name: t.politician })}
+      android_ripple={{ color: "rgba(99,102,241,0.12)" }}
+      className="py-2.5"
+    >
+      <View className="flex-row items-center gap-1.5">
+        {t.party ? (
+          <Pressable
+            accessibilityRole="button"
+            accessibilityLabel={`Filter to ${t.party} only`}
+            onPress={() => onToggleParty(t.party!)}
+            hitSlop={6}
+            className={`rounded px-1.5 py-0.5 ${partyCls}`}
+          >
+            <Text className="text-[10px] font-bold text-white">
+              {t.party}
+              {t.state ? `-${t.state}` : ""}
+            </Text>
+          </Pressable>
+        ) : null}
+        {t.chamber ? (
+          <Pressable
+            accessibilityRole="button"
+            accessibilityLabel={`Filter to ${t.chamber} only`}
+            onPress={() => onToggleChamber(t.chamber!)}
+            hitSlop={6}
+            className="rounded border border-gray-300 px-1.5 py-0.5 dark:border-gray-600"
+          >
+            <Text className="text-[10px] text-gray-600 dark:text-gray-300">
+              {t.chamber}
+            </Text>
+          </Pressable>
+        ) : null}
+        <Text
+          className="flex-1 text-sm font-medium text-gray-900 dark:text-gray-100"
+          numberOfLines={1}
+        >
+          {displayName(t.politician)}
+        </Text>
+        <Text className={`text-[11px] font-semibold ${netCls}`}>
+          {netLabel}
+        </Text>
+      </View>
+      <View className="mt-1 flex-row items-center">
+        <Text className="text-[11px] text-gray-500 dark:text-gray-400">
+          {t.trade_count} trade{t.trade_count === 1 ? "" : "s"}
+          {breakdown}
+          {dateStr ? " · " : ""}
+        </Text>
+        {dateStr ? (
+          t.latest_source_url ? (
+            <Pressable
+              accessibilityRole="link"
+              accessibilityLabel="Open source filing"
+              onPress={() =>
+                void openBrowserAsync(t.latest_source_url!).catch(() => {
+                  /* best-effort */
+                })
+              }
+              hitSlop={6}
+            >
+              <Text className="text-[11px] text-cta-accent underline">
+                {dateStr} {"↗"}
+              </Text>
+            </Pressable>
+          ) : (
+            <Text className="text-[11px] text-gray-500 dark:text-gray-400">
+              {dateStr}
+            </Text>
+          )
+        ) : null}
+      </View>
+    </Pressable>
+  );
+}
+
 // --- ticker card ---------------------------------------------------------
 
 function TickerDrill({
@@ -192,7 +351,16 @@ function TickerDrill({
   onNavigate: (route: string) => void;
 }) {
   const info = useTickerInfo(entry.symbol ?? "");
-  const congress = useTickerTrades(entry.symbol ?? "");
+  const congress = useTickerCongressional(entry.symbol ?? "");
+
+  // In-card sort + filter over the congressional table (web parity:
+  // _tickerCongState.sort / .filter). Local to the drill card so pushing a
+  // nested card and coming back resets to the defaults, like the web modal.
+  const [congSort, setCongSort] = useState<CongSort>("recent");
+  const [congFilter, setCongFilter] = useState<{
+    party: string | null;
+    chamber: string | null;
+  }>({ party: null, chamber: null });
 
   // This member's stats on the node (from the profile trades already loaded
   // -- web parity: showTickerPanel derives from node.trades).
@@ -209,23 +377,31 @@ function TickerDrill({
     .sort()
     .pop();
 
-  // Who else in Congress trades it: aggregate the loaded disclosure rows by
-  // politician, sized + sorted by row count. Honesty: the list is derived
-  // from the most recent disclosures loaded, and says so.
-  const traders = useMemo(() => {
-    const rows = congress.data?.flat ?? [];
-    const byPol = new Map<string, { count: number; party: string | null }>();
-    for (const t of rows) {
-      const cur = byPol.get(t.politician) ?? { count: 0, party: t.party };
-      cur.count += 1;
-      byPol.set(t.politician, cur);
-    }
-    return Array.from(byPol.entries())
-      .map(([name, v]) => ({ name, ...v }))
-      .sort((a, b) => b.count - a.count);
-  }, [congress.data?.flat]);
-  const loadedCount = congress.data?.flat.length ?? 0;
-  const totalCount = congress.data?.total ?? 0;
+  // Who else in Congress trades it: the server-aggregated congressional
+  // table (one row per politician, complete -- replaces the old
+  // loaded-pages approximation), filtered + sorted in-card.
+  const allTraders = congress.data?.traders;
+  const congRows = useMemo(() => {
+    const traders = allTraders ?? [];
+    return traders
+      .filter((t) => {
+        if (congFilter.party && t.party !== congFilter.party) return false;
+        if (congFilter.chamber && t.chamber !== congFilter.chamber)
+          return false;
+        return true;
+      })
+      .sort(CONG_CMP[congSort]);
+  }, [allTraders, congSort, congFilter]);
+  const totalTraders = allTraders?.length ?? 0;
+
+  const toggleParty = (party: string) =>
+    setCongFilter((f) => ({ ...f, party: f.party === party ? null : party }));
+  const toggleChamber = (chamber: string) =>
+    setCongFilter((f) => ({
+      ...f,
+      chamber: f.chamber === chamber ? null : chamber,
+    }));
+  const filterActive = congFilter.party != null || congFilter.chamber != null;
 
   return (
     <View>
@@ -276,40 +452,99 @@ function TickerDrill({
 
       {entry.symbol ? (
         <>
-          <SectionLabel>Traded by</SectionLabel>
+          <SectionLabel>Congressional activity</SectionLabel>
           {congress.isLoading ? (
             <ShimmerRows />
           ) : congress.isError ? (
             <LoadError onRetry={() => congress.refetch()} />
-          ) : traders.length ? (
+          ) : totalTraders === 0 ? (
+            <Text className="text-sm text-gray-500 dark:text-gray-400">
+              No Congress member has disclosed trading this ticker.
+            </Text>
+          ) : (
             <>
-              <RowGroup>
-                {traders.slice(0, 12).map((p, i) => (
-                  <View
-                    key={p.name}
+              <View className="mb-1.5 flex-row flex-wrap items-center gap-1.5">
+                {CONG_SORTS.map((s) => (
+                  <Pressable
+                    key={s.mode}
+                    accessibilityRole="button"
+                    accessibilityLabel={`Sort by ${s.label.toLowerCase()}`}
+                    accessibilityState={{ selected: congSort === s.mode }}
+                    onPress={() => setCongSort(s.mode)}
                     className={
-                      i > 0
-                        ? "border-t border-gray-100 dark:border-gray-800"
-                        : ""
+                      congSort === s.mode
+                        ? "rounded-lg border border-cta-accent/40 bg-cta-accent/10 px-2.5 py-1"
+                        : "rounded-lg border border-gray-200 px-2.5 py-1 dark:border-gray-700"
                     }
                   >
-                    <Row
-                      label={`${displayName(p.name)}${p.party ? ` (${p.party})` : ""}`}
-                      value={`${p.count}`}
-                      onPress={() => onPush({ kind: "member", name: p.name })}
-                    />
-                  </View>
+                    <Text
+                      className={
+                        congSort === s.mode
+                          ? "text-[11px] font-semibold text-cta-accent"
+                          : "text-[11px] text-gray-500 dark:text-gray-400"
+                      }
+                    >
+                      {s.label}
+                    </Text>
+                  </Pressable>
                 ))}
-              </RowGroup>
-              <Text className="mt-1.5 text-[11px] text-gray-500 dark:text-gray-500">
-                From the {loadedCount} most recent of {totalCount} disclosures
-                on {entry.symbol}.
-              </Text>
+              </View>
+              <View className="mb-2 flex-row flex-wrap items-center gap-1.5">
+                <Text className="text-[11px] text-gray-500 dark:text-gray-400">
+                  {congRows.length} of {totalTraders} member
+                  {totalTraders === 1 ? "" : "s"}
+                </Text>
+                {filterActive ? (
+                  <Pressable
+                    accessibilityRole="button"
+                    accessibilityLabel="Clear filters"
+                    onPress={() =>
+                      setCongFilter({ party: null, chamber: null })
+                    }
+                    className="rounded-lg border border-cta-late/40 bg-cta-late/10 px-2.5 py-1"
+                  >
+                    <Text className="text-[11px] font-medium text-amber-600 dark:text-amber-300">
+                      Clear filter
+                      {congFilter.party && congFilter.chamber ? "s" : ""}
+                      {congFilter.party ? ` · ${congFilter.party}` : ""}
+                      {congFilter.chamber ? ` · ${congFilter.chamber}` : ""} ×
+                    </Text>
+                  </Pressable>
+                ) : null}
+              </View>
+              {congRows.length === 0 ? (
+                <Text className="text-sm text-gray-500 dark:text-gray-400">
+                  No members match the current filter.
+                </Text>
+              ) : (
+                <>
+                  <RowGroup>
+                    {congRows.slice(0, CONG_ROW_CAP).map((t, i) => (
+                      <View
+                        key={t.politician}
+                        className={
+                          i > 0
+                            ? "border-t border-gray-100 dark:border-gray-800"
+                            : ""
+                        }
+                      >
+                        <CongTraderRow
+                          t={t}
+                          onPush={onPush}
+                          onToggleParty={toggleParty}
+                          onToggleChamber={toggleChamber}
+                        />
+                      </View>
+                    ))}
+                  </RowGroup>
+                  {congRows.length > CONG_ROW_CAP ? (
+                    <Text className="mt-1.5 text-[11px] text-gray-500 dark:text-gray-500">
+                      +{congRows.length - CONG_ROW_CAP} more on the full page.
+                    </Text>
+                  ) : null}
+                </>
+              )}
             </>
-          ) : (
-            <Text className="text-sm text-gray-500 dark:text-gray-400">
-              No other disclosures on file.
-            </Text>
           )}
         </>
       ) : null}

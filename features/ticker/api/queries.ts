@@ -13,7 +13,12 @@ import { apiFetch } from "@/lib/api/client";
 import { getTradesPageParam } from "@/features/trades/api/queries";
 import type { TradeRecord, TradesListPage } from "@/features/trades/api/types";
 import { tickerKeys } from "./keys";
-import type { TickerInfo, TickerInfoEnvelope } from "./types";
+import type {
+  TickerCongressional,
+  TickerCongressionalEnvelope,
+  TickerInfo,
+  TickerInfoEnvelope,
+} from "./types";
 
 // Worker accepts [A-Za-z0-9.\-]{1,10}; normalize to uppercase to match the
 // server (handleTrades uppercases ticker; handleTickerInfo trims+uppercases)
@@ -35,6 +40,26 @@ export function useTickerInfo(symbol: string) {
     enabled: sym.length > 0,
     staleTime: 1000 * 60 * 60,
     select: (env) => env.data as TickerInfo,
+  });
+}
+
+// useTickerCongressional -- GET /api/tickers/{symbol}/congressional. Every
+// member who has traded the ticker, pre-aggregated server-side (net
+// direction, buy/sell counts, biggest position, latest trade + source URL)
+// plus any detected 90-day cluster buys. Worker edge-caches 5 min; match
+// that staleTime so the app never re-fetches inside the server's own window.
+export function useTickerCongressional(symbol: string) {
+  const sym = normalizeSymbol(symbol);
+  return useQuery({
+    queryKey: tickerKeys.congressional(sym),
+    queryFn: ({ signal }) =>
+      apiFetch<TickerCongressionalEnvelope>(
+        `/api/tickers/${encodeURIComponent(sym)}/congressional`,
+        { signal },
+      ),
+    enabled: sym.length > 0,
+    staleTime: 1000 * 60 * 5,
+    select: (env) => env.data as TickerCongressional,
   });
 }
 
