@@ -47,6 +47,7 @@ export type CNode = {
   ringIdx: number; // -1 = inner core
   targetR: number; // radius the relaxation attracts this node to
   labeled: boolean; // top-LABEL_CAP by value -> draw the ticker label
+  rank: number; // 0-based value rank (0 = biggest) -- zoom label re-gating
 };
 
 export type CRing = {
@@ -70,7 +71,10 @@ export type Constellation = {
 
 function aggregate(
   trades: TradeRecord[],
-): Omit<CNode, "x" | "y" | "r" | "ringIdx" | "targetR" | "labeled">[] {
+): Omit<
+  CNode,
+  "x" | "y" | "r" | "ringIdx" | "targetR" | "labeled" | "rank"
+>[] {
   const byKey = new Map<
     string,
     {
@@ -190,6 +194,7 @@ export function computeConstellation(
       ringIdx,
       r: sizeFor(n.totalHi),
       labeled: idx < LABEL_CAP,
+      rank: idx,
     };
   });
 

@@ -8,10 +8,18 @@
 // Fill is neutral (returns are gated OFF, so no gain/loss coloring, matching
 // the web's returns-off state); conflict severity is carried entirely by the
 // stroke + halo. Static v1: no pan/pulse yet (layout settles once in JS).
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Pressable, Text, View } from "react-native";
 import { useRouter } from "expo-router";
 import Svg, { Circle, Line, Rect, Text as SvgText, G } from "react-native-svg";
+import { Gesture, GestureDetector } from "react-native-gesture-handler";
+import Animated, {
+  runOnJS,
+  useAnimatedReaction,
+  useAnimatedStyle,
+  useSharedValue,
+  withSpring,
+} from "react-native-reanimated";
 
 import type { MemberProfile } from "@/features/members/api/types";
 import {
@@ -34,6 +42,18 @@ const heightFor = (w: number) =>
   Math.max(360, Math.min(520, Math.round(w * 1.1)));
 const DIRECT = ctaColors.sell; // red
 const ADJACENT = ctaColors.late; // amber
+
+// Pinch-zoom bounds + the settle spring. The spring approximates the web
+// canvas pan's stiffness 0.18 / damping 0.78 per-frame feel (dashboard.html
+// _animatePanSpring) in reanimated's physical units -- tuned by hand, not a
+// unit conversion.
+const ZOOM_MIN = 1;
+const ZOOM_MAX = 3;
+const SETTLE_SPRING = { damping: 18, stiffness: 160, mass: 1 };
+
+// Label caps per zoom bucket: more labels as you zoom in (bucket 0 = 1x,
+// 1 = past ~1.45x, 2 = past ~2.2x -> label everything visible).
+const LABEL_CAPS = [10, 20, 99];
 
 function strokeFor(n: CNode): { color: string; width: number } | null {
   if (!n.conflict) return null;
@@ -87,6 +107,97 @@ export function ConstellationCard({ profile }: { profile: MemberProfile }) {
     });
   };
 
+  // --- pan + pinch-zoom (canvas transform; scale from center, 1x-3x) ------
+  // Pan is clamped to the scaled content bounds with rubber-band overflow;
+  // release springs back inside (at 1x the bounds are 0,0, so it springs
+  // to center exactly like the web canvas). Taps pass through: the pan
+  // gesture only activates after ~8px of travel.
+  const scale = useSharedValue(1);
+  const savedScale = useSharedValue(1);
+  const tx = useSharedValue(0);
+  const ty = useSharedValue(0);
+  const savedTx = useSharedValue(0);
+  const savedTy = useSharedValue(0);
+
+  // More labels when zoomed in: mirror the scale into a JS zoom bucket.
+  const [zoomBucket, setZoomBucket] = useState(0);
+  useAnimatedReaction(
+    () => (scale.value >= 2.2 ? 2 : scale.value >= 1.45 ? 1 : 0),
+    (bucket, prev) => {
+      if (bucket !== prev) runOnJS(setZoomBucket)(bucket);
+    },
+  );
+  const labelCap = LABEL_CAPS[zoomBucket];
+
+  // Reset the viewport when the member (or canvas size) changes.
+  useEffect(() => {
+    scale.value = 1;
+    savedScale.value = 1;
+    tx.value = 0;
+    ty.value = 0;
+    savedTx.value = 0;
+    savedTy.value = 0;
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [profile, width]);
+
+  const pinch = Gesture.Pinch()
+    .onUpdate((e) => {
+      scale.value = Math.min(
+        ZOOM_MAX,
+        Math.max(ZOOM_MIN, savedScale.value * e.scale),
+      );
+    })
+    .onEnd(() => {
+      savedScale.value = scale.value;
+      // Re-clamp the pan to the new scale's bounds.
+      const bx = ((scale.value - 1) * width) / 2;
+      const by = ((scale.value - 1) * height) / 2;
+      tx.value = withSpring(
+        Math.min(bx, Math.max(-bx, tx.value)),
+        SETTLE_SPRING,
+      );
+      ty.value = withSpring(
+        Math.min(by, Math.max(-by, ty.value)),
+        SETTLE_SPRING,
+      );
+      savedTx.value = Math.min(bx, Math.max(-bx, tx.value));
+      savedTy.value = Math.min(by, Math.max(-by, ty.value));
+    });
+
+  const pan = Gesture.Pan()
+    .minDistance(8)
+    .onUpdate((e) => {
+      const bx = ((scale.value - 1) * width) / 2;
+      const by = ((scale.value - 1) * height) / 2;
+      const rubber = (raw: number, bound: number) => {
+        "worklet";
+        if (raw > bound) return bound + (raw - bound) * 0.3;
+        if (raw < -bound) return -bound + (raw + bound) * 0.3;
+        return raw;
+      };
+      tx.value = rubber(savedTx.value + e.translationX, bx);
+      ty.value = rubber(savedTy.value + e.translationY, by);
+    })
+    .onEnd(() => {
+      const bx = ((scale.value - 1) * width) / 2;
+      const by = ((scale.value - 1) * height) / 2;
+      const cxv = Math.min(bx, Math.max(-bx, tx.value));
+      const cyv = Math.min(by, Math.max(-by, ty.value));
+      tx.value = withSpring(cxv, SETTLE_SPRING);
+      ty.value = withSpring(cyv, SETTLE_SPRING);
+      savedTx.value = cxv;
+      savedTy.value = cyv;
+    });
+
+  const canvasGesture = Gesture.Simultaneous(pinch, pan);
+  const canvasStyle = useAnimatedStyle(() => ({
+    transform: [
+      { translateX: tx.value },
+      { translateY: ty.value },
+      { scale: scale.value },
+    ],
+  }));
+
   const data = useMemo(
     () =>
       width > 0
@@ -123,10 +234,12 @@ export function ConstellationCard({ profile }: { profile: MemberProfile }) {
         <Info size={12} color={ctaColors.accent} />
       </Pressable>
 
-      {/* canvas */}
+      {/* canvas (pan + pinch-zoom; the card's overflow-hidden clips) */}
       <View onLayout={(e) => setWidth(e.nativeEvent.layout.width)}>
         {data ? (
-          <Svg width={width} height={height}>
+          <GestureDetector gesture={canvasGesture}>
+            <Animated.View style={canvasStyle}>
+              <Svg width={width} height={height}>
             {/* tap-out target: a background tap clears the isolate */}
             <Rect
               x={0}
@@ -218,7 +331,7 @@ export function ConstellationCard({ profile }: { profile: MemberProfile }) {
                     stroke={s?.color}
                     strokeWidth={s?.width ?? 0}
                   />
-                  {n.labeled ? (
+                  {n.rank < labelCap ? (
                     <SvgText
                       x={n.x}
                       y={n.y + 3}
@@ -246,7 +359,9 @@ export function ConstellationCard({ profile }: { profile: MemberProfile }) {
             >
               {data.center.label}
             </SvgText>
-          </Svg>
+              </Svg>
+            </Animated.View>
+          </GestureDetector>
         ) : (
           <View style={{ height }} />
         )}
