@@ -106,6 +106,7 @@ export default function TradeDetailScreen() {
           <SubscribeButton trade={query.data} />
           <CommitteeChips
             committees={memberProfile.data?.committees ?? []}
+            committeeTree={memberProfile.data?.committee_tree}
             loading={memberProfile.isLoading}
           />
           <TransactionHero trade={query.data} />

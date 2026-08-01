@@ -4,16 +4,27 @@
 // worker profile supplies the names) and on the trade detail (where the screen
 // fetches the trade politician's profile committees).
 //
-// `committees` is the canonical parent-committee name list, passed straight to
-// the worker's ?name= filter (the committee detail screen encodes it). `loading`
-// shows a slim shimmer instead of the empty copy while a caller's source query
-// is still in flight, so the trade detail doesn't flash "no committees" before
+// Sourcing: `committeeTree` (the worker's buildCommitteeTree over
+// politician_committees) is the maintained store and wins when present;
+// `committees` (the legacy politicians.committees CSV, populated by a one-shot
+// 45-name backfill and NULL for ~92% of current members) is the fallback only
+// when the tree is empty. Same fallback-chain idea as the web's
+// renderPdCommitteesLine. Parent-committee names go straight to the worker's
+// ?name= filter (the committee detail screen encodes them). `loading` shows a
+// slim shimmer instead of the empty copy while a caller's source query is
+// still in flight, so the trade detail doesn't flash "no committees" before
 // the member profile resolves.
 import { FlatList, Pressable, Text, View } from "react-native";
 import { Link } from "expo-router";
 import { ChevronRight } from "lucide-react-native";
 
-type Props = { committees?: string[]; loading?: boolean };
+import type { CommitteeTreeNode } from "@/features/members/api/types";
+
+type Props = {
+  committees?: string[];
+  committeeTree?: CommitteeTreeNode[] | null;
+  loading?: boolean;
+};
 
 function ShimmerChip({ className }: { className: string }) {
   return (
@@ -23,8 +34,17 @@ function ShimmerChip({ className }: { className: string }) {
   );
 }
 
-export function CommitteeChips({ committees = [], loading = false }: Props) {
-  if (!committees.length) {
+export function CommitteeChips({
+  committees = [],
+  committeeTree,
+  loading = false,
+}: Props) {
+  const treeNames = (committeeTree ?? [])
+    .map((node) => node.committee)
+    .filter(Boolean);
+  const names = treeNames.length ? treeNames : committees;
+
+  if (!names.length) {
     return (
       <View className="pb-2">
         <Text className="px-4 pb-2 text-xs uppercase text-gray-500 dark:text-gray-400">
@@ -53,7 +73,7 @@ export function CommitteeChips({ committees = [], loading = false }: Props) {
       <FlatList
         horizontal
         showsHorizontalScrollIndicator={false}
-        data={committees}
+        data={names}
         keyExtractor={(c) => c}
         contentContainerStyle={{ paddingHorizontal: 16, gap: 8 }}
         renderItem={({ item }) => (

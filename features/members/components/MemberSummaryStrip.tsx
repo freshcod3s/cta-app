@@ -13,13 +13,14 @@
 // disclosures" -- we never fabricate a number the data doesn't support,
 // and we never imply the loaded slice is the lifetime record.
 //
-// Committee chips reuse the existing CommitteeChips presentation contract
-// (committees: string[]); the worker profile endpoint DOES expose
-// committees, so unlike the trade-detail screen this list is usually
-// populated.
+// Committee chips reuse the CommitteeChips contract; the structured
+// committee_tree is the primary source (the legacy committees CSV is NULL
+// for most current members), so both are forwarded and CommitteeChips
+// picks tree-first.
 import { Text, View } from "react-native";
 
 import { CommitteeChips } from "@/features/trades/components/CommitteeChips";
+import type { CommitteeTreeNode } from "@/features/members/api/types";
 
 type Props = {
   // Lifetime disclosed-trade count from the worker (stats.total_trades).
@@ -31,6 +32,7 @@ type Props = {
   // caption's honesty -- "N of M loaded").
   loadedCount: number;
   committees: string[];
+  committeeTree?: CommitteeTreeNode[] | null;
 };
 
 export function MemberSummaryStrip({
@@ -38,6 +40,7 @@ export function MemberSummaryStrip({
   lateCount,
   loadedCount,
   committees,
+  committeeTree,
 }: Props) {
   const total = totalTrades ?? loadedCount;
   const tradeLabel = total === 1 ? "disclosed trade" : "disclosed trades";
@@ -69,7 +72,7 @@ export function MemberSummaryStrip({
           </Text>
         )}
       </View>
-      <CommitteeChips committees={committees} />
+      <CommitteeChips committees={committees} committeeTree={committeeTree} />
     </View>
   );
 }

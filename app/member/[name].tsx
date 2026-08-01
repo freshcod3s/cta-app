@@ -214,6 +214,7 @@ export default function MemberProfileScreen() {
         lateCount={lateCount}
         loadedCount={trades.length}
         committees={profile.committees}
+        committeeTree={profile.committee_tree}
       />
       {/* Web-parity profile cards (P3/P4). Each self-hides when its data is
           absent (e.g. the name-only fallback profile), so no inert boxes. */}
