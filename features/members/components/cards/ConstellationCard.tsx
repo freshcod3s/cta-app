@@ -7,25 +7,37 @@
 //
 // Fill is neutral (returns are gated OFF, so no gain/loss coloring, matching
 // the web's returns-off state); conflict severity is carried entirely by the
-// stroke + halo. Static v1: no pan/pulse yet (layout settles once in JS).
+// stroke + halo. Layout settles once in JS; pan/pinch is a reanimated
+// transform; a deterministic starfield (generateStars) sits behind the disc
+// with a small UI-thread twinkle subset (web parity: the canvas star loop).
 import { useEffect, useMemo, useState } from "react";
 import { Pressable, Text, View } from "react-native";
 import { useRouter } from "expo-router";
 import Svg, { Circle, Line, Rect, Text as SvgText, G } from "react-native-svg";
 import { Gesture, GestureDetector } from "react-native-gesture-handler";
 import Animated, {
+  Easing,
+  cancelAnimation,
   runOnJS,
+  useAnimatedProps,
   useAnimatedReaction,
   useAnimatedStyle,
+  useReducedMotion,
   useSharedValue,
+  withDelay,
+  withRepeat,
+  withSequence,
   withSpring,
+  withTiming,
 } from "react-native-reanimated";
 
 import type { MemberProfile } from "@/features/members/api/types";
 import {
   computeConstellation,
+  generateStars,
   RING_COLORS,
   type CNode,
+  type Star,
 } from "@/features/members/constellation";
 import {
   ConstellationDrillSheet,
@@ -60,6 +72,63 @@ function strokeFor(n: CNode): { color: string; width: number } | null {
   return n.conflict.severity === "direct"
     ? { color: DIRECT, width: 2.2 }
     : { color: ADJACENT, width: 1.6 };
+}
+
+// --- starfield -------------------------------------------------------------
+// The stars render inside the pan/zoom Animated.View, so they travel with
+// the disc exactly like the web's stars-inside-the-pan-translate -- no
+// parallax, on purpose. Color is slate-500: darker than the light card
+// (gray-50), lighter than the dark card (gray-800), so one hex reads as a
+// faint speck on both backgrounds without a color-scheme branch.
+const STAR_COLOR = "#64748b";
+const AnimatedCircle = Animated.createAnimatedComponent(Circle);
+
+// One pulsing star. Opacity oscillates trough <-> peak entirely on the UI
+// thread via animatedProps (no React re-render, zero JS work per frame).
+// Duration + delay derive from the star index, echoing the web's per-star
+// speed/phase (0.5-2.0 rad/s, random phase) without any Math.random. Peak
+// is capped well below the node labels so the sky never competes.
+function TwinkleStar({ star, index }: { star: Star; index: number }) {
+  const period = 1600 + (index % 7) * 380; // half-cycle 1.6-3.9s (web-ish)
+  const delay = (index % 11) * 260; // stagger so pulses never sync up
+  const peak = Math.min(0.45, star.baseOpacity + 0.22);
+  const trough = star.baseOpacity * 0.45;
+  const opacity = useSharedValue(star.baseOpacity);
+
+  useEffect(() => {
+    opacity.value = withDelay(
+      delay,
+      withRepeat(
+        withSequence(
+          withTiming(peak, {
+            duration: period,
+            easing: Easing.inOut(Easing.sin),
+          }),
+          withTiming(trough, {
+            duration: period,
+            easing: Easing.inOut(Easing.sin),
+          }),
+        ),
+        -1,
+        false,
+      ),
+    );
+    return () => cancelAnimation(opacity);
+  }, [opacity, delay, peak, trough, period]);
+
+  const animatedProps = useAnimatedProps(() => ({
+    fillOpacity: opacity.value,
+  }));
+
+  return (
+    <AnimatedCircle
+      cx={star.x}
+      cy={star.y}
+      r={star.r}
+      fill={STAR_COLOR}
+      animatedProps={animatedProps}
+    />
+  );
 }
 
 export function ConstellationCard({ profile }: { profile: MemberProfile }) {
@@ -212,6 +281,36 @@ export function ConstellationCard({ profile }: { profile: MemberProfile }) {
     [width, height, profile],
   );
 
+  // Starfield: regenerate only when the canvas size changes (web parity:
+  // the _starW guard keeps the field persistent across re-renders). The
+  // whole layer memoizes into one element tree, so isolate/zoom state
+  // changes never reconcile 120 circles -- only the ~14 twinkle stars own
+  // animators, and those run purely on the UI thread. Reduced motion (OS
+  // setting, via reanimated's hook) renders every star static instead.
+  const reducedMotion = useReducedMotion();
+  const stars = useMemo(
+    () => (width > 0 ? generateStars(width, height) : []),
+    [width, height],
+  );
+  const starLayer = useMemo(
+    () =>
+      stars.map((s, i) =>
+        s.twinkles && !reducedMotion ? (
+          <TwinkleStar key={`star-${i}`} star={s} index={i} />
+        ) : (
+          <Circle
+            key={`star-${i}`}
+            cx={s.x}
+            cy={s.y}
+            r={s.r}
+            fill={STAR_COLOR}
+            fillOpacity={s.baseOpacity}
+          />
+        ),
+      ),
+    [stars, reducedMotion],
+  );
+
   // Need trades to draw anything.
   if (!profile.trades || profile.trades.length === 0) return null;
 
@@ -240,6 +339,15 @@ export function ConstellationCard({ profile }: { profile: MemberProfile }) {
           <GestureDetector gesture={canvasGesture}>
             <Animated.View style={canvasStyle}>
               <Svg width={width} height={height}>
+            {/* starfield: MUST stay the bottom of the paint order, below
+                the tap-out Rect. react-native-svg hit-tests topmost-first
+                and bare Circles DO participate (GroupView.java hitTest /
+                RNSVGGroup.mm), so the only thing keeping star taps from
+                swallowing background taps is that the full-canvas Rect
+                above covers every star. Reorder this layer upward and the
+                tap-out breaks. */}
+            {starLayer}
+
             {/* tap-out target: a background tap clears the isolate */}
             <Rect
               x={0}

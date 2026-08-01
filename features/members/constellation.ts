@@ -299,3 +299,47 @@ export function computeConstellation(
     height,
   };
 }
+
+// --- Starfield -------------------------------------------------------------
+// Deep-space backdrop behind the disc (web parity: the 120-star canvas field
+// dashboard.html draws first each frame, inside the pan translate). Pure +
+// deterministic like the layout above: no Math.random -- every attribute
+// derives from the star index through fract(sin(n) * 43758.5453) (the classic
+// GLSL one-liner hash), so the same canvas size always yields the same field
+// and re-renders never reshuffle the sky.
+
+export type Star = {
+  x: number;
+  y: number;
+  r: number; // 0.3 - 1.5 px (web parity: Math.random() * 1.2 + 0.3)
+  baseOpacity: number; // resting fill opacity -- kept low so labels win
+  twinkles: boolean; // small subset pulses; the rest stay static
+};
+
+// fract(sin(n) * 43758.5453): cheap index hash, uniform-ish on [0, 1).
+// Distinct multiplier/offset pairs per attribute decorrelate the channels.
+function hash01(n: number): number {
+  const v = Math.sin(n) * 43758.5453123;
+  return v - Math.floor(v);
+}
+
+export function generateStars(
+  width: number,
+  height: number,
+  count = 120,
+): Star[] {
+  const stars: Star[] = [];
+  for (let i = 0; i < count; i++) {
+    stars.push({
+      x: hash01(i * 12.9898 + 78.233) * width,
+      y: hash01(i * 39.3468 + 11.135) * height,
+      r: 0.3 + hash01(i * 26.6519 + 53.758) * 1.2,
+      baseOpacity: 0.12 + hash01(i * 45.164 + 91.876) * 0.2,
+      // Every 9th star (offset 2) pulses -> exactly 14 of the default 120.
+      // Index-modulo keeps the count exact; positions are hashed anyway, so
+      // the pulsing subset still lands spatially scattered.
+      twinkles: i % 9 === 2,
+    });
+  }
+  return stars;
+}
