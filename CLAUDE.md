@@ -370,3 +370,23 @@ Verified operational dead-ends -- do NOT re-attempt these:
    `changesNotSentForReview=false` -> 400, which points to the Console UI).
    Conclusion: CTA store-listing changes and the policy re-review / appeal are
    Console-only for now.
+
+---
+
+## Release log
+
+### 2026-07-31 -- Android production launch (1.0.0, versionCode 4)
+
+- **2026-07-31 8:05 PM ET: Congress Trade Alerts is LIVE on Google Play
+  production** -- full rollout, US + rest of world. versionCode 4 (1.0.0),
+  `com.congresstradealerts.cta`, published via managed publishing. Review
+  cleared ~2026-07-26, after the 2026-07-24 Misleading-Claims rejection was
+  fixed with official .gov source URLs plus a non-affiliation disclaimer in
+  the full description. Listing:
+  https://play.google.com/store/apps/details?id=com.congresstradealerts.cta
+- Backend state verified 2026-07-31: Worker PRs #37-#41 all merged 2026-07-25
+  / 07-26; Senate feed healthy (the SQLITE_TOOBIG chunking fix holds, data
+  committing again); `/health?strict=true` green -- 40,551 trades, D1 + Redis
+  ok, pipeline not stale.
+
+- Listing copy follow-up: tracked in the private Worker repo CLAUDE.md.
