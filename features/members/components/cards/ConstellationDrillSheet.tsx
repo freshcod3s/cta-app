@@ -403,6 +403,17 @@ function TickerDrill({
     }));
   const filterActive = congFilter.party != null || congFilter.chamber != null;
 
+  // Cluster-buy callout (web parity: renderTickerClusterCallout) -- first
+  // detected cluster with 3+ politicians buying inside a rolling 7-day
+  // window in the last 90 days. Presentation-only: the clusters arrive
+  // pre-detected from the same congressional payload (server-side scanner),
+  // no client-side detection. The >= 3 guard mirrors the web even though
+  // the endpoint already filters.
+  const cluster =
+    (congress.data?.clusters ?? []).find(
+      (c) => (c.politician_count ?? 0) >= 3,
+    ) ?? null;
+
   return (
     <View>
       {info.data?.company_name ? (
@@ -448,6 +459,45 @@ function TickerDrill({
             />
           </RowGroup>
         </>
+      ) : null}
+
+      {cluster ? (
+        <View className="mt-4 rounded-xl border-2 border-cta-late/40 bg-cta-late/10 p-3">
+          <View className="flex-row flex-wrap items-center gap-x-2 gap-y-0.5">
+            <Text className="text-sm font-bold uppercase tracking-wider text-amber-600 dark:text-amber-400">
+              {"🔥"} Cluster purchase
+            </Text>
+            <Text className="text-[11px] text-amber-700 dark:text-amber-200/90">
+              {cluster.politician_count} members ·{" "}
+              {cluster.first_trade_date === cluster.last_trade_date
+                ? formatShortDate(cluster.first_trade_date)
+                : `${formatShortDate(cluster.first_trade_date)} → ${formatShortDate(cluster.last_trade_date)}`}
+              {cluster.total_midpoint_value > 0
+                ? ` · ~${formatMoneyShort(cluster.total_midpoint_value)} est. volume`
+                : ""}
+            </Text>
+          </View>
+          <View className="mt-2 flex-row flex-wrap gap-1.5">
+            {cluster.members.slice(0, 12).map((name) => (
+              <Pressable
+                key={name}
+                accessibilityRole="button"
+                accessibilityLabel={`View ${displayName(name)}`}
+                onPress={() => onPush({ kind: "member", name })}
+                className="rounded-lg border border-cta-late/30 bg-cta-late/15 px-2 py-1"
+              >
+                <Text className="text-[11px] font-medium text-amber-700 dark:text-amber-100">
+                  {displayName(name)}
+                </Text>
+              </Pressable>
+            ))}
+            {cluster.members.length > 12 ? (
+              <Text className="px-1 py-1 text-[11px] text-amber-700/70 dark:text-amber-200/70">
+                +{cluster.members.length - 12} more
+              </Text>
+            ) : null}
+          </View>
+        </View>
       ) : null}
 
       {entry.symbol ? (
