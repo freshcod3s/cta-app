@@ -1,35 +1,37 @@
-Google Play Console listing fields. Filled by CTA-App-1-10. ASCII only.
-Char limits annotated; counts verified at write time. Body text under
-"FULL_DESCRIPTION (max 4000):" is the description verbatim, formatted
-for Play's plain-text rendering (sentence-case section headers, no
-all-caps).
+Google Play Console listing fields. ASCII only. Char limits annotated;
+counts verified at write time (title 27/30, short 77/80, full 2408/4000).
 
-STAGED for vc5 (2026-07-31): Privacy section bullets + closing tagline
-updated to match the Data Safety declaration (anonymous device push
-token + chosen follows are stored; in-app deletion path). NOT live --
-the Play listing still carries the vc4-approved text; this ships with
-the vc5 release via Console. The .gov source links and non-affiliation
-disclaimer are the approved review-clearing text -- unchanged.
+TRANCHE-1 ASO (2026-08-02): title, short description, and full description
+rewritten per the ASO tranche-1 ticket for the Fri Aug 7 Console session.
+Title + short description are LOCKED copy from Joe -- verify counts, never
+reword. Privacy section carried VERBATIM from the vc5 listing (live since
+2026-08-01). The .gov source links and the non-affiliation disclaimer are
+the approved review-clearing text from the 2026-07-24 rejection fix --
+unchanged. NOT live until entered in Console: edits park under managed
+publishing, and the title change may trigger listing re-review. Field-by-
+field entry steps: docs/aso/runsheet-tranche1.md. Fact audit: every claim
+mapped to a shipped vc5 surface in docs/aso/fact-audit-tranche1.md.
 
-APP_NAME (max 30): Congress Trade Alerts
-SHORT_DESCRIPTION (max 80): Real-time STOCK Act alerts when Congress members file stock disclosures.
+APP_NAME (max 30): Congress Stock Trade Alerts
+SHORT_DESCRIPTION (max 80): Track House and Senate stock trades with alerts on new STOCK Act disclosures.
 
 FULL_DESCRIPTION (max 4000):
-Congress Trade Alerts surfaces every stock trade disclosed under the STOCK Act by members of the US House and Senate -- drawn from official public records, with no opinions, no spin, and no guesswork.
+Congress Trade Alerts tracks the stock transactions that members of the US House and Senate disclose under the STOCK Act. Get trade alerts when new filings appear, search and filter by member or company, and open the original government disclosure.
+
+Built as a Congress stock tracker for journalists, researchers, and civic-engaged citizens who want politician stock trades in one legible place, with the primary source always one tap away.
 
 What you get
-- Live feed of every congressional stock trade as it's disclosed
-- Filter by individual member to follow specific Representatives or Senators
+- A single feed of congressional stock trades from both chambers
 - Push alerts when a member you follow files a new disclosure
-- Plain-language methodology so you know exactly where the data comes from and how it's processed
-- Clear flags when a trade is filed late (the STOCK Act requires disclosure within 45 days; we surface that lag)
-
-Who it's for
-- Journalists tracking congressional compliance failures
-- Civic-engaged citizens watching their representatives' financial activity
-- Researchers studying public-record financial disclosure data
+- Follow any member or company ticker to shape the alerts you receive
+- A trade constellation on every member profile: disclosed trades sized by amount, grouped around committee assignments
+- Committee overlap flags when a traded company intersects the filer's committee jurisdiction -- a transparency signal, not a finding of wrongdoing
+- Late-filing flags when a disclosure lands past the 45-day STOCK Act deadline
+- One tap from a trade to its original filing on the official .gov source
+- A plain-language methodology explaining how STOCK Act filings become the feed you see
 
 Data sources
+Everything in the app comes from official House and Senate disclosures:
 - US House Clerk Periodic Transaction Reports (PTR): https://disclosures-clerk.house.gov
 - US Senate Office of Public Records (Senate EFD): https://efdsearch.senate.gov/search/
 - Refreshed every 30 minutes from official filings
@@ -45,7 +47,7 @@ Congress Trade Alerts is an informational public-records tool. It does not execu
 
 This app is not affiliated with the United States government or with any member of Congress. All data comes from public records that members of Congress are required by law to file under the Stop Trading on Congressional Knowledge Act of 2012.
 
-Free. No ads. Updated every 30 minutes.
+Free. No ads. No account required. Open source under the AGPL-3.0 license.
 
 PRIMARY_CATEGORY: Finance
 (Changed 2026-07-18. News & Magazines subjects the app to Play's News
