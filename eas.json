@@ -48,7 +48,7 @@
       },
       "android": {
         "serviceAccountKeyPath": "./store/google-play/service-account-key.json",
-        "track": "internal"
+        "track": "production"
       }
     },
     "preview": {
