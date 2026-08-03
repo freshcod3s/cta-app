@@ -320,7 +320,7 @@ export const INFO_REGISTRY: Record<string, InfoEntry> = {
       "Bubbles aggregate trades per ticker (size = sum of the high end of each amount range). Rings are the member's committees, ranked by trading overlap. Red stroke = direct overlap (the member's own committee), amber = adjacent.",
     caveats: [
       "Overlap is a transparency signal, NOT a claim of wrongdoing.",
-      "Shows the largest ~30 tickers from the most-recent loaded trades; gain/loss coloring is off while returns are hidden.",
+      "Shows the largest ~30 tickers from the most-recent loaded trades -- tap \"+N more\" under the map for the rest; gain/loss coloring is off while returns are hidden.",
     ],
     sources: [
       { label: "Conflict-scoring methodology", url: `${METHODOLOGY}#how-conflict-scoring-works` },

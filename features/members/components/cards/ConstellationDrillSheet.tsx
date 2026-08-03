@@ -36,9 +36,13 @@ import {
   X,
 } from "lucide-react-native";
 
-import type { TradeRecord } from "@/features/trades/api/types";
+import { isLateFiling, type TradeRecord } from "@/features/trades/api/types";
 import type { TickerCongressionalTrader } from "@/features/ticker/api/types";
-import type { CNodeConflict } from "@/features/members/constellation";
+import {
+  tradesForKey,
+  type CNodeConflict,
+  type COverflowNode,
+} from "@/features/members/constellation";
 import {
   useTickerCongressional,
   useTickerInfo,
@@ -63,7 +67,55 @@ export type DrillEntry =
       sector: string | null;
     }
   | { kind: "committee"; name: string; parent?: string | null }
-  | { kind: "member"; name: string };
+  | { kind: "member"; name: string }
+  // One STOCK Act filing (from the profile's trades[]) -- the leaf card.
+  // Disclosure facts only; price/return fields stay unrendered
+  // (RETURNS_DISPLAY gate).
+  | { kind: "trade"; trade: TradeRecord }
+  // The holdings past the canvas node cap (the "+N more" chip).
+  | {
+      kind: "holdings";
+      title: string;
+      items: COverflowNode[];
+      memberName: string;
+      allTrades: TradeRecord[];
+    }
+  // The committees folded into the "Other" ring.
+  | {
+      kind: "committees";
+      title: string;
+      items: { name: string; conflictCount: number }[];
+    };
+
+// Stable identity per card -- React-key material and the push dedup guard
+// (pushing the entry that is already on top is a no-op, so a double-tap
+// can't stack twin cards and dirty the back-stack).
+export function entryKey(e: DrillEntry): string {
+  switch (e.kind) {
+    case "ticker":
+      return `ticker:${e.symbol ?? e.label}`;
+    case "committee":
+      return `committee:${e.name}`;
+    case "member":
+      return `member:${e.name}`;
+    case "trade":
+      return `trade:${e.trade.id}`;
+    case "holdings":
+      return "holdings";
+    case "committees":
+      return "committees";
+  }
+}
+
+// Compact disclosure band: "$15K–$50K" (falls back to the filing's verbatim
+// range string, then an em dash). Amount bands are disclosure facts, not
+// prices -- outside the RETURNS_DISPLAY gate.
+function bandLabel(t: TradeRecord): string {
+  const lo = t.amount_low > 0 ? formatMoneyShort(t.amount_low) : null;
+  const hi = t.amount_high > 0 ? formatMoneyShort(t.amount_high) : null;
+  if (lo && hi) return `${lo}–${hi}`;
+  return t.amount_range || hi || "—";
+}
 
 type Props = {
   stack: DrillEntry[];
@@ -361,6 +413,7 @@ function TickerDrill({
     party: string | null;
     chamber: string | null;
   }>({ party: null, chamber: null });
+  const [clusterExpanded, setClusterExpanded] = useState(false);
 
   // This member's stats on the node (from the profile trades already loaded
   // -- web parity: showTickerPanel derives from node.trades).
@@ -376,6 +429,16 @@ function TickerDrill({
     .filter(Boolean)
     .sort()
     .pop();
+
+  // The individual filings behind this node, newest first -- each row opens
+  // the filing-detail card (ticket V6: trade -> filing detail w/ source).
+  const filings = useMemo(
+    () =>
+      [...mine].sort((a, b) =>
+        (b.trade_date ?? "").localeCompare(a.trade_date ?? ""),
+      ),
+    [mine],
+  );
 
   // Who else in Congress trades it: the server-aggregated congressional
   // table (one row per politician, complete -- replaces the old
@@ -427,6 +490,11 @@ function TickerDrill({
           Private fund / LP · no public ticker
         </Text>
       ) : null}
+      {entry.sector && !info.data?.industry ? (
+        <Text className="mt-1 text-sm text-gray-500 dark:text-gray-400">
+          {entry.sector}
+        </Text>
+      ) : null}
 
       <SectionLabel>{`${displayName(entry.memberName)}'s disclosures`}</SectionLabel>
       <RowGroup>
@@ -446,6 +514,34 @@ function TickerDrill({
           </View>
         ) : null}
       </RowGroup>
+
+      {filings.length ? (
+        <>
+          <SectionLabel>{`Filings (${filings.length})`}</SectionLabel>
+          <RowGroup>
+            {filings.slice(0, 8).map((t, i) => (
+              <View
+                key={t.id}
+                className={
+                  i > 0 ? "border-t border-gray-100 dark:border-gray-800" : ""
+                }
+              >
+                <Row
+                  label={`${formatShortDate(t.trade_date)} · ${t.tx_type}${t.date_quality !== "corrupt" && isLateFiling(t.disclosure_lag_days) ? " · Late" : ""}`}
+                  value={bandLabel(t)}
+                  onPress={() => onPush({ kind: "trade", trade: t })}
+                />
+              </View>
+            ))}
+          </RowGroup>
+          {filings.length > 8 ? (
+            <Text className="mt-1.5 text-[11px] text-gray-500 dark:text-gray-500">
+              {/* private funds have no /ticker full page -- don't point at one */}
+              +{filings.length - 8} more{entry.symbol ? " on the full page" : " not shown"}.
+            </Text>
+          ) : null}
+        </>
+      ) : null}
 
       {entry.conflict ? (
         <>
@@ -478,7 +574,10 @@ function TickerDrill({
             </Text>
           </View>
           <View className="mt-2 flex-row flex-wrap gap-1.5">
-            {cluster.members.slice(0, 12).map((name) => (
+            {(clusterExpanded
+              ? cluster.members
+              : cluster.members.slice(0, 12)
+            ).map((name) => (
               <Pressable
                 key={name}
                 accessibilityRole="button"
@@ -491,10 +590,17 @@ function TickerDrill({
                 </Text>
               </Pressable>
             ))}
-            {cluster.members.length > 12 ? (
-              <Text className="px-1 py-1 text-[11px] text-amber-700/70 dark:text-amber-200/70">
-                +{cluster.members.length - 12} more
-              </Text>
+            {!clusterExpanded && cluster.members.length > 12 ? (
+              <Pressable
+                accessibilityRole="button"
+                accessibilityLabel={`Show all ${cluster.members.length} members`}
+                onPress={() => setClusterExpanded(true)}
+                className="rounded-lg border border-cta-late/30 px-2 py-1"
+              >
+                <Text className="text-[11px] font-semibold text-amber-700 dark:text-amber-200">
+                  +{cluster.members.length - 12} more
+                </Text>
+              </Pressable>
             ) : null}
           </View>
         </View>
@@ -683,6 +789,30 @@ function MemberDrill({
               : String(p.trades?.length ?? 0)
           }
         />
+        {p.stats && (p.stats.buys > 0 || p.stats.sells > 0) ? (
+          <View className="border-t border-gray-100 dark:border-gray-800">
+            <Row
+              label="Buys / sells"
+              value={`${p.stats.buys} / ${p.stats.sells}`}
+            />
+          </View>
+        ) : null}
+        {p.stats?.volume_high ? (
+          <View className="border-t border-gray-100 dark:border-gray-800">
+            <Row
+              label="Est. volume (range high)"
+              value={formatMoneyShort(p.stats.volume_high) ?? "—"}
+            />
+          </View>
+        ) : null}
+        {p.disclosureLag?.median != null ? (
+          <View className="border-t border-gray-100 dark:border-gray-800">
+            <Row
+              label="Median disclosure lag"
+              value={`${Math.round(p.disclosureLag.median)} days`}
+            />
+          </View>
+        ) : null}
         {p.stats?.last_trade ? (
           <View className="border-t border-gray-100 dark:border-gray-800">
             <Row label="Most recent trade" value={p.stats.last_trade} />
@@ -879,6 +1009,200 @@ function CommitteeDrill({
   );
 }
 
+// --- filing-detail card (leaf) -------------------------------------------
+//
+// One STOCK Act filing. Disclosure facts only -- tx type, amount band,
+// dates, lag, owner, sector. The price/return columns on TradeRecord are
+// deliberately NOT rendered (RETURNS_DISPLAY gate). Indexed variables:
+// the member -> member card, the overlapped committee -> committee card,
+// the source -> official .gov filing in the browser.
+
+function TradeDrill({
+  entry,
+  onPush,
+  onNavigate,
+}: {
+  entry: Extract<DrillEntry, { kind: "trade" }>;
+  onPush: (e: DrillEntry) => void;
+  onNavigate: (route: string) => void;
+}) {
+  const t = entry.trade;
+  // Rows the ingest flagged date_quality='corrupt' carry garbage lags
+  // (five-digit day counts from mis-parsed filing dates) -- render an em
+  // dash instead of presenting them as fact. Null-lag guard is free
+  // insurance (prod has none today).
+  const corrupt = t.date_quality === "corrupt" || t.disclosure_lag_days == null;
+  const late = !corrupt && isLateFiling(t.disclosure_lag_days);
+
+  return (
+    <View>
+      <Text className="mt-1 text-sm text-gray-500 dark:text-gray-400">
+        {[t.asset_name || t.ticker, t.owner_type ? `Owner: ${t.owner_type}` : null]
+          .filter(Boolean)
+          .join(" · ")}
+      </Text>
+
+      <SectionLabel>This filing</SectionLabel>
+      <RowGroup>
+        <Row label="Transaction" value={t.tx_type} />
+        <View className="border-t border-gray-100 dark:border-gray-800">
+          <Row label="Amount (disclosed band)" value={bandLabel(t)} />
+        </View>
+        <View className="border-t border-gray-100 dark:border-gray-800">
+          <Row label="Trade date" value={formatShortDate(t.trade_date)} />
+        </View>
+        <View className="border-t border-gray-100 dark:border-gray-800">
+          <Row
+            label="Disclosed"
+            value={formatShortDate(t.disclosure_date)}
+          />
+        </View>
+        <View className="border-t border-gray-100 dark:border-gray-800">
+          <Row
+            label="Reporting lag"
+            value={
+              corrupt
+                ? "—"
+                : `${t.disclosure_lag_days} days${late ? " · Late (>45d)" : ""}`
+            }
+          />
+        </View>
+        {t.sector ? (
+          <View className="border-t border-gray-100 dark:border-gray-800">
+            <Row label="Sector" value={t.sector} />
+          </View>
+        ) : null}
+      </RowGroup>
+
+      <SectionLabel>Related</SectionLabel>
+      <RowGroup>
+        <Row
+          label={displayName(t.politician)}
+          value="Member"
+          onPress={() => onPush({ kind: "member", name: t.politician })}
+        />
+        {t.conflict?.committee ? (
+          <View className="border-t border-gray-100 dark:border-gray-800">
+            <Row
+              label={`${t.conflict.severity === "direct" ? "Direct" : "Adjacent"} overlap: ${t.conflict.committee}`}
+              onPress={() =>
+                onPush({ kind: "committee", name: t.conflict!.committee })
+              }
+            />
+          </View>
+        ) : null}
+        {t.source_url ? (
+          <View className="border-t border-gray-100 dark:border-gray-800">
+            <Row
+              label={`Source filing${t.source ? ` (${t.source})` : ""}`}
+              external
+              onPress={() =>
+                void openBrowserAsync(t.source_url).catch(() => {
+                  /* best-effort */
+                })
+              }
+            />
+          </View>
+        ) : null}
+      </RowGroup>
+
+      <FullPageAction onPress={() => onNavigate(`/trade/${t.id}`)} />
+    </View>
+  );
+}
+
+// --- overflow-holdings card (the "+N more" chip) --------------------------
+
+const HOLDINGS_ROW_CAP = 80;
+
+function HoldingsDrill({
+  entry,
+  onPush,
+}: {
+  entry: Extract<DrillEntry, { kind: "holdings" }>;
+  onPush: (e: DrillEntry) => void;
+}) {
+  return (
+    <View>
+      <Text className="mt-1 text-sm text-gray-500 dark:text-gray-400">
+        Holdings past the constellation&apos;s bubble cap · ranked by
+        disclosed est. volume
+      </Text>
+      <SectionLabel>Holdings</SectionLabel>
+      <RowGroup>
+        {entry.items.slice(0, HOLDINGS_ROW_CAP).map((h, i) => (
+          <View
+            key={h.key}
+            className={
+              i > 0 ? "border-t border-gray-100 dark:border-gray-800" : ""
+            }
+          >
+            <Row
+              label={h.label}
+              value={`${h.tradeCount} · ${formatMoneyShort(h.totalHi) ?? "—"}`}
+              onPress={() =>
+                onPush({
+                  kind: "ticker",
+                  symbol: h.ticker,
+                  label: h.label,
+                  memberName: entry.memberName,
+                  memberTrades: tradesForKey(entry.allTrades, h.key),
+                  conflict: h.conflict,
+                  sector: h.sector,
+                })
+              }
+            />
+          </View>
+        ))}
+      </RowGroup>
+      {entry.items.length > HOLDINGS_ROW_CAP ? (
+        <Text className="mt-1.5 text-[11px] text-gray-500 dark:text-gray-500">
+          +{entry.items.length - HOLDINGS_ROW_CAP} more not shown.
+        </Text>
+      ) : null}
+    </View>
+  );
+}
+
+// --- other-committees card (the "Other" ring) -----------------------------
+
+function CommitteeListDrill({
+  entry,
+  onPush,
+}: {
+  entry: Extract<DrillEntry, { kind: "committees" }>;
+  onPush: (e: DrillEntry) => void;
+}) {
+  return (
+    <View>
+      <Text className="mt-1 text-sm text-gray-500 dark:text-gray-400">
+        Committees folded into the outer &quot;Other&quot; ring
+      </Text>
+      <SectionLabel>Committees</SectionLabel>
+      <RowGroup>
+        {entry.items.map((c, i) => (
+          <View
+            key={c.name}
+            className={
+              i > 0 ? "border-t border-gray-100 dark:border-gray-800" : ""
+            }
+          >
+            <Row
+              label={c.name}
+              value={
+                c.conflictCount > 0
+                  ? `${c.conflictCount} overlap${c.conflictCount === 1 ? "" : "s"}`
+                  : undefined
+              }
+              onPress={() => onPush({ kind: "committee", name: c.name })}
+            />
+          </View>
+        ))}
+      </RowGroup>
+    </View>
+  );
+}
+
 // --- sheet shell ----------------------------------------------------------
 
 function titleFor(e: DrillEntry): string {
@@ -889,6 +1213,12 @@ function titleFor(e: DrillEntry): string {
       return e.name;
     case "member":
       return displayName(e.name);
+    case "trade":
+      return `Filing · ${formatShortDate(e.trade.trade_date)}`;
+    case "holdings":
+      return e.title;
+    case "committees":
+      return e.title;
   }
 }
 
@@ -983,6 +1313,12 @@ export function ConstellationDrillSheet({
               <TickerDrill entry={top} onPush={onPush} onNavigate={navigate} />
             ) : top.kind === "member" ? (
               <MemberDrill entry={top} onPush={onPush} onNavigate={navigate} />
+            ) : top.kind === "trade" ? (
+              <TradeDrill entry={top} onPush={onPush} onNavigate={navigate} />
+            ) : top.kind === "holdings" ? (
+              <HoldingsDrill entry={top} onPush={onPush} />
+            ) : top.kind === "committees" ? (
+              <CommitteeListDrill entry={top} onPush={onPush} />
             ) : (
               <CommitteeDrill
                 entry={top}

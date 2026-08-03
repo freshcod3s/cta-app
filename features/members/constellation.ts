@@ -39,6 +39,7 @@ export type CNode = {
   ticker: string | null;
   label: string;
   totalHi: number;
+  tradeCount: number;
   conflict: CNodeConflict | null;
   sector: string | null;
   x: number;
@@ -48,6 +49,18 @@ export type CNode = {
   targetR: number; // radius the relaxation attracts this node to
   labeled: boolean; // top-LABEL_CAP by value -> draw the ticker label
   rank: number; // 0-based value rank (0 = biggest) -- zoom label re-gating
+};
+
+// A holding past the NODE_CAP -- not drawn on the canvas, but listed in the
+// "+N more" drill card so the cap never hides data behind a dead label.
+export type COverflowNode = {
+  key: string;
+  ticker: string | null;
+  label: string;
+  totalHi: number;
+  tradeCount: number;
+  conflict: CNodeConflict | null;
+  sector: string | null;
 };
 
 export type CRing = {
@@ -65,9 +78,28 @@ export type Constellation = {
   rings: CRing[];
   center: { x: number; y: number; r: number; label: string };
   moreCount: number;
+  // The aggregates past NODE_CAP, ranked -- feeds the "+N more" drill card.
+  overflow: COverflowNode[];
+  // Committees past RING_CAP (the "Other" ring's contents) -- feeds the
+  // Other-ring drill card. Names are real committees, safe to link.
+  otherCommittees: { name: string; conflictCount: number }[];
+  maxR: number; // disc radius -- the center-glow backdrop sizes from it
   width: number;
   height: number;
 };
+
+// The trades behind one constellation aggregate -- same keying as
+// aggregate() (ticker first, asset_name fallback). Shared by the canvas
+// tap handler and the drill cards so every path scopes identically.
+export function tradesForKey(
+  trades: TradeRecord[],
+  key: string,
+): TradeRecord[] {
+  return trades.filter((t) => {
+    const k = (t.ticker ?? "").trim() || (t.asset_name ?? "").trim();
+    return k === key;
+  });
+}
 
 function aggregate(
   trades: TradeRecord[],
@@ -81,6 +113,7 @@ function aggregate(
       ticker: string | null;
       label: string;
       totalHi: number;
+      tradeCount: number;
       conflict: CNodeConflict | null;
       sector: string | null;
     }
@@ -94,12 +127,17 @@ function aggregate(
       byKey.get(key) ??
       {
         ticker,
-        label: ticker ?? (t.asset_name ?? "OTHER").slice(0, 12),
+        // Generous cap: the canvas fits-and-ellipsizes at render time, and
+        // the drill-sheet title wants the fuller name (the old hard
+        // slice(0,12) shipped "Alliance Ber"-style stubs everywhere).
+        label: ticker ?? (t.asset_name ?? "OTHER").slice(0, 28),
         totalHi: 0,
+        tradeCount: 0,
         conflict: null as CNodeConflict | null,
         sector: null as string | null,
       };
     cur.totalHi += hi;
+    cur.tradeCount += 1;
     if (!cur.sector && t.sector) cur.sector = t.sector;
     // keep the highest-severity conflict (direct overrides adjacent)
     const c = t.conflict;
@@ -132,7 +170,8 @@ export function computeConstellation(
   const agg = aggregate(trades).sort((a, b) => b.totalHi - a.totalHi);
   if (agg.length === 0) return null;
   const visible = agg.slice(0, NODE_CAP);
-  const moreCount = Math.max(0, agg.length - visible.length);
+  const overflow: COverflowNode[] = agg.slice(NODE_CAP);
+  const moreCount = overflow.length;
 
   // Rings = the member's committees ranked by exposure -- UNFILTERED (web
   // parity: ranked.slice(0,8)). Zero-conflict committees still ring the
@@ -295,6 +334,12 @@ export function computeConstellation(
     rings,
     center: { x: cx, y: cy, r: centerR, label: last.slice(0, 8) },
     moreCount,
+    overflow,
+    otherCommittees: otherComms.map((c) => ({
+      name: c.committee,
+      conflictCount: c.conflictCount,
+    })),
+    maxR,
     width,
     height,
   };
@@ -311,9 +356,10 @@ export function computeConstellation(
 export type Star = {
   x: number;
   y: number;
-  r: number; // 0.3 - 1.5 px (web parity: Math.random() * 1.2 + 0.3)
+  r: number; // 0.3 - 2.3 px (bright subset gets the extra size)
   baseOpacity: number; // resting fill opacity -- kept low so labels win
   twinkles: boolean; // small subset pulses; the rest stay static
+  bright: boolean; // screenshot-legible subset (bigger + higher opacity)
 };
 
 // fract(sin(n) * 43758.5453): cheap index hash, uniform-ish on [0, 1).
@@ -323,22 +369,35 @@ function hash01(n: number): number {
   return v - Math.floor(v);
 }
 
+// Default count raised 120 -> 156 (V6): the old field at uniform 0.12-0.32
+// opacity vanished in a static screenshot at default brightness. ~1 in 7
+// stars is "bright" (bigger radius, 0.42-0.68 opacity) so the sky reads
+// without motion; the faint majority keeps the depth. Still fully
+// deterministic -- same size in, same sky out.
 export function generateStars(
   width: number,
   height: number,
-  count = 120,
+  count = 156,
 ): Star[] {
   const stars: Star[] = [];
   for (let i = 0; i < count; i++) {
+    const bright = hash01(i * 7.1313 + 3.719) > 0.86;
     stars.push({
       x: hash01(i * 12.9898 + 78.233) * width,
       y: hash01(i * 39.3468 + 11.135) * height,
-      r: 0.3 + hash01(i * 26.6519 + 53.758) * 1.2,
-      baseOpacity: 0.12 + hash01(i * 45.164 + 91.876) * 0.2,
-      // Every 9th star (offset 2) pulses -> exactly 14 of the default 120.
-      // Index-modulo keeps the count exact; positions are hashed anyway, so
-      // the pulsing subset still lands spatially scattered.
-      twinkles: i % 9 === 2,
+      r:
+        0.3 +
+        hash01(i * 26.6519 + 53.758) * 1.2 +
+        (bright ? 0.6 + hash01(i * 17.2837 + 29.41) * 0.4 : 0),
+      baseOpacity: bright
+        ? 0.42 + hash01(i * 45.164 + 91.876) * 0.26
+        : 0.12 + hash01(i * 45.164 + 91.876) * 0.24,
+      // Every 9th star (offset 2) pulses, EXCEPT bright stars: TwinkleStar's
+      // peak cap (0.45) sits below the bright base range, so a bright
+      // twinkler would animate permanently DIMMER than its rest state --
+      // the screenshot-legible subset stays static instead.
+      twinkles: i % 9 === 2 && !bright,
+      bright,
     });
   }
   return stars;

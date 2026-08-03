@@ -12,8 +12,16 @@
 // with a small UI-thread twinkle subset (web parity: the canvas star loop).
 import { useEffect, useMemo, useState } from "react";
 import { Pressable, Text, View } from "react-native";
-import { useRouter } from "expo-router";
-import Svg, { Circle, Line, Rect, Text as SvgText, G } from "react-native-svg";
+import Svg, {
+  Circle,
+  Defs,
+  G,
+  Line,
+  RadialGradient,
+  Rect,
+  Stop,
+  Text as SvgText,
+} from "react-native-svg";
 import { Gesture, GestureDetector } from "react-native-gesture-handler";
 import Animated, {
   Easing,
@@ -36,11 +44,13 @@ import {
   computeConstellation,
   generateStars,
   RING_COLORS,
+  tradesForKey,
   type CNode,
   type Star,
 } from "@/features/members/constellation";
 import {
   ConstellationDrillSheet,
+  entryKey,
   type DrillEntry,
 } from "@/features/members/components/cards/ConstellationDrillSheet";
 import { useOpenInfo } from "@/features/info/store";
@@ -74,13 +84,51 @@ function strokeFor(n: CNode): { color: string; width: number } | null {
     : { color: ADJACENT, width: 1.6 };
 }
 
+// Label fit (V6 clip fix). react-native-svg has no measureText, so width is
+// approximated at ~0.62em average advance for the bold face. Long labels
+// ellipsize to the bubble's neighborhood instead of spilling across the
+// disc, and the anchor point clamps inside the canvas so an edge bubble
+// can't ship half a label ("abet Inc") under the card's overflow-hidden.
+const LABEL_CHAR_W = 0.62;
+function fitLabel(
+  n: CNode,
+  width: number,
+  height: number,
+): { text: string; fs: number; x: number; y: number } {
+  const fs = Math.max(8, Math.min(n.r * 0.72, 12));
+  const maxW = Math.max(2 * n.r + 26, 64);
+  let text = n.label;
+  if (text.length * fs * LABEL_CHAR_W > maxW) {
+    const keep = Math.max(3, Math.floor(maxW / (fs * LABEL_CHAR_W)) - 1);
+    text = `${text.slice(0, keep).trimEnd()}…`;
+  }
+  const half = (text.length * fs * LABEL_CHAR_W) / 2 + 2;
+  return {
+    text,
+    fs,
+    x: Math.min(Math.max(n.x, half), width - half),
+    y: Math.min(Math.max(n.y + 3, fs + 2), height - 3),
+  };
+}
+
 // --- starfield -------------------------------------------------------------
-// The stars render inside the pan/zoom Animated.View, so they travel with
-// the disc exactly like the web's stars-inside-the-pan-translate -- no
-// parallax, on purpose. Color is slate-500: darker than the light card
-// (gray-50), lighter than the dark card (gray-800), so one hex reads as a
-// faint speck on both backgrounds without a color-scheme branch.
+// V6: the stars render in their OWN layer behind the disc's pan/zoom view
+// and track the same shared values at STAR_PARALLAX (slow-sky depth cue;
+// supersedes the old stars-inside-the-transform no-parallax port). Color is
+// slate-500: darker than the light card (gray-50), lighter than the dark
+// card (gray-800), so one hex reads as a faint speck on both backgrounds
+// without a color-scheme branch.
 const STAR_COLOR = "#64748b";
+// How much of the disc's pan/zoom the star layer follows (1 = locked to the
+// disc, 0 = fixed). 0.35 reads as a slow, distant sky.
+const STAR_PARALLAX = 0.35;
+// A background tap within this many px of a ring line opens that ring's
+// card; rings sit ~17px apart at the 5-ring cap, so 12 keeps bands from
+// bleeding into each other (nearest ring wins on overlap).
+const RING_TAP_TOL = 12;
+// The star canvas is oversized by this factor so parallax never exposes a
+// bare edge inside the card.
+const STAR_OVERSCAN = 1.4;
 const AnimatedCircle = Animated.createAnimatedComponent(Circle);
 
 // One pulsing star. Opacity oscillates trough <-> peak entirely on the UI
@@ -132,15 +180,21 @@ function TwinkleStar({ star, index }: { star: Star; index: number }) {
 }
 
 export function ConstellationCard({ profile }: { profile: MemberProfile }) {
-  const router = useRouter();
   const openInfo = useOpenInfo();
   const [width, setWidth] = useState(0);
   const height = heightFor(width || 360);
 
   // In-place drill-down stack (web parity: pd-trade-panel). A node/ring tap
-  // pushes a card onto this stack instead of navigating away.
+  // pushes a card onto this stack instead of navigating away. Pushing the
+  // entry already on top is a no-op (stable IDs via entryKey), so a
+  // double-tap can't dirty the back-stack with twin cards.
   const [stack, setStack] = useState<DrillEntry[]>([]);
-  const pushEntry = (e: DrillEntry) => setStack((s) => [...s, e]);
+  const pushEntry = (e: DrillEntry) =>
+    setStack((s) => {
+      const top = s[s.length - 1];
+      if (top && entryKey(top) === entryKey(e)) return s;
+      return [...s, e];
+    });
   const popEntry = () => setStack((s) => s.slice(0, -1));
   const closeSheet = () => setStack([]);
 
@@ -167,10 +221,7 @@ export function ConstellationCard({ profile }: { profile: MemberProfile }) {
       symbol: n.ticker,
       label: n.label,
       memberName: profile.name,
-      memberTrades: (profile.trades ?? []).filter((t) => {
-        const k = (t.ticker ?? "").trim() || (t.asset_name ?? "").trim();
-        return k === n.key;
-      }),
+      memberTrades: tradesForKey(profile.trades ?? [], n.key),
       conflict: n.conflict,
       sector: n.sector,
     });
@@ -267,6 +318,20 @@ export function ConstellationCard({ profile }: { profile: MemberProfile }) {
     ],
   }));
 
+  // Starfield parallax (V6): the sky sits in its OWN layer behind the disc
+  // and follows the same pan/zoom shared values at 0.35x, so dragging the
+  // constellation slides the stars slower -- depth without any autonomous
+  // motion (reduced-motion safe: it only moves when the user's finger does).
+  // The layer is oversized 1.4x and the fractional scale term keeps its
+  // edges covered at every reachable pan/zoom, so no starless strip appears.
+  const starStyle = useAnimatedStyle(() => ({
+    transform: [
+      { translateX: tx.value * STAR_PARALLAX },
+      { translateY: ty.value * STAR_PARALLAX },
+      { scale: 1 + (scale.value - 1) * STAR_PARALLAX },
+    ],
+  }));
+
   const data = useMemo(
     () =>
       width > 0
@@ -284,13 +349,25 @@ export function ConstellationCard({ profile }: { profile: MemberProfile }) {
   // Starfield: regenerate only when the canvas size changes (web parity:
   // the _starW guard keeps the field persistent across re-renders). The
   // whole layer memoizes into one element tree, so isolate/zoom state
-  // changes never reconcile 120 circles -- only the ~14 twinkle stars own
+  // changes never reconcile the circles -- only the twinkle subset owns
   // animators, and those run purely on the UI thread. Reduced motion (OS
   // setting, via reanimated's hook) renders every star static instead.
+  // The field spans STAR_OVERSCAN x the canvas (centered) for parallax
+  // coverage; the star COUNT scales with that extra area so the visible
+  // density stays at the tuned default.
   const reducedMotion = useReducedMotion();
+  const starW = Math.round(width * STAR_OVERSCAN);
+  const starH = Math.round(height * STAR_OVERSCAN);
   const stars = useMemo(
-    () => (width > 0 ? generateStars(width, height) : []),
-    [width, height],
+    () =>
+      width > 0
+        ? generateStars(
+            starW,
+            starH,
+            Math.round(156 * STAR_OVERSCAN * STAR_OVERSCAN),
+          )
+        : [],
+    [width, starW, starH],
   );
   const starLayer = useMemo(
     () =>
@@ -336,19 +413,87 @@ export function ConstellationCard({ profile }: { profile: MemberProfile }) {
       {/* canvas (pan + pinch-zoom; the card's overflow-hidden clips) */}
       <View onLayout={(e) => setWidth(e.nativeEvent.layout.width)}>
         {data ? (
-          <GestureDetector gesture={canvasGesture}>
-            <Animated.View style={canvasStyle}>
-              <Svg width={width} height={height}>
-            {/* starfield: MUST stay the bottom of the paint order, below
-                the tap-out Rect. react-native-svg hit-tests topmost-first
-                and bare Circles DO participate (GroupView.java hitTest /
-                RNSVGGroup.mm), so the only thing keeping star taps from
-                swallowing background taps is that the full-canvas Rect
-                above covers every star. Reorder this layer upward and the
-                tap-out breaks. */}
-            {starLayer}
+          <View style={{ width, height }}>
+            {/* parallax sky (V6): its own non-interactive layer BEHIND the
+                gesture view, oversized + centered, tracking pan/zoom at
+                STAR_PARALLAX. Moving the stars out of the disc's Svg also
+                retires the old hit-test footgun (bare Circles participate
+                in react-native-svg hit-testing) -- pointerEvents="none"
+                makes the whole sky tap-transparent. The clipping wrapper
+                pins the oversized field to the canvas rect; without it the
+                0.2x overhang paints over the card header and legends (RN
+                overflow defaults to visible). */}
+            <View
+              pointerEvents="none"
+              style={{
+                position: "absolute",
+                left: 0,
+                top: 0,
+                width,
+                height,
+                overflow: "hidden",
+              }}
+            >
+              <Animated.View
+                pointerEvents="none"
+                style={[
+                  {
+                    position: "absolute",
+                    left: -(starW - width) / 2,
+                    top: -(starH - height) / 2,
+                    width: starW,
+                    height: starH,
+                  },
+                  starStyle,
+                ]}
+              >
+                <Svg width={starW} height={starH}>
+                  {starLayer}
+                </Svg>
+              </Animated.View>
+            </View>
+            <GestureDetector gesture={canvasGesture}>
+              <Animated.View style={canvasStyle}>
+                <Svg width={width} height={height}>
+            <Defs>
+              <RadialGradient
+                id="cta-center-glow"
+                cx="50%"
+                cy="50%"
+                rx="50%"
+                ry="50%"
+              >
+                <Stop
+                  offset="0"
+                  stopColor={ctaColors.accent}
+                  stopOpacity="0.26"
+                />
+                <Stop
+                  offset="0.55"
+                  stopColor={ctaColors.accent}
+                  stopOpacity="0.09"
+                />
+                <Stop offset="1" stopColor={ctaColors.accent} stopOpacity="0" />
+              </RadialGradient>
+            </Defs>
 
-            {/* tap-out target: a background tap clears the isolate */}
+            {/* faint radial glow behind the center node (V6). Painted below
+                the tap-out Rect so it can never swallow a background tap. */}
+            <Circle
+              cx={cx}
+              cy={cy}
+              r={data.maxR * 0.6}
+              fill="url(#cta-center-glow)"
+            />
+
+            {/* tap-out target AND ring selector. react-native-svg hit-tests
+                a fill="none" Circle across its WHOLE interior disc (raw
+                path region, topmost-first) -- an onPress on the outermost
+                ring would swallow every background tap and shadow the
+                inner rings. So the rings are inert (no onPress) and THIS
+                Rect resolves each background tap by radius: within
+                RING_TAP_TOL of a ring line -> that ring's card + isolate
+                (nearest ring wins); anywhere else -> clear the isolate. */}
             <Rect
               x={0}
               y={0}
@@ -356,12 +501,41 @@ export function ConstellationCard({ profile }: { profile: MemberProfile }) {
               height={height}
               fill="#000000"
               fillOpacity={0.01}
-              onPress={() => setIsolate(null)}
+              onPress={(e) => {
+                const { locationX, locationY } = e.nativeEvent;
+                const d = Math.hypot(locationX - cx, locationY - cy);
+                let best = -1;
+                let bestDist = RING_TAP_TOL;
+                data.rings.forEach((ring, i) => {
+                  const dd = Math.abs(d - ring.radius);
+                  if (dd <= bestDist) {
+                    best = i;
+                    bestDist = dd;
+                  }
+                });
+                if (best < 0) {
+                  setIsolate(null);
+                  return;
+                }
+                const ring = data.rings[best];
+                setIsolate({ nodeKey: null, ringIdx: best });
+                if (ring.isOther) {
+                  // The overflow ring is a bucket, not a committee -- it
+                  // opens the list of committees folded into it (V6: no
+                  // dead ring).
+                  pushEntry({
+                    kind: "committees",
+                    title: "More committees",
+                    items: data.otherCommittees,
+                  });
+                } else {
+                  pushEntry({ kind: "committee", name: ring.name });
+                }
+              }}
             />
 
-            {/* rings -- tap opens the committee card IN PLACE (web parity:
-                highlightRing -> showCommitteeDetail) and isolates the ring.
-                "Other" is an overflow bucket, not a committee -- no card. */}
+            {/* rings -- visual only; taps resolve through the Rect above
+                (see its comment for the hit-test rationale) */}
             {data.rings.map((ring, i) => (
               <Circle
                 key={`ring-${i}`}
@@ -372,14 +546,7 @@ export function ConstellationCard({ profile }: { profile: MemberProfile }) {
                 strokeOpacity={ringDimmed(i) ? 0.08 : 0.22}
                 strokeWidth={1}
                 fill="none"
-                onPress={
-                  ring.isOther
-                    ? undefined
-                    : () => {
-                        setIsolate({ nodeKey: null, ringIdx: i });
-                        pushEntry({ kind: "committee", name: ring.name });
-                      }
-                }
+                pointerEvents="none"
               />
             ))}
 
@@ -406,6 +573,7 @@ export function ConstellationCard({ profile }: { profile: MemberProfile }) {
                 the card handles the no-full-page case. */}
             {data.nodes.map((n) => {
               const s = strokeFor(n);
+              const L = n.rank < labelCap ? fitLabel(n, width, height) : null;
               return (
                 <G
                   key={`node-${n.key}`}
@@ -439,56 +607,77 @@ export function ConstellationCard({ profile }: { profile: MemberProfile }) {
                     stroke={s?.color}
                     strokeWidth={s?.width ?? 0}
                   />
-                  {n.rank < labelCap ? (
+                  {L ? (
                     <SvgText
-                      x={n.x}
-                      y={n.y + 3}
-                      fontSize={Math.min(n.r * 0.72, 12)}
+                      x={L.x}
+                      y={L.y}
+                      fontSize={L.fs}
                       fontWeight="bold"
                       fill="#f8fafc"
                       textAnchor="middle"
                     >
-                      {n.label}
+                      {L.text}
                     </SvgText>
                   ) : null}
                 </G>
               );
             })}
 
-            {/* center member node */}
-            <Circle cx={cx} cy={cy} r={data.center.r} fill={ctaColors.accent} />
-            <SvgText
-              x={cx}
-              y={cy + 4}
-              fontSize={12}
-              fontWeight="bold"
-              fill="#ffffff"
-              textAnchor="middle"
-            >
-              {data.center.label}
-            </SvgText>
-              </Svg>
-            </Animated.View>
-          </GestureDetector>
+            {/* center member node -- tappable (V6): opens this member's own
+                drill card, same in-place pattern as every bubble */}
+            <G onPress={() => pushEntry({ kind: "member", name: profile.name })}>
+              <Circle
+                cx={cx}
+                cy={cy}
+                r={data.center.r}
+                fill={ctaColors.accent}
+              />
+              <SvgText
+                x={cx}
+                y={cy + 4}
+                fontSize={12}
+                fontWeight="bold"
+                fill="#ffffff"
+                textAnchor="middle"
+              >
+                {data.center.label}
+              </SvgText>
+            </G>
+                </Svg>
+              </Animated.View>
+            </GestureDetector>
+          </View>
         ) : (
           <View style={{ height }} />
         )}
       </View>
 
-      {/* ring legend (tappable committees) */}
+      {/* ring legend -- every chip opens its committee's in-place card
+          (V6: same drill the ring tap runs; the old chips navigated away,
+          and the "Other" chip was dead) */}
       {data && data.rings.length > 0 ? (
         <View className="flex-row flex-wrap gap-x-3 gap-y-1 px-4 pt-1">
           {data.rings.map((ring, i) => (
             <Pressable
               key={`legend-${i}`}
-              disabled={!!ring.isOther}
-              onPress={
-                ring.isOther
-                  ? undefined
-                  : () =>
-                      router.push(`/committee/${encodeURIComponent(ring.name)}`)
-              }
+              onPress={() => {
+                setIsolate({ nodeKey: null, ringIdx: i });
+                if (ring.isOther) {
+                  pushEntry({
+                    kind: "committees",
+                    title: "More committees",
+                    items: data.otherCommittees,
+                  });
+                } else {
+                  pushEntry({ kind: "committee", name: ring.name });
+                }
+              }}
               accessibilityRole="button"
+              accessibilityLabel={
+                ring.isOther
+                  ? "View the committees in the Other ring"
+                  : `View ${ring.name}`
+              }
               className="flex-row items-center gap-1.5 py-0.5"
             >
               <View
@@ -506,9 +695,16 @@ export function ConstellationCard({ profile }: { profile: MemberProfile }) {
         </View>
       ) : null}
 
-      {/* severity + size legend */}
+      {/* severity + size legend -- the explainer chips open the info sheet
+          (what does Direct/Adjacent/size mean); "+N more" opens the
+          overflow-holdings card (V6: no dead chips) */}
       <View className="flex-row flex-wrap items-center gap-x-4 gap-y-1 px-4 pb-3 pt-1.5">
-        <View className="flex-row items-center gap-1.5">
+        <Pressable
+          accessibilityRole="button"
+          accessibilityLabel="What does Direct mean?"
+          onPress={() => openInfo("profile-constellation")}
+          className="flex-row items-center gap-1.5"
+        >
           <View
             className="h-2.5 w-2.5 rounded-full"
             style={{ backgroundColor: DIRECT }}
@@ -516,8 +712,13 @@ export function ConstellationCard({ profile }: { profile: MemberProfile }) {
           <Text className="text-[11px] text-gray-500 dark:text-gray-400">
             Direct
           </Text>
-        </View>
-        <View className="flex-row items-center gap-1.5">
+        </Pressable>
+        <Pressable
+          accessibilityRole="button"
+          accessibilityLabel="What does Adjacent mean?"
+          onPress={() => openInfo("profile-constellation")}
+          className="flex-row items-center gap-1.5"
+        >
           <View
             className="h-2.5 w-2.5 rounded-full"
             style={{ backgroundColor: ADJACENT }}
@@ -525,14 +726,34 @@ export function ConstellationCard({ profile }: { profile: MemberProfile }) {
           <Text className="text-[11px] text-gray-500 dark:text-gray-400">
             Adjacent
           </Text>
-        </View>
-        <Text className="text-[11px] text-gray-500 dark:text-gray-400">
-          Size = trade value
-        </Text>
-        {data && data.moreCount > 0 ? (
-          <Text className="text-[11px] text-gray-500 dark:text-gray-500">
-            +{data.moreCount} more
+        </Pressable>
+        <Pressable
+          accessibilityRole="button"
+          accessibilityLabel="How is bubble size computed?"
+          onPress={() => openInfo("profile-constellation")}
+        >
+          <Text className="text-[11px] text-gray-500 dark:text-gray-400">
+            Size = trade value
           </Text>
+        </Pressable>
+        {data && data.moreCount > 0 ? (
+          <Pressable
+            accessibilityRole="button"
+            accessibilityLabel={`View the ${data.moreCount} holdings not shown on the map`}
+            onPress={() =>
+              pushEntry({
+                kind: "holdings",
+                title: `+${data.moreCount} more holdings`,
+                items: data.overflow,
+                memberName: profile.name,
+                allTrades: profile.trades ?? [],
+              })
+            }
+          >
+            <Text className="text-[11px] font-medium text-cta-accent underline">
+              +{data.moreCount} more
+            </Text>
+          </Pressable>
         ) : null}
       </View>
 
