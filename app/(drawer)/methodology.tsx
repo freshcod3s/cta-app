@@ -6,10 +6,9 @@
 import { Linking, Pressable, ScrollView, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
-// PRESS_EMAIL is the single source of truth for the three-surface email rule
-// (CLAUDE.md: about.tsx + Worker privacy.html + Worker press.ts). Import it --
-// do not hardcode -- so this 4th surface can't drift when it flips to
-// press@congresstradealerts.com.
+// PRESS_EMAIL is the single source of truth for the contact-email rule
+// (CLAUDE.md: about.tsx + press.tsx + Worker privacy.html + Worker press.ts).
+// Import it -- never hardcode -- so this surface cannot drift from the others.
 import { PRESS_EMAIL } from "./about";
 
 const WEB_METHODOLOGY = "https://congresstradealerts.com/methodology";

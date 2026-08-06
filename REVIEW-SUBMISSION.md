@@ -117,7 +117,10 @@ role-insufficient -- re-check step 1 before anything else.
       record and prompt, then backfill the id it reports into `eas.json`; or
   (b) if the app record already exists in ASC, copy the Apple ID from
       ASC -> App Information -> General and fill it now.
-- `appleId` is already set (freshgrooves@gmail.com) -- leave it.
+- `appleId`: REMOVED 2026-08-06 -- it exists only to support Apple ID +
+  app-specific-password auth. Under ASC API key auth, supply the key via
+  `EXPO_ASC_API_KEY_PATH` / `EXPO_ASC_KEY_ID` / `EXPO_ASC_ISSUER_ID` (preferred
+  in a PUBLIC repo) and keep `ascAppId` + `appleTeamId` -- both auth-independent.
 
 Verify: `git diff eas.json` shows only the two ids changed; JSON parses
 (`node -e "require('./eas.json')"`). Commit the change (ids are
@@ -217,7 +220,7 @@ Sources are authoritative -- transcribe, do not improvise:
   questionnaire, all content toggles None/No, expected computed outcome
   4+ -- accept whatever ASC computes, never self-select higher).
 - Review information: sign-in required = **No** (no auth in v1), no demo
-  account. Contact info = Joe / freshgrooves@gmail.com. Review Notes:
+  account. Contact info = Joe / hello@freshcod3s.com. Review Notes:
   transcribe the APP_REVIEW_NOTES block from
   `store/app-store/metadata.txt` (leads with: informational tool over
   public STOCK Act disclosure data, no trading, no advice).

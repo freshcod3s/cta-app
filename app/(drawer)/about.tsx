@@ -2,24 +2,25 @@
 // Constants.expoConfig.version so a `expo prebuild`-driven version
 // bump in app.json reflects automatically without code changes.
 //
-// Press contact email tracks the /press surface on the web. CTA-34
-// (2026-05-08) downgraded the brand-aligned press@congresstradealerts.com
-// to congresstradealertsapp@gmail.com because Cloudflare Email Routing
-// for press@ isn't wired yet (per CTA Worker repo's PRE_SEND_CHECKLIST
-// Phase 1). All three customer-facing surfaces (mobile About, web
-// /privacy, web /press) line up on this gmail value until Joe completes
-// the routing setup. When that happens, flip this constant + the two
-// CTA Worker constants in the same motion.
+// Press contact email tracks the /press surface on the web. History:
+// CTA-34 (2026-05-08) downgraded press@congresstradealerts.com to a gmail
+// address because Email Routing was unwired. On 2026-07-07 the Worker moved
+// to press@freshcod3s.com and recorded that the gmail inbox was dead; this
+// screen kept publishing the dead address until 2026-08-06. Routing for
+// press@freshcod3s.com was verified by API on 2026-08-04.
+// Do NOT wire or reinstate press@congresstradealerts.com -- nothing
+// publishes it, and the Worker checklist says not to.
 import { Linking, Pressable, ScrollView, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import Constants from "expo-constants";
 
 import { GITHUB_URL, PRIVACY_URL, TERMS_URL, WEB_URL } from "@/lib/constants/links";
 
-// Single source of truth for the three-surface email rule (CLAUDE.md):
-// also mirrored in the Worker repo's privacy.html + press.ts. Imported by
-// methodology.tsx so the in-app surfaces can't drift.
-export const PRESS_EMAIL = "congresstradealertsapp@gmail.com";
+// Public contact address, mirrored in the Worker repo's privacy.html +
+// press.ts (PRESS_CONTACT_EMAIL). This is the single in-app source of truth:
+// methodology.tsx and press.tsx both import it, so no mobile screen can drift.
+// Keep it that way -- a local literal in another screen is what broke before.
+export const PRESS_EMAIL = "press@freshcod3s.com";
 
 // Canonical civic-transparency disclaimer (verbatim, Lowe v. SEC-aligned).
 // Same text as methodology.tsx's footer; both screens stand alone with the

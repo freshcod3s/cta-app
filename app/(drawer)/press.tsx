@@ -3,9 +3,10 @@
 // Product Invariant #5). The full media kit (brand assets, screenshots) is
 // not ported; it lives at /press on the web.
 //
-// Press email mirrors the About screen (three-surface email rule):
-// congresstradealertsapp@gmail.com until Cloudflare Email Routing wires
-// press@.
+// Press email imports about.tsx PRESS_EMAIL rather than restating it. This
+// screen previously held its own literal, which is how it drifted onto a dead
+// inbox while the comments claimed it could not drift. Do not reintroduce a
+// local constant here.
 import { Linking, Pressable, ScrollView, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import * as WebBrowser from "expo-web-browser";
@@ -14,7 +15,7 @@ import { ExternalLink, Mail } from "lucide-react-native";
 import { ctaColors } from "@/lib/theme/tokens";
 import { PRESS_URL } from "@/lib/constants/links";
 
-const PRESS_EMAIL = "congresstradealertsapp@gmail.com";
+import { PRESS_EMAIL } from "./about";
 
 function Fact({ label, value }: { label: string; value: string }) {
   return (

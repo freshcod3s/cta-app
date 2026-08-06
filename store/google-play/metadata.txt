@@ -67,7 +67,7 @@ user-generated content moderation surface. See data-safety-checklist.md
 for related answers.)
 
 PRIVACY_POLICY_URL: https://congresstradealerts.com/privacy
-SUPPORT_EMAIL: congresstradealertsapp@gmail.com
+SUPPORT_EMAIL: hello@freshcod3s.com
 WEBSITE: https://congresstradealerts.com
 
 TAGS: civic-data, public-records, financial-disclosure, congress, stock-act

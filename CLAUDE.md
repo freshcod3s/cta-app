@@ -159,12 +159,15 @@ repeated here. cta-app-specific:
 
 - Real-device perception checks are Joe-tasks (RULE #1). CC may drive
   simulator / Expo Go web-preview, but the final pass is on hardware.
-- Three-surface email rule: the contact email is mirrored across cta-app
-  `app/(drawer)/about.tsx` PRESS_EMAIL + Worker `privacy.html` + Worker
-  `press.ts`. Change one -> change all three. Locked on
-  `congresstradealertsapp@gmail.com`; flips to `press@congresstradealerts.com`
-  when Cloudflare Email Routing is wired (currently blocked; rationale in the
-  private Worker repo).
+- Contact email rule: `app/(drawer)/about.tsx` exports `PRESS_EMAIL` and is the
+  ONLY in-app definition. `press.tsx` and `methodology.tsx` both import it --
+  never add a local literal to another screen, which is exactly how this drifted
+  onto a dead inbox before. Cross-repo, the same address is mirrored in Worker
+  `privacy.html` + Worker `press.ts`; changing it means changing all three
+  definitions. Locked on `press@freshcod3s.com` (2026-08-06); routing verified
+  by API 2026-08-04. The former `congresstradealertsapp@gmail.com` inbox is
+  DEAD, and `press@congresstradealerts.com` was never wired and is published
+  nowhere -- do not reinstate either.
 
 ## Gotchas
 
