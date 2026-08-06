@@ -103,6 +103,63 @@ thin; do not exceed 8 -- later shots are rarely seen.
   row. Cosmetic only, but on re-capture apply the Apple convention:
   `xcrun simctl status_bar booted override --time "9:41" --batteryState charged --batteryLevel 100 --cellularBars 4 --dataNetwork wifi`
   then capture with `xcrun simctl io booted screenshot <file>.png`.
+- **Post-capture: strip the alpha channel. REQUIRED, every capture, no
+  exceptions.** `xcrun simctl io booted screenshot` always writes RGBA.
+  The ASC spec page states: "Images can't include alpha channels or
+  transparencies." A dimensionally perfect capture is still rejected if
+  the alpha channel is present. Run this from the repo root after
+  capturing, before committing. Copy it exactly -- the closing `PY` must
+  sit at column 0 or the shell will not terminate the heredoc:
+
+```
+python3 - <<'PY'
+import glob, os, hashlib
+from PIL import Image   # pip3 install --user pillow (same dep as store/_generate_screenshots.py)
+
+failed = False
+for f in sorted(glob.glob("store/app-store/screenshots/*.png")):
+    im = Image.open(f)
+    name = os.path.basename(f)
+    if im.mode != "RGBA":
+        print("skip     %-26s already %s" % (name, im.mode))
+        continue
+    lo, _ = im.getchannel("A").getextrema()
+    if lo != 255:
+        # Guard: a non-opaque pixel means the alpha carries real information.
+        # Flattening would change what the image looks like -- that is an edit,
+        # not a format conversion. Stop and hand it back rather than guess.
+        print("REFUSED  %-26s alpha min=%d -- real transparency present, NOT stripped" % (name, lo))
+        failed = True
+        continue
+    w, h = im.size
+    before = im.convert("RGB").tobytes()
+    im.convert("RGB").save(f, "PNG", optimize=True)
+    out = Image.open(f)
+    after = out.convert("RGB").tobytes()
+    ok = (hashlib.sha256(before).hexdigest() == hashlib.sha256(after).hexdigest()
+          and out.size == (w, h) and out.mode == "RGB")
+    print("stripped %-26s %dx%d RGBA->RGB pixels_identical=%s" % (name, w, h, ok))
+    failed = failed or not ok
+raise SystemExit(1 if failed else 0)
+PY
+```
+
+  Exit code 0 and `pixels_identical=True` on every line means the strip
+  was lossless -- only the constant channel was dropped, no colour value
+  moved. Any `REFUSED` line stops the pass: re-capture that shot, do not
+  flatten it by hand.
+- **Verify the strip independently.** Do not trust the stripping tool to
+  grade itself. Byte 25 of a PNG is the IHDR colour type; read it directly:
+
+  ```
+  for f in store/app-store/screenshots/*.png; do
+    echo "$(basename "$f")  colortype=0x$(xxd -p -s 25 -l 1 "$f")"
+  done
+  ```
+
+  Every line must read `colortype=0x02` (RGB). `0x06` is RGBA and will be
+  rejected at upload. Confirm dimensions are still exactly 1320x2868 in the
+  same pass -- `sips -g pixelWidth -g pixelHeight <file>.png`.
 - **Device frames / captions:** keep the current style -- raw, full-bleed
   app UI, no marketing frame, no caption overlay. ASC accepts framed or
   raw; the shipped raw dark-theme set is consistent and honest (2.3.3).
