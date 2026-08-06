@@ -2,7 +2,7 @@
 CTA-App-1-10 designed-mockup screenshot generator.
 
 Produces preliminary marketing-style screenshots at both stores' required
-dimensions (iOS 6.7" 1290x2796 and Android phone 1080x1920) following
+dimensions (iOS 6.9" 1320x2868 and Android phone 1080x1920) following
 the 8-shot sequence in screenshots-brief.md, with caption strips baked in
 per the brief's caption-text overlays.
 
@@ -11,6 +11,34 @@ captures from a production EAS build can swap over them later if higher
 fidelity is desired. Per Apple/Play guidelines both stores accept
 designed screenshots as long as they accurately represent the app
 surfaces.
+
+OUTPUT PATHS -- read before changing either one:
+    iOS  -> store/app-store/generated/      (mockups; NOT the submission set)
+    Play -> store/google-play/screenshots/  (the live Play listing set)
+
+The iOS output used to be store/app-store/screenshots/, which is the
+directory holding the seven hand-captured simulator screenshots that go to
+App Store Connect. One generated filename (01-feed.png) collides exactly
+with a real capture, so a single run overwrote the hero shot with mock art
+and scattered seven more generated files among the real ones. The iOS path
+now writes to store/app-store/generated/ and guard_output_dir() refuses to
+write into any directory holding files this generator did not produce.
+Do not point it back.
+
+KNOWN CONTRADICTION, deliberate, do not "fix" by stripping captions:
+this generator bakes caption strips into every shot, while section 4 of
+store/app-store/screenshot-spec.md requires the SUBMISSION set to be raw
+full-bleed UI with "no marketing frame, no caption overlay". Both are
+correct because they describe different artifacts -- the captioned mockups
+here are marketing/preview material, and the raw simulator captures in
+store/app-store/screenshots/ are what is uploaded to ASC. The captions are
+the point of this script; the separation of directories is what keeps the
+contradiction harmless.
+
+Size note: the iOS mockups render at 1320x2868 to match the real capture
+set exactly. Both 1290x2796 and 1320x2868 are accepted 6.9" portrait
+sizes; this script previously rendered 1290x2796 and labelled it 6.7",
+which is the display class Apple used before the naming shifted.
 
 Run from repo root:
     python store/_generate_screenshots.py
@@ -650,6 +678,38 @@ SLUGS = {
 }
 
 
+def generated_filenames() -> set:
+    """Exactly the filenames one render_set() pass writes. Nothing else."""
+    return {f"{n:02d}-{SLUGS[surface]}.png" for n, _, _, surface, _ in SHOTS}
+
+
+def guard_output_dir(out_dir: Path) -> None:
+    """Refuse to write into a directory holding anything this generator did not make.
+
+    Retargeting a path is undone the moment someone edits it back, so the
+    refusal lives next to the write rather than in a comment. If this is ever
+    pointed at store/app-store/screenshots/ again, the six hand-captured files
+    whose names this generator never produces will trip it and nothing is
+    written -- including 01-feed.png, the one name that DOES collide and would
+    otherwise be silently overwritten.
+    """
+    if not out_dir.exists():
+        return
+    mine = generated_filenames()
+    foreign = sorted(p.name for p in out_dir.iterdir() if p.name not in mine)
+    if foreign:
+        raise SystemExit(
+            "REFUSED: {0} holds {1} file(s) this generator did not produce.\n"
+            "  conflicting: {2}\n"
+            "  this generator only ever writes: {3}\n"
+            "  Writing here would mix generated mockups with material of another\n"
+            "  provenance. If you meant to regenerate mockups, point the output at\n"
+            "  an empty directory or one containing only the files listed above.".format(
+                out_dir, len(foreign), ", ".join(foreign), ", ".join(sorted(mine))
+            )
+        )
+
+
 def render_set(W: int, H: int, out_dir: Path, store_label: str):
     out_dir.mkdir(parents=True, exist_ok=True)
     for n, caption, header, surface_name, accent in SHOTS:
@@ -663,8 +723,18 @@ def render_set(W: int, H: int, out_dir: Path, store_label: str):
 
 def main():
     repo_root = Path(__file__).resolve().parents[1]
-    print("Generating App Store 6.7\" iPhone screenshots (1290 x 2796)...")
-    render_set(1290, 2796, repo_root / "store" / "app-store" / "screenshots", "iOS")
+
+    # iOS mockups. NOT the ASC submission set -- see the module docstring.
+    # Guarded because this path once pointed at the hand-captured directory.
+    ios_out = repo_root / "store" / "app-store" / "generated"
+    guard_output_dir(ios_out)
+    print("Generating App Store 6.9\" iPhone mockups (1320 x 2868)...")
+    render_set(1320, 2868, ios_out, "iOS")
+
+    # Play output is deliberately NOT guarded: store/google-play/screenshots/
+    # legitimately also holds feature-graphic.png from _generate_feature_graphic.py,
+    # which the guard would read as foreign and abort on. This path is correct
+    # and the Play listing is live -- do not change it.
     print("Generating Google Play phone screenshots (1080 x 1920)...")
     render_set(1080, 1920, repo_root / "store" / "google-play" / "screenshots", "Play")
     print("Done.")
