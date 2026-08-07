@@ -304,6 +304,29 @@ Section C -- After every master merge, emit the cross-chat broadcast block
 shipped commits by track, new deps, likely-conflict files, orphan SHAs, rebase
 command. Joe pastes it into other active chats before they continue.
 
+Section D -- Committer identity changed mid-history. Commits before
+2026-08-06 01:36 are authored `freshcod3s@gmail.com`; commits from that point
+on are `241018594+freshcod3s@users.noreply.github.com`. Same person, same
+machine -- a GitHub noreply switch, not a second contributor. A session that
+compares author or committer emails across that boundary will read one person
+as two and conclude a concurrent session pushed. That misdiagnosis has already
+happened once: the 2026-08-07 attribution audit opened on the premise that a
+parallel session pushed `d8d92f4` to master, when this clone's own reflog
+(`.git/logs/refs/remotes/origin/master`, `update by push`) showed the push came
+from here. Attribute pushes from reflog verbs and the GitHub events API, never
+from an email comparison.
+
+Section E -- Pushes to master are hook-guarded. `push.default` is `current`
+(repo-local), and the global pre-push hook at `~/.claude/git-hooks/pre-push`
+(reached via a GLOBAL `core.hooksPath`, so it covers every repo on this
+machine) refuses any refspec whose destination branch differs from its named
+source: `branch:master`, `HEAD:master` from another branch, and `<sha>:master`
+all exit 1. It reads the refspec pairs off stdin, so being on the "right"
+branch does not launder a wrong destination. It gates on `CLAUDECODE=1`, so
+Joe's own terminal is unaffected. Vetted one-off override:
+`CLAUDE_ALLOW_CROSS_PUSH=1 git push ...`. Do not route around it -- push the
+branch under its own name and merge deliberately.
+
 ---
 
 ## SECRETS POLICY (vault-first -- Bitwarden Secrets Manager)
