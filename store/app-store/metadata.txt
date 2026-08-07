@@ -109,7 +109,7 @@ PUSH NOTIFICATIONS:
 
 PURCHASES (re guideline 3.1.3(f) -- free stand-alone app):
 - There is no purchase surface anywhere in the app: no in-app purchases, no external purchase links, no checkout, and no pricing displayed in the app.
-- A paid tier exists only on the developer website for the companion web product. The app does not link to that checkout and does not promote it. One FAQ answer factually describes the free-vs-paid split of the web service, with no prices, no links, and no call to action.
+- A paid tier exists only on the developer website for the companion web product. The app does not link to that checkout and does not promote it. In this build no screen the app can display -- the FAQ included -- mentions that tier, its price, or the web product's pricing. The FAQ's only cost-related answer, "Does this app cost anything?", speaks solely to the app and answers "No": every feature in this app is free, with no in-app purchases, no subscription, no ads, and no tracking. For completeness: a Subscription card that would link out to the web checkout exists in the source and is compiled out by the build-time constant SHOW_UPGRADE_CTA=false (lib/flags.ts:39), so its strings may appear in a binary string dump while being unreachable at runtime; restoring it would be a separate submission.
 
 METADATA ACCURACY (re guideline 2.3):
 - The description and screenshots reflect the shipped build. Price-performance comparisons that exist on the web product are not present in this build and are not claimed in the listing.

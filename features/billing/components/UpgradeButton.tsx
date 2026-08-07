@@ -8,6 +8,20 @@
 // Custom Tab on Android) and resolves when the user dismisses it, so `busy`
 // spans the presentation and clears on return. A failed open surfaces a
 // non-fatal inline error rather than throwing.
+//
+// GATED DEAD CODE. Nothing here renders while SHOW_UPGRADE_CTA is false
+// (lib/flags.ts:39); the sole call site is the Subscription card in
+// app/(drawer)/settings.tsx:248. It ships the moment that flag flips, so the
+// user-visible strings below are held to the same claim bar as live copy --
+// see the CLAIM CONSTRAINT note at that call site before flipping.
+//
+// The "Pro" naming is deliberate and accurate: the web product sells Pro and
+// Pro+ (congress-trade-alerts src/routes/stripe.ts), so these strings are true
+// on arrival and must NOT be genericized -- renaming them would desync the app
+// from the checkout page it opens, which is its own accuracy problem. What must
+// never appear here is a cadence claim ("real-time", "instant", "as filed") or
+// an unbounded feature claim ("Pro features", "everything unlocked"): ingest is
+// House ~30min / Senate ~6h, so nothing is real-time at any tier.
 import { useState } from "react";
 import { ActivityIndicator, Pressable, Text, View } from "react-native";
 import * as WebBrowser from "expo-web-browser";

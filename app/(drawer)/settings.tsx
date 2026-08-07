@@ -244,7 +244,22 @@ export default function SettingsScreen() {
             upgrade CTA, even though the US-storefront external link is
             currently permitted under 3.1.1(a). Flip SHOW_UPGRADE_CTA
             (lib/flags.ts) to restore the isUS-gated link-out on iOS in a
-            post-approval release. */}
+            post-approval release.
+
+            CLAIM CONSTRAINT -- read before flipping that flag. Everything in
+            this block is dead code today but ships the instant the flag is
+            true, so it is held to the same bar as visible copy. Two Play
+            rejections were Misleading Claims. The tier NAMES here ("Pro",
+            "Subscription") are accurate -- the web product really does sell
+            Pro and Pro+ (congress-trade-alerts src/routes/stripe.ts). What is
+            NOT allowed is a cadence claim or an unbounded feature claim. The
+            body copy below therefore names only the two capabilities the
+            server actually gates on isPaidTier: no 24h feed delay
+            (src/routes/api.ts:246-248, src/routes/export.ts:31-33) and no cap
+            on alert subscriptions (src/routes/mobile.ts:209). It previously
+            read "Real-time disclosures and Pro features", which was false on
+            both counts -- ingest is 30min/6h, so nothing is real-time at any
+            tier. Do not reintroduce it. */}
         {SHOW_UPGRADE_CTA && isUS && Platform.OS !== "android" && (
           <>
             <Text className="mb-4 mt-8 text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">
@@ -255,8 +270,11 @@ export default function SettingsScreen() {
                 Congress Trade Alerts Pro
               </Text>
               <Text className="mb-3 mt-0.5 text-xs text-gray-600 dark:text-gray-400">
-                Real-time disclosures and Pro features. Secure checkout opens in
-                your browser -- never in the app.
+                No 24-hour delay on the trade feed, and no cap on the number of
+                members and tickers you can set alerts for. Filing cadence is
+                the same on every tier -- the House portal is checked about
+                every 30 minutes and the Senate portal about every six hours.
+                Secure checkout opens in your browser -- never in the app.
               </Text>
               <UpgradeButton />
             </View>
