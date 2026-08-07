@@ -68,22 +68,38 @@ export default function MethodologyScreen() {
 
         <Section title="Data sources">
           <Para>
-            Primary feed: Capitol Trades (capitoltrades.com), scraped every
-            30 minutes for fresh disclosures.
+            Primary feed: the U.S. House Clerk disclosure portal. Filing
+            records come from the Clerk&apos;s feed, and ticker-level
+            transactions are parsed from the Periodic Transaction Report
+            PDFs the Clerk publishes.
           </Para>
           <Para>
-            Redundancy: House Clerk PTR XML feed and Senate EFD search
-            results. Committee assignments come from clerk.house.gov and
-            the open @unitedstates/congress-legislators dataset; sector
-            tagging from Finnhub&apos;s GICS classifications.
+            Senate: the Senate Office of Public Records electronic
+            disclosure system (EFD). Committee assignments come from
+            clerk.house.gov and the open @unitedstates/congress-legislators
+            dataset; sector tagging from Finnhub&apos;s GICS
+            classifications.
           </Para>
         </Section>
 
         <Section title="Update cadence">
           <Para>
-            New disclosures land within ~30 minutes of appearing on
-            Capitol Trades. Committee assignments backfill on a slower
-            schedule (last full pass: 2026-05-06).
+            We check the House Clerk portal about every 30 minutes and the
+            Senate EFD system about every six hours. That is how often we
+            look for new filings -- not how quickly a trade becomes public.
+            The STOCK Act gives members up to 45 days to file, so a
+            disclosure typically describes a trade made weeks earlier.
+          </Para>
+          <Para>
+            The trade feed in this app shows filings once they are at
+            least 24 hours old. That applies to every user; there is no
+            faster tier. Push alerts are separate and go out on the check
+            cycle above, so an alert can arrive before that trade is
+            browsable in the feed.
+          </Para>
+          <Para>
+            Committee assignments backfill on a slower schedule (last full
+            pass: 2026-05-06).
           </Para>
         </Section>
 
@@ -179,7 +195,7 @@ export default function MethodologyScreen() {
         </View>
 
         <Text className="text-[10px] text-gray-400">
-          Last updated: 2026-06-04 (mobile copy)
+          Last updated: 2026-08-07 (mobile copy)
         </Text>
       </ScrollView>
     </SafeAreaView>

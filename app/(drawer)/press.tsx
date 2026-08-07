@@ -50,7 +50,7 @@ export default function PressScreen() {
           />
           <Fact
             label="Data source"
-            value="U.S. House Clerk + Senate EFD disclosure portals, refreshed every 30 minutes."
+            value="U.S. House Clerk + Senate EFD disclosure portals. House checked about every 30 minutes, Senate about every six hours; the in-app feed shows filings once they are at least 24 hours old."
           />
           <Fact
             label="Stance"

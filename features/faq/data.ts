@@ -6,23 +6,23 @@ export type FaqItem = { q: string; a: string };
 export const FAQ_ITEMS: FaqItem[] = [
   {
     q: "Where does this data come from?",
-    a: "All trades are sourced from official congressional disclosures: the U.S. House Clerk's Financial Disclosure portal and the Senate Office of Public Records' Electronic Filing system. Filings are mandated by the STOCK Act of 2012. We pull, normalize, and enrich the same public data anyone can download -- we just do it every 30 minutes and push it to you.",
+    a: "All trades are sourced from official congressional disclosures: the U.S. House Clerk's Financial Disclosure portal and the Senate Office of Public Records' Electronic Filing system. Filings are mandated by the STOCK Act of 2012. We pull, normalize, and enrich the same public data anyone can download. We check the House portal about every 30 minutes and the Senate portal about every six hours; the feed in this app shows filings once they are at least 24 hours old.",
   },
   {
     q: "How fast are the alerts?",
-    a: "Our pipeline scrapes the source feeds every 30 minutes. Once a new filing is detected, your personal alert is dispatched within seconds. Free users see trades on a 24-hour delay; Pro subscribers see them in real time as soon as they hit the disclosure portal.",
+    a: "Our pipeline checks the House portal about every 30 minutes and the Senate portal about every six hours. When a check turns up a new filing, an alert for it goes out on that cycle. The trade feed inside the app is separate: it shows filings once they are at least 24 hours old, the same for everyone. So an alert can reach you before that trade is browsable in the feed. None of this is instant -- the STOCK Act itself allows members up to 45 days to file, so the disclosure you see was usually made weeks after the trade.",
   },
   {
     q: "Is this even legal? Aren't politicians banned from trading?",
     a: "The data is 100% public -- that's the whole point of the STOCK Act. Congress is required to disclose personal trades within 45 days, but is not currently banned from trading individual stocks. Bills like the PELOSI Act and the ETHICS Act have proposed a ban, but none have passed. Until they do, the disclosures themselves remain the most powerful accountability tool we have.",
   },
   {
-    q: "What's the difference between Free and Pro?",
-    a: "The full dashboard, leaderboards, watchlist, basic search, and a 24-hour-delayed trade feed are free during early access. Tiered options for real-time alerts, higher API throughput, and bulk export are coming -- join the waitlist to hear when they launch.",
+    q: "Does this app cost anything?",
+    a: "No. Every feature in this app is free: the trade feed, member and ticker pages, committee overlap flags, late-filing flags, and push alerts. There are no in-app purchases, no subscription, no ads, and no tracking. The app is open source under the AGPL-3.0 license.",
   },
   {
-    q: "Can I cancel anytime?",
-    a: "Yes -- one click in the Stripe billing portal we link from your welcome email. Cancellation is immediate and you keep access through the end of the period you've already paid for. We don't auto-bill silently and we don't make you email support to cancel.",
+    q: "Do I need an account?",
+    a: "No. There is no sign-in, no registration, and no email address to hand over -- every screen works on first launch. If you turn push alerts on, the app stores an anonymous device token plus the members and tickers you follow, and nothing that identifies you personally. Turn notifications off in Settings to delete all of it.",
   },
   {
     q: "Is this financial advice?",

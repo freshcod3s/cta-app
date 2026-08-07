@@ -40,9 +40,14 @@ function AccountButton() {
       accessibilityLabel="Account"
       hitSlop={8}
       onPress={() =>
+        // Do NOT reintroduce a tier/roadmap promise here. This alert is
+        // reachable from every drawer screen (headerRight below), so any
+        // "Pro tier is coming" copy is a shipped claim about a product that
+        // does not exist -- the Misleading Claims class that got this app
+        // rejected twice on Play.
         Alert.alert(
           "Account",
-          "Account flow ships when Pro tier lands on mobile.",
+          "Congress Trade Alerts has no accounts. There is nothing to sign in to -- every feature is available on first launch.",
         )
       }
       style={{
