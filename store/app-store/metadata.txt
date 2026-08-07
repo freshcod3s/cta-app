@@ -105,7 +105,7 @@ ACCOUNTS AND SIGN-IN:
 - The app has no account system, no sign-in, and no registration anywhere. Sign-in is not required for review and no demo account exists or is needed: every feature is reachable on first launch.
 
 PUSH NOTIFICATIONS:
-- Push is strictly opt-in via a toggle in Settings (off by default). Enabling it registers an anonymous push token plus alert preferences with our server; turning it off deletes both from the server. No personal data is collected. No analytics SDK, no tracking, no third-party SDKs.
+- Push is strictly opt-in via a toggle in Settings (off by default). Enabling it registers an anonymous push token plus alert preferences with our server; turning it off deletes both from the server. The push token and the followed members and tickers are the only data stored -- not the user's name, email, or anything that identifies them personally. No analytics SDK, no tracking, no third-party SDKs.
 
 PURCHASES (re guideline 3.1.3(f) -- free stand-alone app):
 - There is no purchase surface anywhere in the app: no in-app purchases, no external purchase links, no checkout, and no pricing displayed in the app.
