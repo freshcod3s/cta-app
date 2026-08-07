@@ -43,7 +43,7 @@
     "production": {
       "ios": {
         "ascAppId": "REPLACE_WITH_APP_STORE_CONNECT_APP_ID",
-        "appleTeamId": "REPLACE_WITH_APPLE_TEAM_ID"
+        "appleTeamId": "LML7BRJ68Q"
       },
       "android": {
         "serviceAccountKeyPath": "./store/google-play/service-account-key.json",
@@ -51,12 +51,7 @@
       }
     },
     "preview": {
-      "ios": {
-        "ascAppId": "REPLACE_WITH_APP_STORE_CONNECT_APP_ID",
-        "appleTeamId": "REPLACE_WITH_APPLE_TEAM_ID"
-      },
       "android": {
-        "serviceAccountKeyPath": "./REPLACE_WITH_SERVICE_ACCOUNT_KEY.json",
         "track": "internal"
       }
     }
