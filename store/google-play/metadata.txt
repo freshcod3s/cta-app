@@ -1,5 +1,5 @@
 Google Play Console listing fields. ASCII only. Char limits annotated;
-counts verified at write time (title 27/30, short 77/80, full 2449/4000).
+counts verified at write time (title 27/30, short 77/80, full 2516/4000).
 
 TRANCHE-1 ASO (2026-08-02): title, short description, and full description
 rewritten per the ASO tranche-1 ticket for the Fri Aug 7 Console session.
@@ -35,6 +35,7 @@ The app tracks the disclosures members file with:
 - US House Clerk Periodic Transaction Reports (PTR): https://disclosures-clerk.house.gov
 - US Senate Office of Public Records (Senate EFD): https://efdsearch.senate.gov/search/
 - House filings checked every 30 minutes; Senate every six hours
+- Trades appear in the feed once a filing is at least 24 hours old
 
 Privacy
 - No account required -- no name, email, or password, ever

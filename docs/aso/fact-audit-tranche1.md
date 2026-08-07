@@ -12,6 +12,13 @@ kit — fix the copy or flag it, never soften to squeak by.
 staging (row 14 / row 25 — the "every trade links to its filing" family);
 the substitution is recorded inline and in the runsheet.**
 
+**Amended 2026-08-07.** Row 19 previously audited the string "Refreshed every
+30 minutes from official filings", which is not present in
+`store/google-play/metadata.txt` — the audit cleared wording the kit does not
+stage. Row 19 now quotes the staged line verbatim. Row 19a is new: a display-gate
+bullet added to the FULL_DESCRIPTION in the same pass, so the block's character
+count moved 2449 -> 2516 (runsheet §1 updated to match).
+
 | # | Claim (verbatim) | Shipped proof | Verdict |
 |---|---|---|---|
 | 1 | Title: "Congress Stock Trade Alerts" (27/30) | Locked copy from Joe. Alerting is real: subscribe surface + push token pipeline (rows 7–9). | PASS |
@@ -32,7 +39,8 @@ the substitution is recorded inline and in the runsheet.**
 | 16 | "Everything in the app comes from official House and Senate disclosures:" | All four `source` values originate in House Clerk / Senate EFD records (capitol_trades rows are parsed from the same underlying filings; the app displays only filing-derived fields). | PASS |
 | 17 | "US House Clerk Periodic Transaction Reports (PTR): https://disclosures-clerk.house.gov" | Carried verbatim from the approved review-clearing text (live listing since 2026-08-01). | PASS (carried) |
 | 18 | "US Senate Office of Public Records (Senate EFD): https://efdsearch.senate.gov/search/" | Same carried block. | PASS (carried) |
-| 19 | "Refreshed every 30 minutes from official filings" | Worker cron ingest cadence (approved live text; same claim on the live listing today). | PASS (carried) |
+| 19 | "House filings checked every 30 minutes; Senate every six hours" | INGEST cadence, both halves cited: House = `wrangler.toml:22` `crons = ["*/30 * * * *", ...]` -> `src/index.ts:1292` else-branch -> `runPipelineInternal`. Senate = NOT on the 30-min cycle; `.github/workflows/scrape-senate.yml:14` `cron: '17 */6 * * *'` -> D1 `senate_feed` staging -> `src/enrichment/senate-feed.ts` (EFD bot-blocks the Worker egress IP). Worker methodology page states the same split (`src/routes/methodology.ts:242`). | PASS |
+| 19a | "Trades appear in the feed once a filing is at least 24 hours old" | DISPLAY gate, added 2026-08-07. `src/routes/api.ts:243-248` — `if (!isPaidTier(tier ?? '')) where += " AND disclosure_date <= datetime('now', '-24 hours')"`. The app never authenticates (`cta-app lib/api/client.ts:20-22` sends no Authorization header), so every user is permanently on the 24h path. Row 19 alone stated ingest cadence while silent on display — the same overclaim class as the two Misleading Claims rejections. | PASS |
 | 20 | Privacy section (5 bullets) | Carried VERBATIM from the vc5 listing live since 2026-08-01 — byte-compared at write time (`privacy verbatim: True`). Matches the Play Data Safety declaration (App activity + Device IDs). | PASS (carried, immutable) |
 | 21 | "Congress Trade Alerts is an informational public-records tool. It does not execute trades, connect to brokerage accounts, or provide investment advice." | Carried verbatim; no brokerage/IAP surface in vc5 (Android IAP surface hidden since vc4). | PASS (carried) |
 | 22 | Non-affiliation paragraph ("...not affiliated with the United States government...") | Carried verbatim — this is the 2026-07-24 rejection-clearing disclaimer. Do not edit. | PASS (carried) |

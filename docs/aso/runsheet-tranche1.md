@@ -30,7 +30,7 @@ Console page: **Grow users → Store presence → Main store listing**
 |---|---|---|
 | App name | Replace | `Congress Stock Trade Alerts` (counter must read 27/30) |
 | Short description | Replace | `Track House and Senate stock trades with alerts on new STOCK Act disclosures.` (counter must read 77/80) |
-| Full description | Replace entire contents | The FULL_DESCRIPTION block in `store/google-play/metadata.txt` — from "Congress Trade Alerts tracks the stock transactions..." through "...Open source under the AGPL-3.0 license." (counter must read 2449/4000) |
+| Full description | Replace entire contents | The FULL_DESCRIPTION block in `store/google-play/metadata.txt` — from "Congress Trade Alerts tracks the stock transactions..." through "...Open source under the AGPL-3.0 license." (counter must read 2516/4000) |
 
 Verification before saving: the description's Privacy section must be
 byte-identical to what is live today (it is carried verbatim), and the
