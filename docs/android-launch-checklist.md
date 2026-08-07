@@ -175,12 +175,23 @@ Both companions follow the same field-path-only OPSEC posture as this checklist;
 
 | Step | Status | Blocker |
 |---|---|---|
-| D-U-N-S submission | IN-FLIGHT (case 10436878, submitted 2026-05-20) | iPostal1 address change in `docs/launch/canonical_address.md`; typical 7-10 business day turnaround |
-| Apple Individual -> Org migration | BLOCKED | Awaits D-U-N-S clearance |
-| Google Play Console enrollment on `<LLC_NAME>` seller identity | BLOCKED | Awaits D-U-N-S clearance + Apple migration sequencing (per `CLAUDE.md` Decisions Log) |
-| Google Play service-account JSON for EAS Submit | BLOCKED | Awaits Play Console enrollment; will land at `cta-app/store/google-play/service-account-key.json` per `eas.json:submit.production.android.serviceAccountKeyPath` |
+**This table is HISTORICAL. Every row below cleared. Corrected 2026-08-07 --
+nothing here is a live blocker.** The whole block was still reading BLOCKED
+more than a week after the app shipped.
 
-Until the org account is provisioned, production-track submission is blocked. Internal/closed testing under the existing `<DEV_HANDLE>` is technically possible but should be deferred -- the closed-testing day counter resets on account transfer.
+| D-U-N-S submission | **DONE** | cleared; the LLC is a verified legal entity on both stores |
+| Apple Individual -> Org migration | **DONE** | ORGANIZATION -- Freshcod3s LLC, Team ID `LML7BRJ68Q`. Free Apps Agreement active 2026-08-05 to 2027-05-12, 175 territories; the individual entity is Deprecated |
+| Google Play Console enrollment on the LLC seller identity | **DONE** | Congress Trade Alerts has been LIVE on Play production since 2026-07-31. Verified independently 2026-08-07: the public listing returns HTTP 200 with an "Updated on" block (an unpublished or nonexistent app returns 404) |
+| Google Play service-account JSON for EAS Submit | **DONE** | present at `cta-app/store/google-play/service-account-key.json`, gitignored at `.gitignore:47`, and referenced by `eas.json` `submit.production.android.serviceAccountKeyPath` |
+
+Production-track submission is NOT blocked -- six production builds have run on
+EAS (versionCode 2 through 6, most recent finished 2026-08-03) and versionCode 4
+was released to production on 2026-07-31.
+
+Caveat kept because it is still true: a finished EAS build is not a Play
+release. Whether versionCode 5 or 6 was ever promoted to the production track is
+not established by the EAS build record -- that needs `androidpublisher`
+`tracks.get` or the Console.
 
 ---
 
