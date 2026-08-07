@@ -112,8 +112,9 @@ Per-language: up to 10 screenshots per device size.
      per `screenshots-brief.md`.
    - 1024x500 feature graphic, per `feature-graphic-brief.md`.
    - 30-second app preview video, per `app-preview-brief.md`.
-3. CTA-App-1-2 (separate ticket): Apple Developer Program enrollment +
-   `.ipa` parity build.
+3. CTA-App-1-2 (separate ticket): `.ipa` parity build. (Apple Developer
+   enrollment is DONE as of 2026-08-07 -- ORGANIZATION, Freshcod3s LLC,
+   Team ID `LML7BRJ68Q`. It is no longer part of this item.)
 4. Submit via `eas submit -p ios` and `eas submit -p android` after
    substituting real credentials into `eas.json` (see repo-root
    `submission-instructions.md`).

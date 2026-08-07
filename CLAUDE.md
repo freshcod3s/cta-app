@@ -137,8 +137,13 @@ expo-secure-store  react-native-safe-area-context  @tanstack/react-query
   The Expo/EAS build layer stays on the `freshcod3r` handle; `freshcod3s` is
   the LLC-era App Store / Play Store seller identity, NOT the build layer.
 - Android `.aab`: preview build shipped via EAS managed keystore.
-- iOS `.ipa`: PENDING Apple Developer enrollment + EAS credentials
-  (tracked in CTA-App-1-2).
+- Apple Developer: **ORGANIZATION -- Freshcod3s LLC, Team ID `LML7BRJ68Q`**
+  (settled 2026-08-07; Free Apps Agreement active 2026-08-05 to 2027-05-12,
+  175 territories; the individual entity is Deprecated). Enrollment is NOT a
+  blocker and is not "individual vs organization" -- do not re-open it.
+- iOS `.ipa`: still PENDING, but the blocker is no longer enrollment. As of
+  2026-08-07 `eas build:list --platform ios` is EMPTY -- no iOS build has ever
+  run, so no distribution certificate and no provisioning profile exist yet.
 
 ---
 

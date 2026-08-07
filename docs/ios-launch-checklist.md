@@ -12,16 +12,21 @@ section so any URL change updates one file, not two.
 
 ## Pre-flight gates (blocking)
 
-- [ ] Apple Developer Program enrollment complete (Org tier post-D-U-N-S
-      per CLAUDE.md Decisions Log)
+- [x] Apple Developer Program enrollment complete (2026-08-07):
+      **ORGANIZATION -- Freshcod3s LLC, Team ID `LML7BRJ68Q`.** Free Apps
+      Agreement ACTIVE 2026-08-05 to 2027-05-12, 175 territories. The
+      individual entity is Deprecated with no agreements.
 - [ ] App Store Connect app shell created with bundle id
       `com.congresstradealerts.cta`
 - [ ] `eas.json` `submit.production.ios` placeholders substituted (or
       passed via CLI flags at submit time per
       `submission-instructions.md`)
 - [ ] APNs key uploaded to Expo via `eas credentials`
-- [ ] `.p8` API key on disk, gitignored (`*.p8` covered in
-      `.gitignore:16`)
+- [x] `.p8` API key on disk (2026-08-07). It lives OUTSIDE every repo working
+      tree in a restricted-ACL directory in the user profile, not in the repo
+      -- so `.gitignore:16` (`*.p8`) is a backstop, not the thing protecting
+      it. Verified: no `.p8` is tracked in any workspace repo, and none has
+      ever been committed to cta-app's history.
 
 ## ASC App Information
 

@@ -31,12 +31,18 @@ Companion docs: `docs/ios-launch-checklist.md` (field-by-field ASC values),
   no third-party native SDKs, expo-updates disabled (no launch beacon).
 - Privacy posture: Apple Tracking = NO; Data Linked to User = NONE; Data
   Not Linked = Device ID (push token), App Functionality only.
-- EAS CLI 18.13.0 installed and logged in (interactive session).
+- EAS CLI: **NOT installed on the Windows rig as of 2026-08-07** (absent from
+  the Bash PATH, the PowerShell PATH, `npm ls -g`, `node_modules/.bin`, and
+  `package.json`). The "18.13.0 installed and logged in" note here was true
+  when written; it no longer describes this machine. `npm install -g eas-cli`
+  (>= 16.0.0 per `eas.json`) is the first step of any EAS work.
 - BLOCKERS:
   - `eas.json` `submit.production.ios` still has REPLACE_WITH placeholders
     for `ascAppId` and `appleTeamId`.
   - NO App Store Connect API key or Apple credential exists in the BWS
-    vault (verified 2026-07-11).
+    vault (verified 2026-07-11). This is a statement about the BWS vault
+    ONLY -- ASC API keys DO exist in the App Store Connect console, and one
+    `.p8` is on this machine. See section 1.
   - The cta-app BWS project UUID in `.bws-project`
     (ac76651c-c42c-4f49-abd6-b468010fbdec) returns 404 -- stale. Needs
     recreation or re-grant in the web vault before `scripts/deploy.sh`
@@ -51,10 +57,15 @@ Companion docs: `docs/ios-launch-checklist.md` (field-by-field ASC values),
 
 ---
 
-## 1. [JOE] THE ONE BLOCKING MANUAL STEP: create the ASC API key
+## 1. ASC API key -- ALREADY DONE, do not generate a new one
 
-Apple provides no API to create App Store Connect API keys -- this is the
-single genuinely manual gate. Everything after it is CC-executable.
+**Status corrected 2026-08-07.** ASC API keys already exist in the console
+(several, three of them showing July 2026 last-use dates), and one `.p8` is on
+this machine in a restricted-ACL directory outside every repo working tree.
+**Do not generate another key.** Skip to step 4 below (hand the existing key to
+EAS). Steps 1-3 are retained only as the procedure for a future key rotation.
+
+The generation procedure, for reference / rotation only:
 
 1. App Store Connect -> Users and Access -> Integrations ->
    App Store Connect API -> Team Keys -> Generate API Key.

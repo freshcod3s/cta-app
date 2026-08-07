@@ -137,6 +137,13 @@ grep `.env` / `.env.local`.
 
 ## 4. Uploading the App Store Connect API key
 
+**Status 2026-08-07: the key exists.** Several ASC API keys are already in the
+console, and one `.p8` is on the Windows rig in a restricted-ACL directory
+outside every repo working tree. Nothing needs generating. Whether EAS already
+holds a key is **UNVERIFIED** -- `eas credentials` could not be run because
+eas-cli is not installed anywhere on that machine. Install it first, then run
+the command below to find out before uploading anything.
+
 Per `REVIEW-SUBMISSION.md:63-70`, the recommended path -- and the one that
 avoids handling the key file on disk at all:
 
@@ -184,15 +191,17 @@ it into `eas.json`. **`eas.json` is committed to a PUBLIC repo.**
 ## 6. NOT done -- the actual remaining work
 
 - **No App Store Connect app record exists** for the bundle identifier.
-- **`eas.json` carries 5 placeholder values** that must be resolved before
-  `eas submit` will run: `ascAppId` and `appleTeamId` in both the `production`
-  and `preview` iOS submit profiles, plus an Android service-account path in
-  the `preview` profile. The `ascAppId` values cannot be filled until the app
-  record above exists.
-- **Apple Developer enrollment type is unsettled** -- individual versus
-  organization. It decides the Apple team type, and the seller name shown
-  publicly on the listing. Settle it before creating the app record, because
-  the bundle identifier is permanent once that record is made.
+- **`eas.json` carries ONE remaining placeholder** (corrected 2026-08-07):
+  `submit.production.ios.ascAppId`, which cannot be filled until the app
+  record above exists. The other four are resolved -- `appleTeamId` is
+  `LML7BRJ68Q`, and the unusable `submit.preview.ios` block plus the dangling
+  `preview` Android service-account path were deleted.
+- ~~Apple Developer enrollment type is unsettled.~~ **SETTLED (2026-08-07):
+  ORGANIZATION -- Freshcod3s LLC, Team ID `LML7BRJ68Q`.** The ASC Business
+  page lists the LLC as a legal entity with the Free Apps Agreement ACTIVE
+  2026-08-05 to 2027-05-12 across 175 territories; the individual entity is
+  Deprecated with no agreements. `eas.json` now carries the Team ID. Do not
+  re-open this question.
 - **No iOS build has ever run.** No distribution certificate, no provisioning
   profile, no TestFlight build.
 
@@ -227,12 +236,12 @@ web console) or **REPO** (doable from a Claude Code session).
 | # | Step | Who |
 |---|---|---|
 | 1 | Commit and push the staged submission-readiness work, then re-clone or pull. Section 1 explains why nothing else can be trusted until this is true. | **REPO** |
-| 2 | Settle Apple Developer enrollment type (individual vs organization). Sets the team type and the public seller name. | **CONSOLE** |
-| 3 | Generate an App Store Connect API key with the **App Manager** role. The `.p8` downloads exactly once. | **CONSOLE** |
+| 2 | ~~Settle Apple Developer enrollment type.~~ **DONE (2026-08-07)** -- ORGANIZATION, Freshcod3s LLC, Team ID `LML7BRJ68Q`, Free Apps Agreement active. | **DONE** |
+| 3 | ~~Generate an App Store Connect API key.~~ **DONE (corrected 2026-08-07)** -- keys already exist in the console and one `.p8` is on the Windows rig outside every repo tree. Do NOT generate another. Confirm the on-disk key's role is **App Manager** or Admin. | **DONE** |
 | 4 | `npm install -g eas-cli` (>= 16.0.0), then authenticate. | **REPO** |
 | 5 | `eas credentials --platform ios` -- upload the `.p8`. EAS keeps it server-side. | **REPO** |
-| 6 | Create the App Store Connect app record for the bundle identifier. This is what mints the ASC app id. Enrollment type (step 2) must be settled first -- the bundle id is permanent. | **CONSOLE** |
-| 7 | Fill the `ascAppId` values in `eas.json`, and resolve the two `appleTeamId` placeholders. No key material, key path, or issuer identifier goes in this file -- it is public. | **REPO** |
+| 6 | Create the App Store Connect app record for the bundle identifier, under the **Freshcod3s LLC** entity. This is what mints the ASC app id. The bundle id is permanent once created. | **CONSOLE** |
+| 7 | Fill the single remaining `ascAppId` in `eas.json`. `appleTeamId` is already set to `LML7BRJ68Q`; the `submit.preview.ios` block was deleted (it could never be used -- `build.preview` is `distribution: internal`, and only a `store` build reaches TestFlight). No key material, key path, or issuer identifier goes in this file -- it is public. | **REPO** |
 | 8 | `eas build --platform ios --profile production`. Confirm the build image supplies Xcode 26 / iOS 26 SDK. | **REPO** |
 | 9 | `eas submit --platform ios --profile production`, then upload metadata and the 7 screenshots. | **REPO** + **CONSOLE** |
 

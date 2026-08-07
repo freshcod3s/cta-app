@@ -66,16 +66,16 @@ EAS profiles are defined in `eas.json` (created by `eas init`):
 # Android preview (.aab)
 eas build --platform android --profile preview
 
-# iOS preview (.ipa) -- BLOCKED until Apple Developer enrollment lands.
-# Tracked in CTA-App-1-2.
+# iOS preview (.ipa) -- no iOS build has run yet. Tracked in CTA-App-1-2.
 ```
 
 ## iOS .ipa parity status: PENDING
 
 CTA-App-1-1 ships day-one parity for everything **except** the iOS .ipa
-build artifact. The blocker is Apple Developer Program enrollment, which
-is a Joe-task per RULE #1 (third-party identity verification flow). Once
-enrollment lands, **CTA-App-1-2** drives:
+build artifact. **Apple Developer enrollment is complete** (2026-08-07:
+ORGANIZATION, Freshcod3s LLC, Team ID `LML7BRJ68Q`) and is no longer the
+blocker. What remains is that no App Store Connect app record exists yet and
+no iOS build has ever run. **CTA-App-1-2** drives:
 
 1. EAS credential setup for iOS (`eas credentials` or auto on next build).
 2. First iOS .ipa preview build via `eas build --platform ios --profile preview`.
