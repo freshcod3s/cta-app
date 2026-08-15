@@ -1,0 +1,286 @@
+// Settings -- push notification preferences (CTA-App-1-6) + Upgrade-to-Pro
+// affordance (billing slice). Theme override + account UI land in later
+// tickets.
+//
+// The Switch drives both the store flag AND the registration side
+// effects. Permission-denied (sticky) shows the "Open OS Settings"
+// affordance instead of the toggle path.
+//
+// Subscription section: per Product Invariant #1, the Upgrade button opens
+// the website's external Stripe Checkout in the system browser (see
+// UpgradeButton). No in-app payment UI, no IAP.
+import { useEffect, useState } from "react";
+import { Linking, Platform, Pressable, Switch, Text, View } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
+import Constants from "expo-constants";
+
+import { useSettingsStore } from "@/features/settings/store";
+import {
+  getStoredPushToken,
+  registerForPushNotifications,
+  unregisterPushNotifications,
+  type RegisterErrorCode,
+} from "@/lib/push/register";
+import { UpgradeButton } from "@/features/billing/components/UpgradeButton";
+import { SHOW_UPGRADE_CTA } from "@/lib/flags";
+import * as Localization from "expo-localization";
+
+// US App Store storefront gate for the Upgrade button. Apple's 3.1.1(a)
+// external-purchase carveout (2025 US court order) permits the web Stripe
+// Checkout link ONLY on the US storefront; EU + rest-of-world still require
+// IAP, so we hide the whole Subscription section off-US. regionCode is a
+// cross-platform proxy for the storefront -- production-accurate detection
+// would need the native SKStorefront API, but the reviewer's device locale
+// equals their storefront, so regionCode is sufficient for App Review safety.
+// Default to HIDE on null/undefined/unknown (conservative).
+const isUS = Localization.getLocales()[0]?.regionCode === "US";
+
+// Minimum-trade-size presets for the push floor (dollar thresholds matching
+// STOCK Act disclosure brackets: $15k = the lowest bracket's ceiling, then
+// natural increments). The worker suppresses any trade whose amount_low is
+// below the chosen floor; "Any" clears it.
+const THRESHOLDS: { label: string; value: number | undefined }[] = [
+  { label: "Any", value: undefined },
+  { label: "$15k", value: 15000 },
+  { label: "$50k", value: 50000 },
+  { label: "$100k", value: 100000 },
+  { label: "$250k", value: 250000 },
+  { label: "$500k", value: 500000 },
+  { label: "$1M", value: 1000000 },
+];
+
+const DEV = Constants.expoConfig?.extra?.eas?.projectId
+  ? typeof __DEV__ !== "undefined" && __DEV__
+  : false;
+
+function errorMessage(code: RegisterErrorCode): string {
+  switch (code) {
+    case "unsupported_platform":
+      return "Push notifications are only supported on iOS and Android.";
+    case "not_a_device":
+      return "Push notifications require a physical device (simulator unsupported).";
+    case "no_project_id":
+      return "Project not configured for push (eas init missing). Contact support.";
+    case "rate_limited":
+      return "Too many registration attempts. Try again in an hour.";
+    case "invalid_token":
+    case "invalid_platform":
+      return "Registration rejected by server. Try again later.";
+    case "network":
+      return "Network error. Check your connection and try again.";
+    default:
+      return "Registration failed. Try again later.";
+  }
+}
+
+export default function SettingsScreen() {
+  const pushEnabled = useSettingsStore((s) => s.pushEnabled);
+  const pushPermissionDenied = useSettingsStore(
+    (s) => s.pushPermissionDenied,
+  );
+  const setPushEnabled = useSettingsStore((s) => s.setPushEnabled);
+  const setPushPermissionDenied = useSettingsStore(
+    (s) => s.setPushPermissionDenied,
+  );
+  const minAmount = useSettingsStore((s) => s.subscriptionPrefs.min_amount);
+  const setMinAmount = useSettingsStore((s) => s.setMinAmount);
+
+  const [busy, setBusy] = useState(false);
+  const [errorText, setErrorText] = useState<string | null>(null);
+  const [storedTokenSuffix, setStoredTokenSuffix] = useState<string | null>(
+    null,
+  );
+
+  useEffect(() => {
+    let active = true;
+    getStoredPushToken().then((t) => {
+      if (!active) return;
+      setStoredTokenSuffix(t ? t.slice(-9, -1) : null);
+    });
+    return () => {
+      active = false;
+    };
+  }, [pushEnabled]);
+
+  const onToggle = async (next: boolean) => {
+    if (busy) return;
+    setErrorText(null);
+    setBusy(true);
+    try {
+      if (next) {
+        const r = await registerForPushNotifications();
+        if (r.success) {
+          setPushEnabled(true);
+          setPushPermissionDenied(false);
+        } else if (r.error === "permission_denied") {
+          setPushPermissionDenied(true);
+          setPushEnabled(false);
+        } else {
+          setErrorText(errorMessage(r.error));
+          setPushEnabled(false);
+        }
+      } else {
+        await unregisterPushNotifications();
+        setPushEnabled(false);
+      }
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  const openSystemSettings = () => {
+    Linking.openSettings().catch(() => {
+      /* swallow -- some platforms refuse; user has to navigate manually. */
+    });
+  };
+
+  return (
+    <SafeAreaView edges={["bottom"]} className="flex-1 bg-white dark:bg-gray-900">
+      <View className="flex-1 p-6">
+        <Text className="mb-4 text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">
+          Notifications
+        </Text>
+
+        <View className="flex-row items-center justify-between rounded-xl border border-gray-200 bg-gray-50 px-4 py-3 dark:border-gray-700 dark:bg-gray-800">
+          <View className="flex-1 pr-3">
+            <Text className="text-base font-semibold text-gray-900 dark:text-gray-100">
+              Push notifications
+            </Text>
+            <Text className="mt-0.5 text-xs text-gray-600 dark:text-gray-400">
+              Alerts when Congress files new stock trades or hits compliance milestones.
+            </Text>
+          </View>
+          <Switch
+            value={pushEnabled && !pushPermissionDenied}
+            onValueChange={onToggle}
+            disabled={busy || pushPermissionDenied}
+          />
+        </View>
+
+        <View className="mt-3">
+          {pushPermissionDenied ? (
+            <Pressable
+              onPress={openSystemSettings}
+              accessibilityRole="button"
+              className="flex-row items-center gap-2"
+            >
+              <View className="h-2 w-2 rounded-full bg-cta-sell" />
+              <Text className="text-sm text-cta-sell underline">
+                Permission denied -- open OS Settings
+              </Text>
+            </Pressable>
+          ) : pushEnabled && storedTokenSuffix ? (
+            <View className="flex-row items-center gap-2">
+              <View className="h-2 w-2 rounded-full bg-cta-buy" />
+              <Text className="text-sm text-gray-700 dark:text-gray-300">
+                Registered
+              </Text>
+            </View>
+          ) : (
+            <View className="flex-row items-center gap-2">
+              <View className="h-2 w-2 rounded-full bg-gray-400" />
+              <Text className="text-sm text-gray-600 dark:text-gray-400">
+                Not registered
+              </Text>
+            </View>
+          )}
+        </View>
+
+        {errorText ? (
+          <Text className="mt-3 text-xs text-cta-sell">{errorText}</Text>
+        ) : null}
+
+        <View className="mt-6">
+          <Text className="mb-1 text-base font-semibold text-gray-900 dark:text-gray-100">
+            Minimum trade size
+          </Text>
+          <Text className="mb-3 text-xs text-gray-600 dark:text-gray-400">
+            When notifications are on, only alert about disclosed trades at or
+            above this size. A $15,001-$50,000 trade will not notify at a $50k
+            floor -- we alert only when confident the trade clears it.
+          </Text>
+          <View className="flex-row flex-wrap gap-2">
+            {THRESHOLDS.map((t) => {
+              const active = minAmount === t.value;
+              return (
+                <Pressable
+                  key={t.label}
+                  onPress={() => setMinAmount(t.value)}
+                  accessibilityRole="button"
+                  accessibilityState={{ selected: active }}
+                  accessibilityLabel={`Minimum trade size ${t.label}`}
+                  className={`rounded-full border px-3 py-1.5 ${
+                    active
+                      ? "border-cta-accent bg-cta-accent"
+                      : "border-gray-300 dark:border-gray-700"
+                  }`}
+                >
+                  <Text
+                    className={`text-sm font-medium ${
+                      active
+                        ? "text-white"
+                        : "text-gray-700 dark:text-gray-300"
+                    }`}
+                  >
+                    {t.label}
+                  </Text>
+                </Pressable>
+              );
+            })}
+          </View>
+        </View>
+
+        {DEV && storedTokenSuffix ? (
+          <Text className="mt-6 text-[10px] text-gray-400">
+            dev: token ...{storedTokenSuffix}
+          </Text>
+        ) : null}
+
+        {/* v1 store posture: NO in-app purchase surface on ANY platform.
+            Android: the bare external Stripe link-out (UpgradeButton) is not
+            enrolled in Play's external-offers / alternative-billing program.
+            iOS: option (a) for the first App Store review (2026-07-11) --
+            ship as a free stand-alone companion app (3.1.3(f)) with no
+            upgrade CTA, even though the US-storefront external link is
+            currently permitted under 3.1.1(a). Flip SHOW_UPGRADE_CTA
+            (lib/flags.ts) to restore the isUS-gated link-out on iOS in a
+            post-approval release.
+
+            CLAIM CONSTRAINT -- read before flipping that flag. Everything in
+            this block is dead code today but ships the instant the flag is
+            true, so it is held to the same bar as visible copy. Two Play
+            rejections were Misleading Claims. The tier NAMES here ("Pro",
+            "Subscription") are accurate -- the web product really does sell
+            Pro and Pro+ (congress-trade-alerts src/routes/stripe.ts). What is
+            NOT allowed is a cadence claim or an unbounded feature claim. The
+            body copy below therefore names only the two capabilities the
+            server actually gates on isPaidTier: no 24h feed delay
+            (src/routes/api.ts:246-248, src/routes/export.ts:31-33) and no cap
+            on alert subscriptions (src/routes/mobile.ts:209). It previously
+            read "Real-time disclosures and Pro features", which was false on
+            both counts -- ingest is 30min/6h, so nothing is real-time at any
+            tier. Do not reintroduce it. */}
+        {SHOW_UPGRADE_CTA && isUS && Platform.OS !== "android" && (
+          <>
+            <Text className="mb-4 mt-8 text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">
+              Subscription
+            </Text>
+            <View className="rounded-xl border border-gray-200 bg-gray-50 px-4 py-4 dark:border-gray-700 dark:bg-gray-800">
+              <Text className="text-base font-semibold text-gray-900 dark:text-gray-100">
+                Congress Trade Alerts Pro
+              </Text>
+              <Text className="mb-3 mt-0.5 text-xs text-gray-600 dark:text-gray-400">
+                No 24-hour delay on the trade feed, and no cap on the number of
+                members and tickers you can set alerts for. Filing cadence is
+                the same on every tier -- the House portal is checked about
+                every 30 minutes and the Senate portal about every six hours.
+                Secure checkout opens in your browser -- never in the app.
+              </Text>
+              <UpgradeButton />
+            </View>
+          </>
+        )}
+      </View>
+    </SafeAreaView>
+  );
+}

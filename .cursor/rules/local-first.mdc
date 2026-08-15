@@ -1,0 +1,11 @@
+---
+description: Enforce local-first model routing for Cursor
+alwaysApply: false
+---
+
+# Local-First Cursor Rule
+
+- Follow `.cursor/rules/local-first-model-routing.mdc` as the canonical AI routing standard.
+- Prefer local models for simple coding, edits, debugging, explanations, and drafting.
+- Escalate only when local inference fails twice, context limits block completion, freshness/web access is required, or the task is high-risk.
+- Keep prompts scoped to the smallest relevant files and avoid visible routing/delegation footers.

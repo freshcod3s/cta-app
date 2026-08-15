@@ -1,0 +1,13 @@
+.env
+.env.*
+.envrc
+.dev.vars
+secrets/
+*.pem
+*.key
+*.pfx
+*.p12
+credentials*
+.wrangler/
+.aws/
+.ssh/

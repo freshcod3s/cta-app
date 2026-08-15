@@ -1,0 +1,17 @@
+---
+description: Core context and guardrails for Congress Trade Alerts mobile app work
+alwaysApply: true
+---
+
+# Congress Trade Alerts (cta-app) Project Context
+
+- The live iOS + Android mobile repo for Congress Trade Alerts. Open Cursor at the repo root (`$REPO_ROOT`). Architecture lock + Process Kernel v2.1.1 live in `CLAUDE.md` (this directory) -- read it before any FSM, persistence, or architectural decision. Worker contract source-of-truth lives in `..\congress-trade-alerts\` (separate repo).
+- Abandoned scratch repos: `Projects/congress-trade-mobile/` and `Projects/congress_trade_alerts_app/`. Do NOT reference. Only this directory + `freshcod3s/cta-app` on GitHub are canonical.
+- Stack: Expo SDK 54 managed workflow + EAS Build, TypeScript strict, Expo Router (file-based), TanStack Query (server state ONLY), Zustand + persist (client state), NativeWind, expo-notifications, expo-secure-store. Dark mode only in v1. Bundle IDs locked: `com.congresstradealerts.cta` on both platforms -- NEVER change after first build.
+- Product invariants (override Expo defaults; violation = bug): NEVER use Apple/Google IAP -- "Upgrade" opens Stripe Checkout via `expo-web-browser`. NEVER use password auth -- API-key paste only, issued via the website. API keys live in `expo-secure-store` (Keychain / EncryptedSharedPreferences), NEVER in AsyncStorage or plain state. NEVER auto-paste keys from clipboard without explicit user tap. NEVER load untrusted HTML in WebView -- external links open via `expo-web-browser`.
+- Architecture: vertical slices over horizontal services. Each feature = UI + FSM + domain + data + tests. FSM states required: idle / loading / success / empty / error / offline (if networked). No boolean-driven UI flow logic. Query keys centralize in `/features/<feature>/api/keys.ts` -- never inline at call sites.
+- Cross-platform parity is non-negotiable. Every push, navigation, gesture, and haptic path tested on BOTH iOS and Android before merge. No "ship Android, fix iOS later."
+- Perf budgets (merge rejection on violation): <=60ms first render, <=200MB peak memory, <=16ms main-thread blocking. UI is pure projection -- side effects, API calls, and business decisions live in domain/FSM, not in components.
+- ASCII only in code, configs, prose, commit messages. JSX gotcha: literal `<` / `>` in text content trips `tsc TS1382` -- escape as `&lt;` / `&gt;`.
+- Contact email rule: `app/(drawer)/about.tsx` exports `PRESS_EMAIL` and is the ONLY in-app definition; `press.tsx` and `methodology.tsx` both import it. Never add a local literal to another screen -- that is exactly how this drifted onto a dead inbox before. Cross-repo the same address is mirrored in Worker `privacy.html` + Worker `press.ts`, so a change touches all three definitions. Locked on `press@freshcod3s.com` (2026-08-06); routing verified by API 2026-08-04. The former personal-Gmail press inbox is DEAD and `press@congresstradealerts.com` was never wired -- do not reinstate either.
+- Apple Developer Program: ENROLLED 2026-05-12 (individual). Google Play Console: registered, and the app shipped to production 2026-07-31 (`com.congresstradealerts.cta`, versionCode 4, full rollout); Free Apps Agreement active through 2027-05-12. Submission infrastructure -- Team ID wiring, upload keystore, ASC API key auth, Play Publisher CI -- is IN SCOPE, and iOS App Store submission is ACTIVE work. Caveat: Play store-listing edits and policy re-review are Console-only (androidpublisher `edits.commit` returns 403 for the service account) -- see CLAUDE.md Known Issues 2.

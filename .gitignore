@@ -1,0 +1,78 @@
+# Learn more https://docs.github.com/en/get-started/getting-started-with-git/ignoring-files
+
+# dependencies
+node_modules/
+
+# Expo
+.expo/
+dist/
+web-build/
+expo-env.d.ts
+
+# Native
+.kotlin/
+*.orig.*
+*.jks
+*.p8
+*.p12
+*.key
+*.mobileprovision
+
+# Metro
+.metro-health-check*
+
+# debug
+npm-debug.*
+yarn-debug.*
+yarn-error.*
+
+# macOS
+.DS_Store
+*.pem
+
+# local env files
+.env*.local
+
+# Vault-first secrets (Bitwarden Secrets Manager) -- never commit secret-bearing
+# files. Real values live in the BWS vault; the bootstrap access token lives in
+# the Windows Credential Manager. NOTE: .bws-project (project UUID, non-secret)
+# is intentionally NOT ignored. Template files (.env.example) stay committable.
+.env*
+.dev.vars*
+.bws-token*
+!.env.example
+!.env.sample
+
+# Google Play service account key (eas submit credential — never commit)
+store/google-play/service-account-key.json
+
+# typescript
+*.tsbuildinfo
+
+app-example
+
+# generated native folders
+/ios
+/android
+
+# Expo tunnel runtime log
+.expo-tunnel.log
+
+# Local AI stack (real config -- env-derived secrets; templates only are tracked)
+local-ai/litellm.config.yaml
+
+# Model weights (never commit)
+*.gguf
+*.safetensors
+*.bin
+
+# Claude Code local config (per-project settings, never commit)
+.claude/
+
+# Local launch/store operational scratch -- per the OPSEC guard this material
+# belongs in the private Worker repo, NOT this public repo. Keep local, never commit.
+docs/launch-gap-check-2026-06-12.md
+
+# EAS local credentials (keystore path + passwords) -- never commit, esp. in a PUBLIC repo
+credentials.json
+.venv-asc/

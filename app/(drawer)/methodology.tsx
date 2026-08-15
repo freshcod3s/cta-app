@@ -1,0 +1,203 @@
+// Methodology -- mirrors the section structure of the web's
+// /methodology page (probed in CTA-App-1-8 P1 against
+// https://congresstradealerts.com/methodology, 2026-05-08). Mobile copy
+// is condensed for scroll-friendly reading; the full version lives on
+// web and is linked at the bottom.
+import { Linking, Pressable, ScrollView, Text, View } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
+
+// PRESS_EMAIL is the single source of truth for the contact-email rule
+// (CLAUDE.md: about.tsx + press.tsx + Worker privacy.html + Worker press.ts).
+// Import it -- never hardcode -- so this surface cannot drift from the others.
+import { PRESS_EMAIL } from "./about";
+
+const WEB_METHODOLOGY = "https://congresstradealerts.com/methodology";
+
+// Civic-framing disclaimer (verbatim, Lowe v. SEC-aligned: public-record,
+// impersonal, no advice, no execution). ASCII only.
+const DISCLAIMER =
+  "This app reports public STOCK Act disclosures and related public records " +
+  "for civic transparency. It does not provide investment, legal, tax, or " +
+  "financial advice; does not recommend buying, selling, or holding any " +
+  "security; does not connect to brokerages or enable trading. Not affiliated " +
+  "with or endorsed by Congress, the House, the Senate, the SEC, or any " +
+  "government agency.";
+
+function openExternal(url: string) {
+  Linking.openURL(url).catch(() => {
+    /* swallow -- opening a link is a non-fatal UI affordance miss */
+  });
+}
+
+function Section({
+  title,
+  children,
+}: {
+  title: string;
+  children: React.ReactNode;
+}) {
+  return (
+    <View className="mb-6">
+      <Text className="mb-2 text-base font-bold text-gray-900 dark:text-gray-100">
+        {title}
+      </Text>
+      {children}
+    </View>
+  );
+}
+
+function Para({ children }: { children: React.ReactNode }) {
+  return (
+    <Text className="mb-2 text-sm leading-5 text-gray-700 dark:text-gray-300">
+      {children}
+    </Text>
+  );
+}
+
+export default function MethodologyScreen() {
+  return (
+    <SafeAreaView edges={["bottom"]} className="flex-1 bg-white dark:bg-gray-900">
+      <ScrollView contentContainerStyle={{ padding: 24, paddingBottom: 48 }}>
+        <Text className="mb-2 text-2xl font-bold text-gray-900 dark:text-gray-100">
+          Methodology
+        </Text>
+        <Text className="mb-6 text-xs text-gray-500 dark:text-gray-400">
+          How Congress Trade Alerts collects, classifies, and surfaces
+          STOCK Act disclosures.
+        </Text>
+
+        <Section title="Data sources">
+          <Para>
+            Primary feed: the U.S. House Clerk disclosure portal. Filing
+            records come from the Clerk&apos;s feed, and ticker-level
+            transactions are parsed from the Periodic Transaction Report
+            PDFs the Clerk publishes.
+          </Para>
+          <Para>
+            Senate: the Senate Office of Public Records electronic
+            disclosure system (EFD). Committee assignments come from
+            clerk.house.gov and the open @unitedstates/congress-legislators
+            dataset; sector tagging from Finnhub&apos;s GICS
+            classifications.
+          </Para>
+        </Section>
+
+        <Section title="Update cadence">
+          <Para>
+            We check the House Clerk portal about every 30 minutes and the
+            Senate EFD system about every six hours. That is how often we
+            look for new filings -- not how quickly a trade becomes public.
+            The STOCK Act gives members up to 45 days to file, so a
+            disclosure typically describes a trade made weeks earlier.
+          </Para>
+          <Para>
+            The trade feed in this app shows filings once they are at
+            least 24 hours old. That applies to every user; there is no
+            faster tier. Push alerts are separate and go out on the check
+            cycle above, so an alert can arrive before that trade is
+            browsable in the feed.
+          </Para>
+          <Para>
+            Committee assignments backfill on a slower schedule (last full
+            pass: 2026-05-06).
+          </Para>
+        </Section>
+
+        <Section title="Late filings">
+          <Para>
+            The STOCK Act requires disclosure within 45 days of the trade.
+            We flag any trade where the disclosure date is more than 45
+            days after the trade date as <Text className="font-semibold">late</Text>.
+            About 17% of disclosures currently exceed this threshold; the
+            median lag is 27 days.
+          </Para>
+          <Para>
+            Trade detail screens show a yellow LATE pill on these rows.
+          </Para>
+        </Section>
+
+        <Section title="Amount ranges">
+          <Para>
+            STOCK Act discloses amounts as ranges, not exact figures
+            (e.g. $1,001 - $15,000). The simulator and aggregate stats use
+            the midpoint of each range, with an explicit +/-50% per-trade
+            variance. Treat range-derived totals as approximations.
+          </Para>
+        </Section>
+
+        <Section title="Disclosure lag">
+          <Para>
+            Lag is the difference (in days) between the trade date a
+            member reports and the date that disclosure becomes public.
+          </Para>
+        </Section>
+
+        <Section title="Conflict + jurisdiction signals">
+          <Para>
+            Trades are tagged when the member sits on a committee whose
+            jurisdiction overlaps the security&apos;s GICS sector. Committee
+            jurisdictions come from public charters; sector mapping from
+            Finnhub.
+          </Para>
+        </Section>
+
+        <Section title="Limitations">
+          <Para>
+            Amounts are ranges, not precise figures. Disclosure lag
+            reflects filing delay; we don&apos;t observe option exercise
+            details, post-disclosure exits, or non-equity assets cleanly.
+          </Para>
+          <Para>
+            Some rows have corrupted source dates (lag &gt; 1,825 days) and
+            are excluded; ~15,900 historical rows lack ticker symbols and
+            are shown by asset name only.
+          </Para>
+        </Section>
+
+        <Section title="Reproducibility">
+          <Para>
+            The full dataset and analysis pipeline are public. The MCP
+            server exposes the same queries the web dashboard runs;
+            benchmark harness + scripts are in the GitHub repo.
+          </Para>
+        </Section>
+
+        <Section title="Questions or corrections">
+          <Para>
+            Spotted an error or have a question about the data? Email{" "}
+            <Text
+              className="text-cta-accent underline"
+              onPress={() => openExternal(`mailto:${PRESS_EMAIL}`)}
+              accessibilityRole="link"
+            >
+              {PRESS_EMAIL}
+            </Text>
+            .
+          </Para>
+        </Section>
+
+        <View className="mt-2 mb-6">
+          <Pressable
+            onPress={() => openExternal(WEB_METHODOLOGY)}
+            accessibilityRole="link"
+            hitSlop={8}
+          >
+            <Text className="text-sm text-cta-accent underline">
+              Read the full methodology on the web -&gt;
+            </Text>
+          </Pressable>
+        </View>
+
+        <View className="mb-4 rounded-lg border border-gray-200 bg-gray-50 p-3 dark:border-gray-700 dark:bg-gray-800">
+          <Text className="text-[11px] leading-4 text-gray-500 dark:text-gray-400">
+            {DISCLAIMER}
+          </Text>
+        </View>
+
+        <Text className="text-[10px] text-gray-400">
+          Last updated: 2026-08-07 (mobile copy)
+        </Text>
+      </ScrollView>
+    </SafeAreaView>
+  );
+}
