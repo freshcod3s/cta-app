@@ -93,7 +93,12 @@
           "backgroundColor": "#0b1220"
         }
       ],
-      "expo-secure-store",
+      [
+        "expo-secure-store",
+        {
+          "faceIDPermission": false
+        }
+      ],
       [
         "expo-notifications",
         {
