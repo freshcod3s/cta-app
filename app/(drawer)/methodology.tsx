@@ -77,8 +77,9 @@ export default function MethodologyScreen() {
             Senate: the Senate Office of Public Records electronic
             disclosure system (EFD). Committee assignments come from
             clerk.house.gov and the open @unitedstates/congress-legislators
-            dataset; sector tagging from Finnhub&apos;s GICS
-            classifications.
+            dataset; ticker sectors use a classification map we maintain
+            ourselves. Finnhub supplies ticker-page company details (name,
+            industry, market cap), not this sector mapping.
           </Para>
         </Section>
 
@@ -99,7 +100,7 @@ export default function MethodologyScreen() {
           </Para>
           <Para>
             Committee assignments backfill on a slower schedule (last full
-            pass: 2026-05-06).
+            pass: 2026-08-20).
           </Para>
         </Section>
 
@@ -136,8 +137,9 @@ export default function MethodologyScreen() {
           <Para>
             Trades are tagged when the member sits on a committee whose
             jurisdiction overlaps the security&apos;s GICS sector. Committee
-            jurisdictions come from public charters; sector mapping from
-            Finnhub.
+            jurisdictions come from public charters; ticker sectors use a
+            classification map we maintain ourselves. Finnhub supplies
+            ticker-page company details, not this sector mapping.
           </Para>
         </Section>
 
@@ -149,7 +151,7 @@ export default function MethodologyScreen() {
           </Para>
           <Para>
             Some rows have corrupted source dates (lag &gt; 1,825 days) and
-            are excluded; ~15,900 historical rows lack ticker symbols and
+            are excluded; 8,703 historical rows lack ticker symbols and
             are shown by asset name only.
           </Para>
         </Section>
@@ -195,7 +197,7 @@ export default function MethodologyScreen() {
         </View>
 
         <Text className="text-[10px] text-gray-400">
-          Last updated: 2026-08-07 (mobile copy)
+          Last updated: 2026-08-25 (mobile copy)
         </Text>
       </ScrollView>
     </SafeAreaView>
