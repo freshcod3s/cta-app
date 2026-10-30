@@ -35,7 +35,7 @@ export function ConflictsLegend() {
   return (
     <View className="border-b border-gray-200 px-4 pb-4 pt-2 dark:border-gray-800">
       <Text className="text-xs leading-5 text-gray-600 dark:text-gray-400">
-        Ranks the disclosures loaded so far -- documented late filings first,
+        Ranks the disclosures loaded so far -- our flagged date gaps first,
         then trade size. Scroll to load and rank more. Each row opens the full
         filing.
       </Text>
@@ -43,7 +43,7 @@ export function ConflictsLegend() {
       <LegendRow
         icon={<ShieldAlert size={16} color={ctaColors.late} />}
         title="Tier A - Documented"
-        body="A late filing under the 45-day STOCK Act deadline. This is the statutory, public-record signal that drives the order."
+        body="The recorded disclosure date is more than 45 days after the trade date. This is our date-based indicator, not an official violation finding; it drives the order."
       />
       <LegendRow
         icon={<Landmark size={16} color="#9ca3af" />}

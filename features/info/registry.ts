@@ -127,7 +127,7 @@ export const INFO_REGISTRY: Record<string, InfoEntry> = {
     eyebrow: "119th Congress",
     title: "Overdue members",
     body:
-      "Members of the current (119th) Congress who have a disclosed trade filed past the STOCK Act's 45-day deadline. Late filing is common -- the statutory penalty is only $200 -- so a persistent late filer is itself a useful transparency signal.",
+      "Members of the current (119th) Congress with a recorded disclosure date more than 45 days after a trade. This is our date-based flag, not an official finding of a reporting violation.",
     method:
       "Distinct sitting members with at least one filing whose disclosure date is more than 45 days after the trade date.",
     caveats: [
@@ -142,7 +142,7 @@ export const INFO_REGISTRY: Record<string, InfoEntry> = {
     eyebrow: "Last 7 days",
     title: "Disclosures last 7 days",
     body:
-      "The number of trades DISCLOSED in the last 7 calendar days -- disclosed, not traded. The underlying transaction may be up to 45 days older, since the STOCK Act allows that long to report.",
+      "The number of trades with a recorded disclosure date in the last 7 calendar days. The underlying transaction may be much older; disclosure dates do not tell us when a trade executed.",
     method: "Filings whose disclosure date falls within the last 7 days.",
     caveats: [
       "Counts disclosure dates, not trade dates.",
@@ -214,12 +214,12 @@ export const INFO_REGISTRY: Record<string, InfoEntry> = {
     eyebrow: "This member",
     title: "Median filing delay",
     body:
-      "The median gap, in days, between when this member trades and when they disclose it. The STOCK Act sets a 45-day deadline; a low number means prompt, transparent filing.",
+      "The median gap, in days, between the recorded trade and disclosure dates. This describes the dates in our records, not an official compliance finding.",
     method:
       "The median of (disclosure date minus trade date) across the member's dated filings.",
     caveats: [
       "Computed over the most-recent loaded slice of trades, not always the full history.",
-      "The late-filing penalty is only $200, so filing delay is a meaningful signal.",
+      "Reporting deadlines generally use the earlier of 30 days after notification or 45 days after the transaction. This metric does not evaluate exceptions or amendments.",
     ],
     sources: [{ label: "STOCK Act reporting rules", url: "https://www.congress.gov/bill/112th-congress/senate-bill/2038" }],
   },
@@ -231,7 +231,7 @@ export const INFO_REGISTRY: Record<string, InfoEntry> = {
     body:
       "The share of this member's disclosed trading dollars -- measured at the HIGH end of each amount range -- that falls in industries their committees oversee. It is a transparency flag, NOT a claim of wrongdoing and NOT a trading signal.",
     method:
-      "Trades whose sector matches a committee's jurisdiction are summed (at range-high) and divided by the member's total disclosed dollars. Direct = the member's own committee; Adjacent = a related committee.",
+      "Trades whose sector matches a committee's jurisdiction are summed (at range-high) and divided by the member's total disclosed dollars. Direct and adjacent describe sector relationships in our committee-to-sector mapping, not government findings.",
     caveats: [
       "Amounts are disclosed ranges, so the percentage is an upper-bound estimate.",
       "Members may legally trade; overlap is not evidence of insider trading.",
@@ -258,12 +258,12 @@ export const INFO_REGISTRY: Record<string, InfoEntry> = {
     eyebrow: "This member",
     title: "Disclosure Speed",
     body:
-      "How promptly this member files -- the gap in days between when they trade and when they disclose it. The STOCK Act sets a 45-day deadline.",
+      "The gap in days between this member's recorded trade and disclosure dates. This describes our records, not an official compliance finding.",
     method:
       "Per dated filing, disclosure date minus trade date; we report the median, fastest, and slowest across all such filings (needs at least 5).",
     caveats: [
       "Only filings with both a trade date and a disclosure date are counted.",
-      "The late-filing penalty is only $200, so filing delay is a meaningful signal.",
+      "Reporting deadlines generally use the earlier of 30 days after notification or 45 days after the transaction. This metric does not evaluate exceptions or amendments.",
     ],
     sources: [
       { label: "STOCK Act reporting rules", url: "https://www.congress.gov/bill/112th-congress/senate-bill/2038" },

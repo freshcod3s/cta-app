@@ -2,7 +2,7 @@
   "expo": {
     "name": "Congress Trade Alerts",
     "slug": "cta-app",
-    "version": "1.0.0",
+    "version": "1.1.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "scheme": "ctaapp",
@@ -69,6 +69,40 @@
               "scheme": "https",
               "host": "congresstradealerts.com",
               "pathPrefix": "/trade"
+            },
+            {
+              "scheme": "https",
+              "host": "congresstradealerts.com",
+              "pathPrefix": "/politician"
+            },
+            {
+              "scheme": "https",
+              "host": "congresstradealerts.com",
+              "pathPrefix": "/ticker"
+            }
+          ],
+          "category": [
+            "BROWSABLE",
+            "DEFAULT"
+          ]
+        },
+        {
+          "action": "VIEW",
+          "data": [
+            {
+              "scheme": "https",
+              "host": "www.congresstradealerts.com",
+              "pathPrefix": "/trade"
+            },
+            {
+              "scheme": "https",
+              "host": "www.congresstradealerts.com",
+              "pathPrefix": "/politician"
+            },
+            {
+              "scheme": "https",
+              "host": "www.congresstradealerts.com",
+              "pathPrefix": "/ticker"
             }
           ],
           "category": [
@@ -93,7 +127,12 @@
           "backgroundColor": "#0b1220"
         }
       ],
-      "expo-secure-store",
+      [
+        "expo-secure-store",
+        {
+          "faceIDPermission": false
+        }
+      ],
       [
         "expo-notifications",
         {

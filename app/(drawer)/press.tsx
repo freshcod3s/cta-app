@@ -38,9 +38,9 @@ export default function PressScreen() {
           Press &amp; media
         </Text>
         <Text className="mt-1 text-sm leading-5 text-gray-600 dark:text-gray-400">
-          Congress Trade Alerts surfaces every stock trade U.S. members of
-          Congress disclose under the STOCK Act -- public filings, normalized
-          and pushed to your phone.
+          Congress Trade Alerts surfaces stock trades U.S. members of Congress
+          disclose under the STOCK Act, with alerts about newly collected
+          filings. Coverage and source availability vary.
         </Text>
 
         <View className="mt-6 gap-2">

@@ -50,7 +50,7 @@ export type DailyDiveUnusual = {
   tx_type: string;
   amount_range: string;
   amount_high: number;
-  disclosure_lag_days: number;
+  disclosure_lag_days: number | null;
   disclosure_date: string;
   sector: string | null;
   party: string | null;

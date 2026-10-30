@@ -1,73 +1,67 @@
-Google Play Console listing fields. ASCII only. Char limits annotated;
-counts verified at write time (title 21/30, short 77/80, full 2516/4000).
-
-APP NAME LOCKED (2026-08-10). The locked store display name is "Congress
-Trade Alerts" (21/30) -- matching congresstradealerts.com and every other
-property named for it, and locked by Product Invariant 10 in CLAUDE.md. The
-tranche-1 rename to "Congress Stock Trade Alerts" is REJECTED and must not be
-re-staged anywhere.
-
-WHAT ACTUALLY HAPPENED (corrected 2026-08-10): the rejected name DID reach the
-public listing. It was committed to Play on 2026-08-09 as one of six changes,
-was approved and held by managed publishing, and on 2026-08-10 the pending set
-was PUBLISHED -- so play.google.com now serves the 27-character name. An
-earlier note here claimed the rejected name was "NOT serving"; that was true
-when written and is now false. A corrective listing edit restoring the locked
-name was saved in Console the same day and sits under "Changes not yet
-submitted for review" as a single change; sending it is Joe's Console step.
-Until that lands, this file and the serving listing DISAGREE, and this file
-carries the locked value.
-
-TRANCHE-1 ASO (2026-08-02): title, short description, and full description
-rewritten per the ASO tranche-1 ticket for the Fri Aug 7 Console session.
-Short description is LOCKED copy from Joe -- verify counts, never reword.
-The app name is LOCKED too, by invariant, not by this ticket -- see the lock
-note above; restoring it needs no gate, changing it away does. Privacy carried
-VERBATIM from the vc5 listing (live since 2026-08-01). The .gov source links
-and the non-affiliation disclaimer are the approved review-clearing text from
-the 2026-07-24 rejection fix -- unchanged. NOT live until entered in Console:
-edits park under managed publishing, and a title change may trigger listing
-re-review. Field-by-field entry steps: docs/aso/runsheet-tranche1.md. Fact
-audit: every claim mapped to a shipped vc5 surface in
-docs/aso/fact-audit-tranche1.md.
+Google Play listing fields, revised 2026-10-29 for source completeness.
+ASCII only. Verified lengths: name 21/30, short 73/80, full 3582/4000.
+The store display name remains locked at Congress Trade Alerts.
+Source attribution distinguishes official records, third-party providers,
+and app-generated analysis. This file describes the corrected submission;
+publication and review status must be verified in Play Console.
 
 APP_NAME (max 30): Congress Trade Alerts
-SHORT_DESCRIPTION (max 80): Track House and Senate stock trades with alerts on new STOCK Act disclosures.
+SHORT_DESCRIPTION (max 80): Track disclosed congressional stock trades and follow new public filings.
 
 FULL_DESCRIPTION (max 4000):
-Congress Trade Alerts tracks the stock transactions that members of the US House and Senate disclose under the STOCK Act. Get trade alerts when new filings appear, search and filter by member or company, and open the original government disclosure behind a newly filed trade.
+Congress Trade Alerts is an independent app. It does not represent, and is not affiliated with or endorsed by, any government entity.
 
-Built as a Congress stock tracker for journalists, researchers, and civic-engaged citizens who want politician stock trades in one legible place, with the primary source one tap away on new filings.
+Explore stock transactions disclosed by members of the US House and Senate, follow members or tickers, and receive alerts about newly collected filings. This is a civic public-records tool, not an investment service.
 
-What you get
-- A single feed of congressional stock trades from both chambers
-- Push alerts when a member you follow files a new disclosure
-- Follow any member or company ticker to shape the alerts you receive
-- A trade constellation on every member profile: disclosed trades sized by amount, grouped around committee assignments
-- Committee overlap flags when a traded company intersects the filer's committee jurisdiction -- a transparency signal, not a finding of wrongdoing
-- Late-filing flags when a disclosure lands past the 45-day STOCK Act deadline
-- One tap from a newly filed trade to its original document on the official .gov source
-- A plain-language methodology explaining how STOCK Act filings become the feed you see
+OFFICIAL GOVERNMENT SOURCES
+House financial disclosures and Periodic Transaction Reports:
+https://disclosures-clerk.house.gov/FinancialDisclosure
+Senate public financial disclosures and transaction reports (public search requires acknowledging use terms):
+https://efdsearch.senate.gov/search/
+House member directory:
+https://www.house.gov/representatives
+Senate member directory:
+https://www.senate.gov/senators/
+House committee membership and links to committee jurisdiction information:
+https://clerk.house.gov/Committees
+Senate committee membership and links to committee jurisdiction information:
+https://www.senate.gov/committees/
+Legislative records and committee activity:
+https://www.congress.gov/
+Congressional biographies and additional member portraits:
+https://bioguide.congress.gov/
+House financial disclosure rules:
+https://ethics.house.gov/financial-disclosure/
+Senate financial disclosure rules:
+https://www.ethics.senate.gov/public/index.cfm/financialdisclosure
 
-Data sources
-The app tracks the disclosures members file with:
-- US House Clerk Periodic Transaction Reports (PTR): https://disclosures-clerk.house.gov
-- US Senate Office of Public Records (Senate EFD): https://efdsearch.senate.gov/search/
-- House filings checked every 30 minutes; Senate every six hours
-- Trades appear in the feed once a filing is at least 24 hours old
+OTHER INFORMATION PROVIDERS
+Member profiles and committee assignments are assembled using the independent congress-legislators dataset; the official directories above provide reference records:
+https://github.com/unitedstates/congress-legislators
+Member portraits also use the independent unitedstates/images collection:
+https://github.com/unitedstates/images
+Some historical trades came from Capitol Trades, a third-party provider, and may lack an original-filing link:
+https://www.capitoltrades.com/trades
+Finnhub supplies company details where available, supplemented by locally maintained details:
+https://finnhub.io/docs/api/company-profile2
+GDELT finds related news, with links to the original publishers:
+https://www.gdeltproject.org/
+Some company summaries are generated with Anthropic Claude when available; they may contain errors and are not government records:
+https://www.anthropic.com/claude
 
-Privacy
-- No account required -- no name, email, or password, ever
-- No analytics, no ads, no third-party tracking SDKs
-- To deliver the alerts you ask for, the app stores an anonymous device push token and the members and tickers you choose to follow -- not your name, email, or anything that identifies you personally
-- Turn off notifications in the app to delete everything tied to your device, anytime
-- Open source: https://github.com/freshcod3s/cta-app
+HOW TO READ THE DATA
+Our pipeline collects and normalizes filings. Open an original disclosure from trade details where a source link is available. Methodology in the app explains each source and its limits.
 
-Congress Trade Alerts is an informational public-records tool. It does not execute trades, connect to brokerage accounts, or provide investment advice.
+Committee overlap flags compare our own sector classifications with committee jurisdictions. These are app-generated indicators, not government findings or evidence of wrongdoing. Amounts are disclosed as ranges; aggregate figures are estimates.
 
-This app is not affiliated with the United States government or with any member of Congress. All data comes from public records that members of Congress are required by law to file under the Stop Trading on Congressional Knowledge Act of 2012.
+Our late flag checks for more than 45 days between the recorded trade and disclosure dates. It is not an official violation determination. Reporting rules generally use the earlier of 30 days after notification or 45 days after the transaction; see the official guidance above.
 
-Free. No ads. No account required. Open source under the AGPL-3.0 license.
+House checks are scheduled about every 30 minutes and Senate checks about every six hours; availability and collection limits can delay or omit records and alerts. The main feed shows filings at least 24 hours old. Alerts and other views may show a record earlier. Alerts do not report trades as they execute.
+
+PRIVACY
+No account, ads, or analytics SDKs. Push notifications use a device push token and your selected preferences. Disable notifications in Settings to remove that registration. No brokerage connection, trade execution, or investment advice.
+
+Open source: https://github.com/freshcod3s/cta-app
 
 PRIMARY_CATEGORY: Finance
 (Changed 2026-07-18. News & Magazines subjects the app to Play's News

@@ -11,4 +11,7 @@ export const membersKeys = {
   all: ["members"] as const,
   // name is the raw (decoded) politician name; it is the cache identity.
   profile: (name: string) => [...membersKeys.all, "profile", name] as const,
+  // Every member name with trades (GET /api/politicians), used to resolve a
+  // web /politician/<slug> link to a name.
+  directory: () => [...membersKeys.all, "directory"] as const,
 };

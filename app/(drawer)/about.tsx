@@ -13,8 +13,10 @@
 import { Linking, Pressable, ScrollView, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import Constants from "expo-constants";
+import { router } from "expo-router";
 
 import { GITHUB_URL, PRIVACY_URL, TERMS_URL, WEB_URL } from "@/lib/constants/links";
+import { GOVERNMENT_DISCLAIMER } from "@/features/methodology/sources";
 
 // Public contact address, mirrored in the Worker repo's privacy.html +
 // press.ts (PRESS_CONTACT_EMAIL). This is the single in-app source of truth:
@@ -107,28 +109,38 @@ export default function AboutScreen() {
           Version {version}
         </Text>
 
+        <View className="mb-6 rounded-lg border border-gray-200 bg-gray-50 p-4 dark:border-gray-700 dark:bg-gray-800">
+          <Text selectable className="mb-3 text-sm leading-5 text-gray-700 dark:text-gray-300">
+            {GOVERNMENT_DISCLAIMER}
+          </Text>
+          <LinkRow
+            label="View data sources and methodology"
+            onPress={() => router.push("/methodology")}
+          />
+        </View>
+
         <Section title="What this app does">
           <Para>
-            Congress Trade Alerts surfaces every stock trade disclosed
-            under the STOCK Act by sitting members of the U.S. Congress.
-            Each disclosure is normalized, tagged with the member&apos;s
-            committee assignments, and pushed to subscribed devices when
-            it lands.
+            Congress Trade Alerts shows the stock trades members disclose,
+            with a link to the official filing where one is on record.
+            Records are normalized and tagged with available committee
+            assignments. Alerts for new filings follow our collection cycles;
+            they do not report trades as they execute. Methodology explains
+            source coverage, polling intervals, and the feed delay.
           </Para>
           <Para>
             Built for journalists tracking compliance failures, civic-
             engaged citizens watching their representatives, and traders
-            curious about congressional activity. The data is public; the
-            app makes it actionable on a phone.
+            curious about congressional activity.
           </Para>
         </Section>
 
         <Section title="Privacy">
           <Para>
-            v1 has no user accounts and no analytics. Push tokens are
-            anonymous: the server stores the token, the platform (iOS or
-            Android), and your subscription preferences (the politicians
-            you&apos;ve opted in to alerts for). No email, no name, no device
+            v1 has no user accounts and no analytics. Saved trades
+            stay on your device. For push notifications, the server
+            stores the token, the platform (iOS or Android), and your
+            notification preferences. No email, no name, no device
             identifier beyond the rotating Expo push token.
           </Para>
           <Para>

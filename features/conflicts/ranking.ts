@@ -5,9 +5,9 @@
 // (singular) per-trade committee-overlap DATA layer. Different directories,
 // different jobs -- do not merge.
 //
-// Ranking principle (locked): rank on data that is CORRECT. The strongest,
-// statutorily-grounded signal is disclosure lateness (45-day STOCK Act), so
-// late filings sort first, then trade materiality (amount). Committee overlap
+// Ranking principle (locked): rank on recorded data. Our over-45-day
+// disclosure-lag indicator sorts first, then trade materiality (amount).
+// The indicator is not an official compliance finding. Committee overlap
 // is computed on the CURRENT roster (not time-aware), so it is a LABELED
 // secondary chip -- it never participates in the ordering until the Worker
 // goes time-aware. No opaque composite score: the comparator below is the
@@ -24,8 +24,8 @@ export type ConflictTrade = TradeRecord & {
   conflict?: TradeConflict | null;
 };
 
-// Tier-A = DOCUMENTED accountability signal (statutory). Today that is a
-// late filing; "amended filing" joins here when the Worker exposes it.
+// Tier-A = our recorded disclosure-lag indicator. Today that is a
+// gap over 45 days; "amended filing" joins here when the Worker exposes it.
 export function isTierA(trade: ConflictTrade): boolean {
   return isLateFiling(trade.disclosure_lag_days);
 }
@@ -34,11 +34,15 @@ export function isTierA(trade: ConflictTrade): boolean {
 // then newest disclosure as a stable tiebreaker. Pure: returns a new array.
 export function rankConflicts(trades: ConflictTrade[]): ConflictTrade[] {
   return [...trades].sort((a, b) => {
-    const aLate = isLateFiling(a.disclosure_lag_days) ? 1 : 0;
-    const bLate = isLateFiling(b.disclosure_lag_days) ? 1 : 0;
+    const aLag = a.disclosure_lag_days;
+    const bLag = b.disclosure_lag_days;
+    const aLate = isLateFiling(aLag) ? 1 : 0;
+    const bLate = isLateFiling(bLag) ? 1 : 0;
     if (aLate !== bLate) return bLate - aLate; // documented (late) first
-    if (aLate && bLate && b.disclosure_lag_days !== a.disclosure_lag_days) {
-      return b.disclosure_lag_days - a.disclosure_lag_days; // most overdue first
+    // A late row always has a non-null lag (isLateFiling rejects null), but
+    // the compiler cannot see through the helper -- narrow explicitly.
+    if (aLate && bLate && aLag != null && bLag != null && bLag !== aLag) {
+      return bLag - aLag; // most overdue first
     }
     const aAmt = a.amount_high ?? 0;
     const bAmt = b.amount_high ?? 0;
@@ -49,7 +53,7 @@ export function rankConflicts(trades: ConflictTrade[]): ConflictTrade[] {
 
 // Human-readable reason for the Tier-A chip -- the "why", not a score.
 export function lateReason(lagDays: number): string {
-  return `Filed ${lagDays}d after the trade -- past the 45-day STOCK Act window`;
+  return `Recorded gap: ${lagDays}d -- our >45-day flag, not an official finding`;
 }
 
 // Owner chip label. The chip is accountability-interesting ONLY for

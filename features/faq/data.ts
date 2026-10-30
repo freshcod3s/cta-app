@@ -6,15 +6,15 @@ export type FaqItem = { q: string; a: string };
 export const FAQ_ITEMS: FaqItem[] = [
   {
     q: "Where does this data come from?",
-    a: "All trades are sourced from official congressional disclosures: the U.S. House Clerk's Financial Disclosure portal and the Senate Office of Public Records' Electronic Filing system. Filings are mandated by the STOCK Act of 2012. We pull, normalize, and enrich the same public data anyone can download. We check the House portal about every 30 minutes and the Senate portal about every six hours; the feed in this app shows filings once they are at least 24 hours old.",
+    a: "Current filing records originate in the U.S. House Clerk and Senate public disclosure systems. Some historical records came through Capitol Trades and may lack a direct original-filing link. Member and committee information, company details, and related news use additional providers. Open Methodology from the menu for the full source list, clickable official references, coverage limits, and our calculated indicators. We check for House filings about every 30 minutes and Senate filings about every six hours; the feed shows filings once they are at least 24 hours old.",
   },
   {
     q: "How fast are the alerts?",
-    a: "Our pipeline checks the House portal about every 30 minutes and the Senate portal about every six hours. When a check turns up a new filing, an alert for it goes out on that cycle. The trade feed inside the app is separate: it shows filings once they are at least 24 hours old, the same for everyone. So an alert can reach you before that trade is browsable in the feed. None of this is instant -- the STOCK Act itself allows members up to 45 days to file, so the disclosure you see was usually made weeks after the trade.",
+    a: "Our pipeline checks for House filings about every 30 minutes and Senate filings about every six hours. Alerts follow collection cycles, subject to source availability and collection limits; we cannot promise an alert for every filing. The main trade feed shows filings once they are at least 24 hours old. Trade details opened from an alert and other views may show them earlier. Alerts report disclosures, not trades as they execute; reporting deadlines are explained in Methodology.",
   },
   {
-    q: "Is this even legal? Aren't politicians banned from trading?",
-    a: "The data is 100% public -- that's the whole point of the STOCK Act. Congress is required to disclose personal trades within 45 days, but is not currently banned from trading individual stocks. Bills like the PELOSI Act and the ETHICS Act have proposed a ban, but none have passed. Until they do, the disclosures themselves remain the most powerful accountability tool we have.",
+    q: "What do the disclosure rules require?",
+    a: "Reportable transactions generally must be disclosed by the earlier of 30 days after notification or 45 days after the transaction. The app's late flag only checks whether the recorded disclosure date is more than 45 days after the trade date; it is not an official violation finding. Methodology links to the House and Senate ethics guidance for the requirements, exceptions, and current rules.",
   },
   {
     q: "Does this app cost anything?",
@@ -22,7 +22,7 @@ export const FAQ_ITEMS: FaqItem[] = [
   },
   {
     q: "Do I need an account?",
-    a: "No. There is no sign-in, no registration, and no email address to hand over -- every screen works on first launch. If you turn push alerts on, the app stores an anonymous device token plus the members and tickers you follow, and nothing that identifies you personally. Turn notifications off in Settings to delete all of it.",
+    a: "No. There is no sign-in or email registration. Saved trades stay on your device. If you enable push notifications, the server stores your device push token, platform, and selected notification preferences to deliver alerts. Turn notifications off in Settings to remove that registration.",
   },
   {
     q: "Is this financial advice?",

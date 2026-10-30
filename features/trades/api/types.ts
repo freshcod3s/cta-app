@@ -35,7 +35,7 @@ export type TradeRecord = {
   amount_high: number;
   trade_date: string;
   disclosure_date: string;
-  disclosure_lag_days: number;
+  disclosure_lag_days: number | null;
   source: string;
   source_url: string;
   sector: string | null;
@@ -81,7 +81,8 @@ export type TradesListPage = {
 
 // Helpers used across feature components.
 export const isBuy = (tx: TxType) => tx === "Purchase";
-export const isLateFiling = (lagDays: number) => lagDays > 45;
+export const isLateFiling = (lagDays: number | null) =>
+  lagDays != null && lagDays > 45;
 
 // Feed filter state. Each field maps 1:1 to a GET /api/trades query
 // param (worker src/routes/api.ts handleTrades). Absent = not applied.

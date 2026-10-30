@@ -41,8 +41,8 @@ export function DisclosureSpeedCard({
       <StatRow label="Fastest" days={speed.fastest} color={ctaColors.buy} />
       <StatRow label="Slowest" days={speed.slowest} color={ctaColors.sell} />
       <Text className="mt-1 text-[11px] text-gray-500 dark:text-gray-500">
-        Across {speed.count.toLocaleString()} dated filings · STOCK Act deadline
-        is 45 days
+        Across {speed.count.toLocaleString()} dated filings - date gaps, not
+        official compliance findings
       </Text>
     </ProfileCard>
   );

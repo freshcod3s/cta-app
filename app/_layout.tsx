@@ -123,7 +123,23 @@ export default function RootLayout() {
                   }}
                 />
                 <Stack.Screen
+                  name="explore/[name]"
+                  options={{
+                    headerShown: true,
+                    title: "Explore",
+                    headerBackTitle: "Back",
+                  }}
+                />
+                <Stack.Screen
                   name="member/[name]"
+                  options={{
+                    headerShown: true,
+                    title: "Member",
+                    headerBackTitle: "Back",
+                  }}
+                />
+                <Stack.Screen
+                  name="politician/[slug]"
                   options={{
                     headerShown: true,
                     title: "Member",
