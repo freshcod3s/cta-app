@@ -5,11 +5,12 @@
 // Label/a11y copy stays in that register ("Follow", "Following") -- never
 // "watch this trader for signal" or similar fintech language.
 //
-// Client state only: wraps the settings store's existing
-// toggleMemberSubscription / isSubscribedToMember (Zustand + AsyncStorage,
-// CTA-App-1-7). It is the SAME persisted set the per-member Subscribe pill
-// uses, so a member followed here shows as subscribed there and vice
-// versa -- one canonical "followed members" list, no duplicate store.
+// Client state only: writes through the Saved workspace store (Zustand +
+// AsyncStorage). That store is now the single write path for the saved
+// member set and keeps settings.subscriptionPrefs.members[] -- the worker's
+// push-targeting contract -- as a mirror. Starring a member here, saving one
+// from a profile, and the per-member Subscribe pill all move the SAME
+// collection; there is no second list.
 //
 // This is purely a local-list toggle: it does NOT touch push registration
 // (that is the Subscribe pill's job on the detail screen, which also needs
@@ -22,7 +23,7 @@
 import { Pressable } from "react-native";
 import { Star } from "lucide-react-native";
 
-import { useSettingsStore } from "@/features/settings/store";
+import { useSavedStore } from "@/features/saved/store";
 import { ctaColors } from "@/lib/theme/tokens";
 
 type Props = {
@@ -33,8 +34,8 @@ type Props = {
 };
 
 export function FollowButton({ politician, size = "sm" }: Props) {
-  const following = useSettingsStore((s) => s.isSubscribedToMember(politician));
-  const toggle = useSettingsStore((s) => s.toggleMemberSubscription);
+  const following = useSavedStore((s) => s.isSaved("member", politician));
+  const toggle = useSavedStore((s) => s.toggleMember);
 
   const iconSize = size === "md" ? 22 : 18;
   // Filled amber star when following; hollow gray when not. Amber reuses

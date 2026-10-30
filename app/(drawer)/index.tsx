@@ -9,6 +9,8 @@
 //   data, empty, filtered-> "No trades match these filters" + Clear
 //   data                 -> FlatList + RefreshControl + pagination
 import { FlatList, Pressable, RefreshControl, Text, View } from "react-native";
+
+import { WorkspaceBar } from "@/features/home/components/WorkspaceBar";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 import { useTradesList } from "@/features/trades/api/queries";
@@ -97,6 +99,9 @@ export default function FeedScreen() {
   return (
     <SafeAreaView edges={["bottom"]} className="flex-1 bg-white dark:bg-gray-900">
       <TickerTape />
+      {/* Pinned above the list so the workspace surfaces are reachable in one
+          tap from launch, not buried behind the hamburger (§12). */}
+      <WorkspaceBar />
       <FilterBar />
 
       {query.isLoading ? (

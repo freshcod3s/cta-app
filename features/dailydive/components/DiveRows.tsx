@@ -15,6 +15,7 @@ import type {
   DailyDiveUnusual,
 } from "@/features/dailydive/api/types";
 import { fmtVolume } from "@/features/dailydive/components/PulseBanner";
+import { isLateFiling } from "@/features/trades/api/types";
 
 export function StockRow({ s }: { s: DailyDiveStock }) {
   return (
@@ -96,7 +97,10 @@ function Tag({ label }: { label: string }) {
 }
 
 export function UnusualRow({ u }: { u: DailyDiveUnusual }) {
-  const late = u.disclosure_lag_days > 45;
+  // Shared helper rather than a second literal 45 -- it is the one place
+  // the STOCK Act threshold lives, and it already returns false for a
+  // null lag, so the "Nd lag" suffix below can never render bare.
+  const late = isLateFiling(u.disclosure_lag_days);
   const big = u.amount_high >= 250000;
   return (
     <Link href={`/member/${encodeURIComponent(u.politician)}`} asChild>

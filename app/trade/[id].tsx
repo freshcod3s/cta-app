@@ -8,6 +8,7 @@
 //
 // SafeAreaView edges={["bottom"]} only -- the Stack header from /app/_layout
 // handles the top inset (back arrow + title).
+import { useEffect } from "react";
 import { Pressable, ScrollView, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useLocalSearchParams } from "expo-router";
@@ -15,16 +16,18 @@ import { useLocalSearchParams } from "expo-router";
 import { useTradeDetail } from "@/features/trades/api/queries";
 import { useMemberProfile } from "@/features/members/api/queries";
 import { MemberHeader } from "@/features/trades/components/MemberHeader";
-import { SubscribeButton } from "@/features/trades/components/SubscribeButton";
+import { SaveMemberButton } from "@/features/saved/components/SaveMemberButton";
 import { CommitteeChips } from "@/features/trades/components/CommitteeChips";
 import { TransactionHero } from "@/features/trades/components/TransactionHero";
 import { TimelineSection } from "@/features/trades/components/TimelineSection";
+import { SaveTradeButton } from "@/features/saved/components/SaveTradeButton";
 import { SourceLink } from "@/features/trades/components/SourceLink";
 import { MethodologyFooter } from "@/features/trades/components/MethodologyFooter";
 import { ShareTradeButton } from "@/features/share/components/ShareTradeButton";
 import { ConflictScore } from "@/features/conflict/components/ConflictScore";
 import { NewsSection } from "@/features/news/components/NewsSection";
 import { RelatedTrades } from "@/features/trades/components/RelatedTrades";
+import { recordReviewEvent } from "@/lib/review-prompt";
 
 function ShimmerBlock({ className = "" }: { className?: string }) {
   return (
@@ -92,6 +95,13 @@ export default function TradeDetailScreen() {
   // Disabled until the trade resolves (politician is the name key).
   const memberProfile = useMemberProfile(query.data?.politician);
 
+  // A trade detail that loaded counts as one viewed trade toward the
+  // store-review prompt (lib/review-prompt): once per trade per mount.
+  const loadedId = query.data?.id;
+  useEffect(() => {
+    if (loadedId != null) void recordReviewEvent("trade_view");
+  }, [loadedId]);
+
   return (
     <SafeAreaView edges={["bottom"]} className="flex-1 bg-white dark:bg-gray-900">
       {query.isLoading ? (
@@ -103,13 +113,29 @@ export default function TradeDetailScreen() {
       ) : (
         <ScrollView contentContainerStyle={{ paddingBottom: 16 }}>
           <MemberHeader trade={query.data} />
-          <SubscribeButton trade={query.data} />
+          {/* Was a "Subscribe to alerts" pill. It promised per-member push
+              this build cannot deliver, and it wrote to
+              subscriptionPrefs.members[] directly -- which the saved store
+              now reconciles, so its writes were going to be silently
+              reverted. Replaced by the same Save action used everywhere
+              else, on the same collection. */}
+          {/* flex-row, like the button's other two hosts. SaveMemberButton
+              is flex-1; in a column wrapper Yoga can size the wrapper from
+              the button's zero flex basis on a measure-only pass, so the
+              button overflows it and the committee header is drawn over it
+              (seen on a first visit, while the profile was still loading). */}
+          <View className="flex-row px-4 pb-2">
+            <SaveMemberButton name={query.data.politician} />
+          </View>
           <CommitteeChips
             committees={memberProfile.data?.committees ?? []}
             committeeTree={memberProfile.data?.committee_tree}
             loading={memberProfile.isLoading}
           />
           <TransactionHero trade={query.data} />
+          {/* Save sits above Share: keeping a record is the workspace
+              action, sharing is the outbound one. */}
+          <SaveTradeButton trade={query.data} />
           <ShareTradeButton trade={query.data} />
           <ConflictScore
             politician={query.data.politician}

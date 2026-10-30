@@ -38,7 +38,7 @@ function Divider() {
 function BoardCaption({ sort }: { sort: LeaderboardSort }) {
   const text =
     sort === "late_filer"
-      ? "Sitting members ranked by average disclosure lag. An OVERDUE flag marks an average past the 45-day STOCK Act window."
+      ? "Sitting members ranked by average recorded disclosure lag. An OVERDUE flag marks our over-45-day average-lag indicator, not an official finding."
       : "Sitting members ranked by number of disclosed trades.";
   return (
     <Text className="px-4 pb-1 pt-3 text-xs leading-4 text-gray-500 dark:text-gray-400">

@@ -8,13 +8,21 @@
 // Account avatar is a shared headerRight across all drawer screens for
 // consistent global access.
 //
-// Web-parity slices add Watchlist + Leaderboard (Track A) and Daily Dive +
+// Web-parity slices add Saved + Leaderboard (Track A) and Daily Dive +
 // FAQ + Press (Track B) as drawer destinations.
+//
+// Saved / Explore / Compare sit directly under Feed: they are the workspace,
+// and burying them below the reference pages would make the app's own
+// interactive surfaces the hardest things to find. The Feed also carries a
+// WorkspaceBar so all three are reachable in one tap from launch without
+// opening the drawer at all.
 import { Drawer } from "expo-router/drawer";
 import { Pressable, Alert } from "react-native";
 import {
   House,
   Star,
+  ChartLine,
+  Columns3,
   Trophy,
   Scale,
   Newspaper,
@@ -82,9 +90,27 @@ export default function DrawerLayout() {
       <Drawer.Screen
         name="watchlist"
         options={{
-          title: "Watchlist",
-          drawerLabel: "Watchlist",
+          // Route path stays /watchlist so existing links resolve; the
+          // user-facing name is Saved everywhere.
+          title: "Saved",
+          drawerLabel: "Saved",
           drawerIcon: ({ color }) => <Star size={ICON_SIZE} color={color} />,
+        }}
+      />
+      <Drawer.Screen
+        name="explore"
+        options={{
+          title: "Explore",
+          drawerLabel: "Explore",
+          drawerIcon: ({ color }) => <ChartLine size={ICON_SIZE} color={color} />,
+        }}
+      />
+      <Drawer.Screen
+        name="compare"
+        options={{
+          title: "Compare",
+          drawerLabel: "Compare",
+          drawerIcon: ({ color }) => <Columns3 size={ICON_SIZE} color={color} />,
         }}
       />
       <Drawer.Screen

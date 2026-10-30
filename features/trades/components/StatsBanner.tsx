@@ -23,7 +23,7 @@ function ShimmerCell() {
 type CellProps = {
   label: string;
   // Context sublabel under the label -- the web tiles' explanatory copy
-  // (e.g. "Past the 45-day STOCK Act deadline"), so a number is never a
+  // (e.g. "Members with a recorded lag over 45 days"), so a number is never a
   // bare figure without its meaning.
   sub: string;
   // InfoSheet registry slug this tile opens (Product Invariant #9 -- no
@@ -74,7 +74,7 @@ function Cell({ label, sub, infoSlug, value, valueClassName }: CellProps) {
 const CELL_COPY = {
   overdue: {
     label: "Overdue (119th)",
-    sub: "Members past the 45-day STOCK Act deadline",
+    sub: "Members with a recorded lag over 45 days",
     infoSlug: "home-overdue",
   },
   disclosures: {

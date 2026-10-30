@@ -58,7 +58,11 @@ function Chip({
 }
 
 // Tier-A: documented late filing. Only rendered for late rows.
-export function TierADocumentedChip({ lagDays }: { lagDays: number }) {
+export function TierADocumentedChip({ lagDays }: { lagDays: number | null }) {
+  // Self-omits when the lag is absent, matching the other chips in this
+  // strip. Callers gate on isTierA(), which is already false for a null
+  // lag, so this is a type-level backstop rather than a live branch.
+  if (lagDays == null) return null;
   return (
     <Chip
       tone="warn"

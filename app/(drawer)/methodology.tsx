@@ -10,6 +10,9 @@ import { SafeAreaView } from "react-native-safe-area-context";
 // (CLAUDE.md: about.tsx + press.tsx + Worker privacy.html + Worker press.ts).
 // Import it -- never hardcode -- so this surface cannot drift from the others.
 import { PRESS_EMAIL } from "./about";
+import { useCoverage, withCommas } from "@/features/methodology/api/coverage";
+import { DataSources } from "@/features/methodology/components/DataSources";
+import { GOVERNMENT_DISCLAIMER, GOVERNMENT_SOURCES, OTHER_SOURCES } from "@/features/methodology/sources";
 
 const WEB_METHODOLOGY = "https://congresstradealerts.com/methodology";
 
@@ -55,6 +58,13 @@ function Para({ children }: { children: React.ReactNode }) {
 }
 
 export default function MethodologyScreen() {
+  // Read live so the figure cannot go stale the way "~15,900" did. On any
+  // failure noTickerRows stays undefined and the sentence below degrades to
+  // "some historical rows" -- never a wrong or zero count, and never a
+  // loading state on a static reading screen.
+  const { data: coverage } = useCoverage();
+  const noTickerRows = coverage?.missing_unpriceable ?? null;
+
   return (
     <SafeAreaView edges={["bottom"]} className="flex-1 bg-white dark:bg-gray-900">
       <ScrollView contentContainerStyle={{ padding: 24, paddingBottom: 48 }}>
@@ -66,19 +76,30 @@ export default function MethodologyScreen() {
           STOCK Act disclosures.
         </Text>
 
-        <Section title="Data sources">
+        <View className="mb-6 rounded-lg border border-gray-200 bg-gray-50 p-4 dark:border-gray-700 dark:bg-gray-800">
+          <Text selectable className="text-sm leading-5 text-gray-700 dark:text-gray-300">
+            {GOVERNMENT_DISCLAIMER}
+          </Text>
+        </View>
+
+        <Section title="Official government sources">
           <Para>
-            Primary feed: the U.S. House Clerk disclosure portal. Filing
-            records come from the Clerk&apos;s feed, and ticker-level
-            transactions are parsed from the Periodic Transaction Report
-            PDFs the Clerk publishes.
+            Current trade records originate in House and Senate financial
+            disclosures. Our collection pipeline parses and normalizes these
+            records. Member and committee data also use the independent
+            datasets listed below. Open the official sources to check the
+            underlying records; source availability and coverage vary.
           </Para>
+          <DataSources sources={GOVERNMENT_SOURCES} />
+        </Section>
+
+        <Section title="Other information providers">
+          <DataSources sources={OTHER_SOURCES} />
           <Para>
-            Senate: the Senate Office of Public Records electronic
-            disclosure system (EFD). Committee assignments come from
-            clerk.house.gov and the open @unitedstates/congress-legislators
-            dataset; sector tagging from Finnhub&apos;s GICS
-            classifications.
+            Sector classifications, committee-to-sector mappings, overlap
+            flags, and aggregate statistics are maintained or calculated by
+            Congress Trade Alerts. They are not government findings or
+            endorsements. An overlap does not establish wrongdoing.
           </Para>
         </Section>
 
@@ -87,29 +108,33 @@ export default function MethodologyScreen() {
             We check the House Clerk portal about every 30 minutes and the
             Senate EFD system about every six hours. That is how often we
             look for new filings -- not how quickly a trade becomes public.
-            The STOCK Act gives members up to 45 days to file, so a
-            disclosure typically describes a trade made weeks earlier.
+            PTR reporting deadlines generally use the earlier of 30 days
+            after the filer is notified of a transaction or 45 days after
+            the transaction. See the official House and Senate guidance
+            above. An alert is about a disclosure, not a trade executing.
           </Para>
           <Para>
-            The trade feed in this app shows filings once they are at
+            The main trade feed in this app shows filings once they are at
             least 24 hours old. That applies to every user; there is no
             faster tier. Push alerts are separate and go out on the check
             cycle above, so an alert can arrive before that trade is
-            browsable in the feed.
+            browsable in the main feed. Other views, such as a trade opened
+            from an alert, may show it earlier. Availability and collection
+            limits can delay or omit records and alerts.
           </Para>
           <Para>
             Committee assignments backfill on a slower schedule (last full
-            pass: 2026-05-06).
+            pass: 2026-08-20).
           </Para>
         </Section>
 
         <Section title="Late filings">
           <Para>
-            The STOCK Act requires disclosure within 45 days of the trade.
-            We flag any trade where the disclosure date is more than 45
+            We flag a trade where the recorded disclosure date is more than 45
             days after the trade date as <Text className="font-semibold">late</Text>.
-            About 17% of disclosures currently exceed this threshold; the
-            median lag is 27 days.
+            This is our date-based indicator, not an official determination
+            of a violation. It does not evaluate the earlier notification-based
+            deadline, exceptions, or the accuracy of the filed dates.
           </Para>
           <Para>
             Trade detail screens show a yellow LATE pill on these rows.
@@ -118,10 +143,9 @@ export default function MethodologyScreen() {
 
         <Section title="Amount ranges">
           <Para>
-            STOCK Act discloses amounts as ranges, not exact figures
-            (e.g. $1,001 - $15,000). The simulator and aggregate stats use
-            the midpoint of each range, with an explicit +/-50% per-trade
-            variance. Treat range-derived totals as approximations.
+            Transaction amounts are reported as ranges, not exact figures
+            (e.g. $1,001 - $15,000). Derived totals are estimates; the
+            calculation basis is identified alongside each metric.
           </Para>
         </Section>
 
@@ -135,9 +159,11 @@ export default function MethodologyScreen() {
         <Section title="Conflict + jurisdiction signals">
           <Para>
             Trades are tagged when the member sits on a committee whose
-            jurisdiction overlaps the security&apos;s GICS sector. Committee
-            jurisdictions come from public charters; sector mapping from
-            Finnhub.
+            jurisdiction overlaps the security&apos;s sector. Committee
+            jurisdictions come from public charters; the sector mapping is
+            one we maintain ourselves. Finnhub supplies the company details
+            on a ticker&apos;s own page -- name, industry, market cap -- but
+            not this mapping.
           </Para>
         </Section>
 
@@ -149,16 +175,19 @@ export default function MethodologyScreen() {
           </Para>
           <Para>
             Some rows have corrupted source dates (lag &gt; 1,825 days) and
-            are excluded; ~15,900 historical rows lack ticker symbols and
-            are shown by asset name only.
+            are excluded;{" "}
+            {noTickerRows == null
+              ? "some historical rows"
+              : `~${withCommas(noTickerRows)} historical rows`}{" "}
+            lack ticker symbols and are shown by asset name only.
           </Para>
         </Section>
 
         <Section title="Reproducibility">
           <Para>
-            The full dataset and analysis pipeline are public. The MCP
-            server exposes the same queries the web dashboard runs;
-            benchmark harness + scripts are in the GitHub repo.
+            The mobile app source is public. The companion website explains
+            the collection and analysis methods; not all underlying data,
+            operational tooling, or benchmark material is published.
           </Para>
         </Section>
 
@@ -195,7 +224,7 @@ export default function MethodologyScreen() {
         </View>
 
         <Text className="text-[10px] text-gray-400">
-          Last updated: 2026-08-07 (mobile copy)
+          Last updated: 2026-10-29 (mobile copy)
         </Text>
       </ScrollView>
     </SafeAreaView>

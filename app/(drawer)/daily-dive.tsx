@@ -136,7 +136,7 @@ export default function DailyDiveScreen() {
 
         <SectionHeader
           title="Large or late filings"
-          sub="Disclosures over $250K or past the 45-day STOCK Act deadline"
+          sub="Disclosures over $250K or recorded more than 45 days after the trade"
         />
         {unusual.length === 0 ? (
           <Text className="px-4 py-3 text-sm text-gray-500 dark:text-gray-400">

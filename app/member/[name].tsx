@@ -22,6 +22,7 @@
 //   error (empty)      -> ErrorState with Retry (refetches BOTH queries)
 //   success + empty    -> EmptyState
 //   success + rows     -> FlatList (profile header scrolls as ListHeader)
+import { useEffect } from "react";
 import {
   FlatList,
   Pressable,
@@ -31,6 +32,7 @@ import {
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Stack, useLocalSearchParams } from "expo-router";
+import { WifiOff } from "lucide-react-native";
 
 import { useTradesList } from "@/features/trades/api/queries";
 import type { TradeRecord } from "@/features/trades/api/types";
@@ -49,6 +51,15 @@ import { DisclosureSpeedCard } from "@/features/members/components/cards/Disclos
 import { Trades12moCard } from "@/features/members/components/cards/Trades12moCard";
 import { Top5TickersCard } from "@/features/members/components/cards/Top5TickersCard";
 import { displayName } from "@/lib/util/display";
+import { MemberActionBar } from "@/features/saved/components/MemberActionBar";
+import {
+  needsRefreshOnMount,
+  savedCopyBanner,
+  savedCopyState,
+} from "@/features/explore/savedCopy";
+import { useSavedStore } from "@/features/saved/store";
+import { PROCESS_START_MS } from "@/lib/query/client";
+import { ctaColors } from "@/lib/theme/tokens";
 
 // Rows here render with hideMember (no per-row avatar), so the divider
 // indents past the 3px buy/sell border + padding only.
@@ -176,6 +187,26 @@ export default function MemberProfileScreen() {
   const profileQuery = useMemberProfile(name || undefined);
   const feedQuery = useTradesList({ politician: name || undefined });
 
+  // A profile rehydrated from the persisted cache is a copy until a refresh
+  // in this process succeeds: refetch once on mount and label it meanwhile,
+  // exactly as Explore does (features/explore/savedCopy.ts).
+  const { refetch: refetchProfile, dataUpdatedAt } = profileQuery;
+  const rehydrated = needsRefreshOnMount(!!profileQuery.data, dataUpdatedAt, PROCESS_START_MS);
+  useEffect(() => {
+    if (rehydrated) void refetchProfile({ cancelRefetch: false });
+  }, [rehydrated, name, refetchProfile]);
+  const isSavedMember = useSavedStore((s) => s.isSaved("member", name));
+  const bannerText = savedCopyBanner(
+    savedCopyState({
+      hasProfile: !!profileQuery.data,
+      dataUpdatedAt,
+      processStartMs: PROCESS_START_MS,
+      hasSnapshot: false,
+      snapshotUpdatedAt: null,
+    }),
+    isSavedMember,
+  );
+
   const trades: TradeRecord[] = feedQuery.data?.flat ?? [];
 
   // Header model: real profile when available, name-only fallback on
@@ -208,6 +239,20 @@ export default function MemberProfileScreen() {
       ) : (
         <MemberProfileHeader profile={profile} />
       )}
+      {bannerText ? (
+        <View className="mx-4 mt-2 flex-row items-center gap-2 rounded-lg border border-amber-300 bg-amber-50 p-3 dark:border-amber-700 dark:bg-amber-950">
+          <WifiOff size={16} color={ctaColors.late} />
+          <Text className="flex-1 text-sm text-amber-900 dark:text-amber-100">
+            {bannerText}
+          </Text>
+        </View>
+      ) : null}
+      {/* Save / Compare / Explore. Placed immediately under the header so
+          the three workspace actions are the first thing on the screen after
+          the member's identity. Keyed on the route name (the query key) and
+          given only real query data: the name-only placeholder must not be
+          saved as a snapshot, nor stamped as retrieved now. */}
+      <MemberActionBar name={name} profile={profileQuery.data ?? null} />
       <MemberStatsRow profile={profile} />
       <MemberSummaryStrip
         totalTrades={totalTrades}
